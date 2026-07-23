@@ -9,7 +9,7 @@ hide:
 # Understand *why* your AI makes decisions
 
 <p class="wbx-tagline">
-WhiteBoxXAI is the AI observability, explainability, and governance platform that helps you
+WhiteBox XAI is the AI observability, explainability, and governance platform that helps you
 monitor production models, explain their predictions, catch drift and bias early, and stay
 compliant — with confidence.
 </p>
@@ -56,7 +56,7 @@ compliant — with confidence.
 
 </div>
 
-## What you can do with WhiteBoxXAI
+## What you can do with WhiteBox XAI
 
 <div class="grid cards" markdown>
 
