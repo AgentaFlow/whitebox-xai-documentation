@@ -1,0 +1,1279 @@
+# WhiteBoxXAI SDK Developer Documentation
+
+Complete developer guide for the WhiteBoxXAI Python SDK.
+
+---
+
+## Table of Contents
+
+1. [SDK Overview](#sdk-overview)
+2. [Architecture](#architecture)
+3. [Core Components](#core-components)
+4. [API Reference](#api-reference)
+5. [Framework Integrations](#framework-integrations)
+6. [Advanced Usage](#advanced-usage)
+7. [Error Handling](#error-handling)
+8. [Performance Optimization](#performance-optimization)
+9. [Security & Privacy](#security--privacy)
+10. [Extending the SDK](#extending-the-sdk)
+
+---
+
+## SDK Overview
+
+### Purpose
+
+The WhiteBoxXAI SDK provides a lightweight Python interface for integrating AI observability into your machine learning applications. It handles:
+
+- Model registration and metadata management
+- Prediction logging and monitoring
+- Data drift detection
+- Privacy-preserving data handling
+- Automatic retries and error recovery
+- Local caching for performance
+
+### Design Principles
+
+1. **Minimal Overhead** - < 5% performance impact on model inference
+2. **Framework Agnostic** - Works with any ML framework via base API
+3. **Privacy First** - Built-in PII detection and masking
+4. **Developer Friendly** - Intuitive API with sensible defaults
+5. **Production Ready** - Robust error handling, retries, caching
+
+### Installation
+
+```bash
+# Base SDK
+pip install whiteboxxai-sdk
+
+# With framework support
+pip install whiteboxxai-sdk[sklearn]    # Scikit-learn
+pip install whiteboxxai-sdk[pytorch]    # PyTorch
+pip install whiteboxxai-sdk[tensorflow] # TensorFlow (future)
+pip install whiteboxxai-sdk[all]        # All integrations
+```
+
+---
+
+## Architecture
+
+### Component Diagram
+
+```
+┌─────────────────────────────────────────┐
+│         User Application                │
+│  (Scikit-learn, PyTorch, etc.)         │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│      Framework Integrations             │
+│  (SklearnMonitor, TorchMonitor)        │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│         ModelMonitor                    │
+│  (Core monitoring logic)                │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│         WhiteBoxXAI Client                │
+│  (API communication)                    │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│      Middleware Layer                   │
+│  (Caching, Retries, Privacy)           │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│      WhiteBoxXAI REST API                 │
+│  (Backend service)                      │
+└─────────────────────────────────────────┘
+```
+
+### Class Hierarchy
+
+```python
+WhiteBoxXAI               # Main client
+├── Config              # Configuration management
+├── APIClient           # HTTP client wrapper
+└── ModelMonitor        # Core monitoring
+    ├── SklearnMonitor  # Scikit-learn integration
+    ├── TorchMonitor    # PyTorch integration
+    └── (Future integrations)
+
+Utils
+├── PIIDetector         # Privacy protection
+├── DataMasker          # Data masking
+├── TTLCache            # Local caching
+└── RetryHandler        # Retry logic
+```
+
+---
+
+## Core Components
+
+### 1. WhiteBoxXAI Client
+
+Main entry point for SDK functionality.
+
+**Initialization:**
+
+```python
+from whiteboxxai import WhiteBoxXAI
+
+# From API key
+client = WhiteBoxXAI(api_key="your-api-key")
+
+# From environment variable
+import os
+os.environ["WHITEBOXXAI_API_KEY"] = "your-api-key"
+client = WhiteBoxXAI()
+
+# With custom config
+from whiteboxxai import Config
+
+config = Config(
+    api_key="your-api-key",
+    api_url="https://api.whiteboxxai.com",
+    timeout=30,
+    max_retries=3
+)
+client = WhiteBoxXAI(config=config)
+```
+
+**Obtaining API Keys:**
+
+API keys are obtained from your WhiteBoxXAI account dashboard:
+1. Log in to the WhiteBoxXAI web application (2FA may be required if enabled)
+2. Navigate to Settings → API Keys
+3. Generate a new API key with appropriate permissions
+4. Store securely and use in your SDK configuration
+
+**Note:** API keys are separate from user account authentication. Once obtained, API keys authenticate SDK requests without requiring 2FA for each call.
+
+**Methods:**
+
+```python
+# Models
+client.models.register(name, version, model_type, **kwargs)
+client.models.get(model_id)
+client.models.list(filters)
+client.models.update(model_id, **kwargs)
+client.models.delete(model_id)
+
+# Predictions
+client.predictions.log(model_id, inputs, output, **kwargs)
+client.predictions.log_batch(model_id, predictions)
+client.predictions.get(prediction_id)
+client.predictions.list(model_id, filters)
+
+# Metrics
+client.metrics.get(model_id, metric_names, date_range)
+client.metrics.aggregate(model_id, aggregation, granularity)
+
+# Drift
+client.drift.detect(model_id, data)
+client.drift.get_latest(model_id)
+
+# Explanations
+client.explanations.generate(prediction_id, method)
+client.explanations.get(explanation_id)
+```
+
+### 2. ModelMonitor
+
+Core monitoring logic for model predictions.
+
+**Initialization:**
+
+```python
+from whiteboxxai import WhiteBoxXAI, ModelMonitor
+
+client = WhiteBoxXAI(api_key="your-api-key")
+monitor = ModelMonitor(client, model_id="existing-model-id")
+
+# Or register new model
+monitor = ModelMonitor(client)
+model_id = monitor.register_model(
+    name="my_model",
+    version="1.0.0",
+    model_type="classification",
+    framework="sklearn"
+)
+```
+
+**Core Methods:**
+
+```python
+# Register model
+model_id = monitor.register_model(
+    name: str,
+    model_type: str,  # "classification", "regression", etc.
+    framework: str = None,
+    version: str = "1.0.0",
+    features: List[str] = None,
+    target: str = None,
+    baseline_metrics: Dict = None,
+    tags: List[str] = None,
+    metadata: Dict = None
+) -> str
+
+# Log single prediction
+monitor.log_prediction(
+    inputs: Dict[str, Any],
+    output: Dict[str, Any],
+    metadata: Dict[str, Any] = None,
+    timestamp: datetime = None
+) -> str  # Returns prediction_id
+
+# Log batch predictions
+monitor.log_batch(
+    predictions: List[Dict],
+    parallel: bool = True
+) -> List[str]  # Returns list of prediction_ids
+
+# Set baseline data
+monitor.set_baseline(
+    baseline_data: Union[pd.DataFrame, np.ndarray],
+    feature_names: List[str] = None
+)
+
+# Enable drift detection
+monitor.enable_drift_detection(
+    threshold: float = 0.1,
+    window_size: int = 1000
+)
+```
+
+**Configuration:**
+
+```python
+# Sampling rate (log N% of predictions)
+monitor.sampling_rate = 0.1  # 10%
+
+# Batch size for batch logging
+monitor.batch_size = 100
+
+# Enable/disable caching
+monitor.use_cache = True
+monitor.cache_ttl = 300  # seconds
+
+# Privacy settings
+monitor.mask_pii = True
+monitor.allowed_fields = ["amount", "category"]
+```
+
+### 3. Framework Integrations
+
+#### Scikit-learn
+
+```python
+from whiteboxxai.integrations.sklearn import SklearnMonitor
+
+# Initialize
+sklearn_monitor = SklearnMonitor(
+    client=client,
+    model=trained_model,
+    model_id="existing-id"  # Optional
+)
+
+# Auto-register from trained model
+model_id = sklearn_monitor.register_from_model(
+    name="sklearn_model",
+    model_type="classification",
+    X_train=X_train,  # For baseline
+    y_train=y_train
+)
+
+# Wrap model for automatic monitoring
+monitored_model = sklearn_monitor.wrap_model(trained_model)
+
+# Use normally - predictions auto-logged
+predictions = monitored_model.predict(X_test)
+probabilities = monitored_model.predict_proba(X_test)
+
+# Manual logging
+sklearn_monitor.log_prediction_from_model(
+    X=input_features,
+    y_pred=prediction,
+    y_prob=probabilities  # Optional
+)
+```
+
+**Features:**
+- Automatic feature extraction from model
+- Support for pipelines and feature transformers
+- Baseline calculation from training data
+- Model metadata extraction (n_features, classes, etc.)
+
+#### PyTorch
+
+```python
+from whiteboxxai.integrations.pytorch import TorchMonitor
+
+# Initialize
+torch_monitor = TorchMonitor(
+    client=client,
+    model=pytorch_model,
+    device="cuda"  # or "cpu"
+)
+
+# Register
+model_id = torch_monitor.register_from_model(
+    name="torch_model",
+    model_type="classification",
+    input_shape=(1, 28, 28),
+    output_classes=10
+)
+
+# Wrap model
+monitored_model = torch_monitor.wrap_model(pytorch_model)
+
+# Forward pass with automatic logging
+outputs = monitored_model(inputs)
+
+# Or manual logging
+with torch.no_grad():
+    outputs = model(inputs)
+    torch_monitor.log_prediction_from_tensor(
+        inputs=inputs,
+        outputs=outputs
+    )
+```
+
+**Features:**
+- GPU/CPU compatibility
+- Batch prediction logging
+- Automatic shape inference
+- Hook-based monitoring (optional)
+
+### 4. Configuration Management
+
+```python
+from whiteboxxai import Config
+
+config = Config(
+    # API settings
+    api_key="your-api-key",
+    api_url="https://api.whiteboxxai.com",
+    api_version="v1",
+
+    # Network settings
+    timeout=30,
+    max_retries=3,
+    retry_backoff=2.0,
+
+    # Caching
+    enable_cache=True,
+    cache_ttl=300,
+    cache_max_size=1000,
+
+    # Privacy
+    mask_pii=True,
+    allowed_fields=["feature1", "feature2"],
+
+    # Logging
+    log_level="INFO",
+    log_to_file=False,
+    log_file_path="/var/log/whiteboxxai.log",
+
+    # Performance
+    batch_size=100,
+    sampling_rate=1.0,
+    async_logging=True
+)
+
+client = WhiteBoxXAI(config=config)
+```
+
+**Environment Variables:**
+
+```bash
+# Required
+WHITEBOXXAI_API_KEY=your-api-key
+
+# Optional
+WHITEBOXXAI_API_URL=https://api.whiteboxxai.com
+WHITEBOXXAI_TIMEOUT=30
+WHITEBOXXAI_MAX_RETRIES=3
+WHITEBOXXAI_CACHE_TTL=300
+WHITEBOXXAI_SAMPLING_RATE=0.1
+WHITEBOXXAI_LOG_LEVEL=INFO
+```
+
+---
+
+## API Reference
+
+### Models API
+
+#### register_model()
+
+Register a new model for monitoring.
+
+```python
+model_id = client.models.register(
+    name: str,                      # Required
+    version: str,                   # Required
+    model_type: str,                # Required: "classification", "regression", etc.
+    framework: str = None,          # Optional: "sklearn", "pytorch", etc.
+    description: str = None,
+    features: List[str] = None,
+    target: str = None,
+    baseline_metrics: Dict = None,
+    tags: List[str] = None,
+    metadata: Dict = None
+) -> str
+```
+
+**Returns:** Model ID (UUID string)
+
+**Example:**
+
+```python
+model_id = client.models.register(
+    name="fraud_detector",
+    version="2.1.0",
+    model_type="classification",
+    framework="xgboost",
+    description="Detects fraudulent transactions",
+    features=[
+        "transaction_amount",
+        "merchant_category",
+        "time_of_day",
+        "customer_age"
+    ],
+    target="is_fraud",
+    baseline_metrics={
+        "accuracy": 0.94,
+        "precision": 0.91,
+        "recall": 0.89,
+        "f1_score": 0.90,
+        "auc_roc": 0.96
+    },
+    tags=["production", "fraud", "high-priority"],
+    metadata={
+        "owner": "data-science-team",
+        "training_date": "2025-11-15",
+        "model_path": "s3://models/fraud-v2.1.0"
+    }
+)
+```
+
+#### get_model()
+
+Retrieve model information.
+
+```python
+model = client.models.get(model_id: str) -> Dict
+```
+
+**Returns:**
+```python
+{
+    "id": "model-uuid",
+    "name": "fraud_detector",
+    "version": "2.1.0",
+    "model_type": "classification",
+    "framework": "xgboost",
+    "status": "active",
+    "created_at": "2025-12-01T10:00:00Z",
+    "features": [...],
+    "baseline_metrics": {...},
+    "tags": [...],
+    "metadata": {...}
+}
+```
+
+#### update_model()
+
+Update model metadata.
+
+```python
+client.models.update(
+    model_id: str,
+    name: str = None,
+    description: str = None,
+    tags: List[str] = None,
+    metadata: Dict = None,
+    status: str = None  # "active", "inactive", "deprecated"
+)
+```
+
+#### list_models()
+
+List all models with optional filters.
+
+```python
+models = client.models.list(
+    tags: List[str] = None,
+    model_type: str = None,
+    status: str = None,
+    limit: int = 100,
+    offset: int = 0
+) -> List[Dict]
+```
+
+### Predictions API
+
+#### log_prediction()
+
+Log a single prediction.
+
+```python
+prediction_id = client.predictions.log(
+    model_id: str,
+    inputs: Dict[str, Any],
+    output: Dict[str, Any],
+    metadata: Dict[str, Any] = None,
+    timestamp: datetime = None,
+    prediction_id: str = None  # Optional custom ID
+) -> str
+```
+
+**Example:**
+
+```python
+prediction_id = client.predictions.log(
+    model_id="model-uuid",
+    inputs={
+        "transaction_amount": 250.00,
+        "merchant_category": "electronics",
+        "time_of_day": 14,
+        "customer_age": 35
+    },
+    output={
+        "prediction": "legitimate",
+        "fraud_probability": 0.08,
+        "confidence": 0.92
+    },
+    metadata={
+        "transaction_id": "txn_123456",
+        "customer_id": "cust_789012",
+        "ip_address": "masked",
+        "device": "mobile"
+    }
+)
+```
+
+#### log_batch()
+
+Log multiple predictions efficiently.
+
+```python
+prediction_ids = client.predictions.log_batch(
+    model_id: str,
+    predictions: List[Dict]
+) -> List[str]
+```
+
+**Prediction format:**
+```python
+predictions = [
+    {
+        "inputs": {...},
+        "output": {...},
+        "metadata": {...},
+        "timestamp": "2025-12-05T10:30:00Z"  # Optional
+    },
+    # ... up to 1000 predictions
+]
+```
+
+**Example:**
+
+```python
+predictions = []
+for transaction in transactions:
+    pred = model.predict(transaction.features)
+    predictions.append({
+        "inputs": transaction.to_dict(),
+        "output": {"prediction": pred, "probability": model.predict_proba(transaction.features)[0][1]},
+        "metadata": {"transaction_id": transaction.id}
+    })
+
+prediction_ids = client.predictions.log_batch(
+    model_id="model-uuid",
+    predictions=predictions
+)
+```
+
+### Metrics API
+
+#### get_metrics()
+
+Retrieve metrics for a model.
+
+```python
+metrics = client.metrics.get(
+    model_id: str,
+    metric_names: List[str],
+    date_range: str = "last_7_days",  # or "YYYY-MM-DD:YYYY-MM-DD"
+    aggregation: str = "mean"  # "mean", "median", "min", "max"
+) -> Dict
+```
+
+**Example:**
+
+```python
+metrics = client.metrics.get(
+    model_id="model-uuid",
+    metric_names=["accuracy", "precision", "recall"],
+    date_range="2025-12-01:2025-12-05",
+    aggregation="mean"
+)
+
+# Returns:
+{
+    "accuracy": 0.89,
+    "precision": 0.87,
+    "recall": 0.84
+}
+```
+
+### Drift Detection API
+
+#### detect_drift()
+
+Run drift detection on new data.
+
+```python
+drift_result = client.drift.detect(
+    model_id: str,
+    data: Union[pd.DataFrame, np.ndarray],
+    feature_names: List[str] = None,
+    reference: str = "baseline"  # "baseline" or "recent"
+) -> Dict
+```
+
+**Returns:**
+
+```python
+{
+    "overall_score": 0.15,
+    "severity": "medium",
+    "drifted_features": [
+        {
+            "feature": "transaction_amount",
+            "drift_score": 0.22,
+            "severity": "high",
+            "test": "ks_test",
+            "p_value": 0.001
+        }
+    ],
+    "timestamp": "2025-12-05T14:30:00Z"
+}
+```
+
+### Explanations API
+
+#### generate_explanation()
+
+Generate explanation for a prediction.
+
+```python
+explanation = client.explanations.generate(
+    prediction_id: str,
+    method: str = "shap",  # "shap" or "lime"
+    config: Dict = None
+) -> Dict
+```
+
+**Example:**
+
+```python
+explanation = client.explanations.generate(
+    prediction_id="pred-uuid",
+    method="shap",
+    config={
+        "background_samples": 100,
+        "approximate": False
+    }
+)
+
+# Returns:
+{
+    "explanation_id": "exp-uuid",
+    "method": "shap",
+    "base_value": 0.20,
+    "prediction": 0.65,
+    "feature_contributions": {
+        "transaction_amount": 0.15,
+        "merchant_category": 0.10,
+        "time_of_day": -0.05,
+        "customer_age": 0.25
+    }
+}
+```
+
+---
+
+## Framework Integrations
+
+### Adding New Framework Integration
+
+Create a new integration by extending `ModelMonitor`:
+
+```python
+from whiteboxxai import ModelMonitor
+from typing import Any, Dict, List
+
+class CustomFrameworkMonitor(ModelMonitor):
+    """Monitor for CustomFramework models."""
+
+    def __init__(self, client, model, **kwargs):
+        super().__init__(client, **kwargs)
+        self.model = model
+
+    def register_from_model(
+        self,
+        name: str,
+        model_type: str,
+        **kwargs
+    ) -> str:
+        """Register model by extracting metadata."""
+        # Extract features from model
+        features = self._extract_features()
+
+        # Extract model metadata
+        metadata = self._extract_metadata()
+
+        return self.register_model(
+            name=name,
+            model_type=model_type,
+            framework="customframework",
+            features=features,
+            metadata=metadata,
+            **kwargs
+        )
+
+    def _extract_features(self) -> List[str]:
+        """Extract feature names from model."""
+        # Implementation specific to framework
+        return self.model.feature_names_
+
+    def _extract_metadata(self) -> Dict:
+        """Extract model metadata."""
+        return {
+            "n_features": self.model.n_features_,
+            "model_params": self.model.get_params()
+        }
+
+    def wrap_model(self, model):
+        """Wrap model for automatic monitoring."""
+        original_predict = model.predict
+
+        def monitored_predict(X):
+            result = original_predict(X)
+            # Log prediction
+            self.log_prediction_from_model(X, result)
+            return result
+
+        model.predict = monitored_predict
+        return model
+
+    def log_prediction_from_model(
+        self,
+        X: Any,
+        y_pred: Any,
+        **kwargs
+    ):
+        """Log prediction in framework-specific format."""
+        # Convert to SDK format
+        inputs = self._convert_inputs(X)
+        output = self._convert_output(y_pred)
+
+        return self.log_prediction(
+            inputs=inputs,
+            output=output,
+            **kwargs
+        )
+```
+
+---
+
+## Advanced Usage
+
+### Async Operations
+
+Use async methods for non-blocking operations:
+
+```python
+import asyncio
+from whiteboxxai import WhiteBoxXAI
+
+client = WhiteBoxXAI(api_key="your-api-key")
+
+async def log_predictions_async():
+    tasks = []
+    for prediction in predictions:
+        task = client.predictions.log_async(
+            model_id="model-uuid",
+            inputs=prediction["inputs"],
+            output=prediction["output"]
+        )
+        tasks.append(task)
+
+    results = await asyncio.gather(*tasks)
+    return results
+
+# Run
+prediction_ids = asyncio.run(log_predictions_async())
+```
+
+### Custom Sampling Strategy
+
+Implement custom sampling logic:
+
+```python
+from whiteboxxai import ModelMonitor
+import random
+
+class SmartSamplingMonitor(ModelMonitor):
+    def log_prediction(self, inputs, output, **kwargs):
+        # Sample based on confidence
+        confidence = output.get("confidence", 1.0)
+
+        if confidence < 0.6:
+            sample_rate = 1.0  # Log all low-confidence
+        elif confidence < 0.8:
+            sample_rate = 0.5  # Log 50% medium-confidence
+        else:
+            sample_rate = 0.1  # Log 10% high-confidence
+
+        if random.random() < sample_rate:
+            return super().log_prediction(inputs, output, **kwargs)
+```
+
+### Streaming Predictions
+
+For high-throughput scenarios:
+
+```python
+from whiteboxxai import WhiteBoxXAI, ModelMonitor
+from queue import Queue
+import threading
+
+class StreamingMonitor:
+    def __init__(self, client, model_id, buffer_size=100, flush_interval=10):
+        self.monitor = ModelMonitor(client, model_id=model_id)
+        self.buffer = Queue(maxsize=buffer_size)
+        self.flush_interval = flush_interval
+        self._start_flush_thread()
+
+    def log(self, inputs, output, metadata=None):
+        """Add prediction to buffer."""
+        self.buffer.put({
+            "inputs": inputs,
+            "output": output,
+            "metadata": metadata
+        })
+
+    def _start_flush_thread(self):
+        """Background thread to flush buffer."""
+        def flush():
+            while True:
+                time.sleep(self.flush_interval)
+                self._flush_buffer()
+
+        thread = threading.Thread(target=flush, daemon=True)
+        thread.start()
+
+    def _flush_buffer(self):
+        """Flush buffer to API."""
+        predictions = []
+        while not self.buffer.empty() and len(predictions) < 100:
+            predictions.append(self.buffer.get())
+
+        if predictions:
+            self.monitor.log_batch(predictions)
+
+# Usage
+monitor = StreamingMonitor(client, model_id="model-uuid")
+
+for prediction in high_volume_predictions:
+    monitor.log(
+        inputs=prediction["inputs"],
+        output=prediction["output"]
+    )
+```
+
+---
+
+## Error Handling
+
+### Exception Hierarchy
+
+```python
+from whiteboxxai.exceptions import (
+    WhiteBoxXAIError,          # Base exception
+    AuthenticationError,     # Invalid API key
+    APIError,                # API request failed
+    ValidationError,         # Invalid input data
+    RateLimitError,          # Rate limit exceeded
+    NetworkError,            # Network/connectivity issue
+    TimeoutError            # Request timeout
+)
+```
+
+### Error Handling Patterns
+
+```python
+from whiteboxxai import WhiteBoxXAI
+from whiteboxxai.exceptions import (
+    AuthenticationError,
+    RateLimitError,
+    NetworkError
+)
+import time
+
+client = WhiteBoxXAI(api_key="your-api-key")
+
+def log_with_retry(inputs, output, max_retries=3):
+    """Log prediction with custom retry logic."""
+    for attempt in range(max_retries):
+        try:
+            return client.predictions.log(
+                model_id="model-uuid",
+                inputs=inputs,
+                output=output
+            )
+        except AuthenticationError:
+            # Don't retry auth errors
+            raise
+        except RateLimitError as e:
+            # Respect rate limit
+            time.sleep(e.retry_after)
+        except NetworkError:
+            # Exponential backoff
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+            else:
+                raise
+```
+
+### Graceful Degradation
+
+```python
+def monitored_predict(X):
+    """Prediction with fallback if monitoring fails."""
+    # Always make prediction
+    prediction = model.predict(X)
+
+    # Try to log, but don't fail if it doesn't work
+    try:
+        client.predictions.log(
+            model_id="model-uuid",
+            inputs=X.to_dict(),
+            output={"prediction": prediction}
+        )
+    except Exception as e:
+        # Log error but continue
+        logger.warning(f"Failed to log prediction: {e}")
+
+    return prediction
+```
+
+---
+
+## Performance Optimization
+
+### Caching
+
+Use local caching to reduce API calls:
+
+```python
+from whiteboxxai import WhiteBoxXAI, Config
+
+config = Config(
+    api_key="your-api-key",
+    enable_cache=True,
+    cache_ttl=300,  # 5 minutes
+    cache_max_size=1000
+)
+
+client = WhiteBoxXAI(config=config)
+
+# First call hits API
+model = client.models.get("model-uuid")
+
+# Second call within TTL uses cache
+model = client.models.get("model-uuid")  # Instant
+```
+
+### Batch Operations
+
+Always prefer batch operations:
+
+```python
+# ❌ Slow: 100 API calls
+for prediction in predictions:
+    client.predictions.log(model_id, prediction["inputs"], prediction["output"])
+
+# ✅ Fast: 1 API call
+client.predictions.log_batch(model_id, predictions)
+```
+
+### Async for I/O-bound Operations
+
+```python
+import asyncio
+
+async def process_predictions():
+    tasks = [
+        client.predictions.log_async(...)
+        for _ in range(1000)
+    ]
+    await asyncio.gather(*tasks)
+
+# Much faster than sequential
+asyncio.run(process_predictions())
+```
+
+---
+
+## Security & Privacy
+
+### PII Detection
+
+Built-in PII detection:
+
+```python
+from whiteboxxai.utils import PIIDetector
+
+detector = PIIDetector()
+
+data = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "ssn": "123-45-6789",
+    "amount": 100.0
+}
+
+# Detect PII
+pii_fields = detector.detect(data)
+# Returns: ["name", "email", "ssn"]
+
+# Check if PII present
+has_pii = detector.has_pii(data)
+# Returns: True
+```
+
+### Data Masking
+
+Automatically mask sensitive data:
+
+```python
+from whiteboxxai.utils import DataMasker
+
+masker = DataMasker(
+    mask_pii=True,
+    allowed_fields=["amount", "category"]
+)
+
+data = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "amount": 100.0,
+    "category": "electronics"
+}
+
+masked = masker.mask(data)
+# Returns:
+# {
+#     "amount": 100.0,
+#     "category": "electronics"
+# }
+```
+
+### Secure Configuration
+
+Store API keys securely:
+
+```python
+# ✅ Use environment variables
+import os
+os.environ["WHITEBOXXAI_API_KEY"] = "your-api-key"
+client = WhiteBoxXAI()
+
+# ✅ Use secrets management
+from your_secrets_manager import get_secret
+api_key = get_secret("whiteboxxai/api-key")
+client = WhiteBoxXAI(api_key=api_key)
+
+# ❌ Don't hardcode
+client = WhiteBoxXAI(api_key="sk-1234567890")  # Bad!
+```
+
+---
+
+## Extending the SDK
+
+### Custom Middleware
+
+Add custom processing logic:
+
+```python
+from whiteboxxai import WhiteBoxXAI
+
+class CustomMiddleware:
+    def __init__(self, client):
+        self.client = client
+        self._wrap_methods()
+
+    def _wrap_methods(self):
+        """Wrap client methods with custom logic."""
+        original_log = self.client.predictions.log
+
+        def wrapped_log(*args, **kwargs):
+            # Pre-processing
+            print("Logging prediction...")
+
+            # Call original
+            result = original_log(*args, **kwargs)
+
+            # Post-processing
+            print(f"Logged: {result}")
+
+            return result
+
+        self.client.predictions.log = wrapped_log
+
+# Usage
+client = WhiteBoxXAI(api_key="your-api-key")
+middleware = CustomMiddleware(client)
+
+# Now all log calls go through middleware
+client.predictions.log(...)
+```
+
+### Custom Explainer
+
+Add custom explanation methods:
+
+```python
+from whiteboxxai.xai import BaseExplainer
+
+class CustomExplainer(BaseExplainer):
+    """Custom explanation method."""
+
+    def explain(self, model, X, **kwargs):
+        """Generate custom explanation."""
+        # Your explanation logic
+        feature_importance = self._calculate_importance(model, X)
+
+        return {
+            "method": "custom",
+            "feature_contributions": feature_importance,
+            "metadata": {...}
+        }
+
+    def _calculate_importance(self, model, X):
+        """Calculate feature importance."""
+        # Implementation
+        pass
+
+# Register custom explainer
+from whiteboxxai.xai import register_explainer
+
+register_explainer("custom", CustomExplainer)
+
+# Use
+explanation = client.explanations.generate(
+    prediction_id="pred-uuid",
+    method="custom"
+)
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue: "Authentication failed"**
+```python
+# Check API key
+print(os.environ.get("WHITEBOXXAI_API_KEY"))
+
+# Verify key is valid
+from whiteboxxai import WhiteBoxXAI
+client = WhiteBoxXAI(api_key="your-key")
+try:
+    client.models.list()
+    print("API key valid")
+except AuthenticationError:
+    print("API key invalid")
+```
+
+**Issue: "Model not found"**
+```python
+# List all models
+models = client.models.list()
+for model in models:
+    print(f"{model['id']}: {model['name']}")
+
+# Check model ID
+model_id = "your-model-id"
+try:
+    model = client.models.get(model_id)
+    print(f"Model found: {model['name']}")
+except APIError:
+    print(f"Model {model_id} not found")
+```
+
+**Issue: "Rate limit exceeded"**
+```python
+from whiteboxxai.exceptions import RateLimitError
+import time
+
+try:
+    client.predictions.log(...)
+except RateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after}s")
+    time.sleep(e.retry_after)
+    client.predictions.log(...)  # Retry
+```
+
+### Debug Mode
+
+Enable debug logging:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Or SDK-specific
+from whiteboxxai import Config
+
+config = Config(
+    api_key="your-api-key",
+    log_level="DEBUG"
+)
+client = WhiteBoxXAI(config=config)
+```
+
+---
+
+## Examples
+
+See `/examples` directory for complete examples:
+- `basic_usage.py` - Simple prediction logging
+- `sklearn_integration.py` - Scikit-learn integration
+- `pytorch_integration.py` - PyTorch integration
+- `batch_logging.py` - High-volume batch logging
+- `custom_sampling.py` - Custom sampling strategies
+- `async_operations.py` - Async prediction logging
+
+---
+
+*Last Updated: December 30, 2025*
+*SDK Version: 0.1.0*
+*Recent Updates: Added API key generation instructions with 2FA note*

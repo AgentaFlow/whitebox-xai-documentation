@@ -1,0 +1,138 @@
+site_name: WhiteBoxXAI Documentation
+site_url: https://docs.whiteboxxai.com
+site_description: >-
+  User documentation for WhiteBoxXAI — the AI observability, explainability, and
+  governance platform. Learn how to monitor your models, explain predictions, detect
+  drift, audit for bias, and stay compliant.
+site_author: AgentaFlow
+copyright: Copyright &copy; 2026 AgentaFlow · WhiteBoxXAI
+
+# Update this to the public documentation repository if it differs.
+repo_url: https://github.com/AgentaFlow/whitebox-xai-documentation
+repo_name: whitebox-xai-documentation
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  logo: assets/logo.png
+  favicon: assets/favicon.svg
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/AgentaFlow/whitebox-python-sdk
+      name: WhiteBoxXAI Python SDK
+    - icon: fontawesome/solid/globe
+      link: https://whiteboxxai.com
+      name: whiteboxxai.com
+
+nav:
+  - Home: index.md
+  - Get Started:
+      - Getting Started: get-started/getting-started.md
+      - Plans & Limits: get-started/plans.md
+  - User Guide:
+      - user-guide/index.md
+      - Features: user-guide/features.md
+      - Governance Review Boards: user-guide/governance.md
+  - SDK & API:
+      - sdk/index.md
+      - Offline Mode: sdk/offline-mode.md
+      - Multi-Agent Monitoring: sdk/multi-agent-monitoring.md
+      - Multi-Agent Quick Reference: sdk/multi-agent-quick-reference.md
+      - API Reference: sdk/api-reference.md
+  - Integrations:
+      - Integration Examples: integrations/examples.md
+      - GitHub: integrations/github.md
+      - GitHub Quick Reference: integrations/github-quick-reference.md
+      - GitHub Diff Reviews: integrations/github-diff.md
+      - LangChain: integrations/langchain.md
+      - LangChain Multi-Agent: integrations/langchain-multi-agent.md
+      - TensorFlow: integrations/tensorflow.md
+      - Hugging Face: integrations/huggingface.md
+      - Boosting (XGBoost & LightGBM): integrations/boosting.md
+      - n8n Webhooks: integrations/n8n-webhooks.md
+      - CLI Git Tracking: integrations/cli-git-tracking.md
+  - Account & Compliance:
+      - Two-Factor Authentication: account/two-factor-authentication.md
+      - AI Regulations: account/ai-regulations.md
+  - Learn:
+      - learn/index.md
+      - Case Studies: learn/case-studies.md
+      - Hands-On Workshops: learn/workshops.md
+      - Interactive Demos: learn/interactive-demos.md
+      - Certification Program: learn/certification.md
+  - Help:
+      - FAQ: help/faq.md
+      - Troubleshooting: help/troubleshooting.md
