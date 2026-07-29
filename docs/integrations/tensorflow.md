@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install whiteboxxai-sdk[tensorflow]
+pip install whitebox-xai-sdk[tensorflow]
 ```
 
 ## Basic Setup

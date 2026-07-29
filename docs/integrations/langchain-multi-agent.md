@@ -34,7 +34,7 @@ The WhiteBoxXAI LangChain integration provides comprehensive monitoring for Lang
 ### Installation
 
 ```bash
-pip install whiteboxxai langchain
+pip install whitebox-xai-sdk langchain
 ```
 
 ### Basic Single Agent Monitoring

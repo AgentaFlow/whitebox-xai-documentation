@@ -5,7 +5,7 @@ Fast reference for monitoring multi-agent AI workflows with WhiteBoxXAI.
 ## Installation
 
 ```bash
-pip install whiteboxxai
+pip install whitebox-xai-sdk
 ```
 
 ## CrewAI - Quick Start

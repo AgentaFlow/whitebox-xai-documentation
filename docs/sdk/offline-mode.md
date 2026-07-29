@@ -2,17 +2,41 @@
 
 ## Overview
 
-The WhiteBoxXAI SDK offline mode enables robust operation in environments with unreliable network connectivity. When the API is unavailable, operations are automatically queued in a persistent SQLite database and synchronized when the connection is restored.
+Offline mode lets the SDK keep working in environments with unreliable network
+connectivity. When the API is unreachable, operations are queued in a persistent SQLite
+database and synchronized once the connection is restored.
+
+!!! info "Requires SDK 1.0.0 or later"
+    Offline mode was not functional before 1.0.0: nothing was ever queued automatically, and
+    `sync()` failed against methods that didn't exist. If you're on an older version,
+    upgrade — `pip install --upgrade whitebox-xai-sdk` — before relying on any of this.
 
 ## Key Features
 
 - **Persistent Queue**: SQLite-based storage survives application restarts
+- **Automatic Fallback**: Operations queue themselves on a connection failure — no special
+  code path in your application
 - **Auto-Sync**: Automatic background synchronization with configurable interval
 - **Priority-Based**: Operations processed by priority (CRITICAL > HIGH > NORMAL > LOW)
-- **Retry Logic**: Automatic retry with exponential backoff
+- **Retry Logic**: Automatic retry with exponential backoff, and a path back for
+  permanently-failed operations
 - **Thread-Safe**: Concurrent operation support
 - **Resource Limits**: Configurable maximum queue size
 - **Manual Control**: Optional manual sync for fine-grained control
+
+## What gets queued, and when
+
+With `enable_offline=True`, these operations fall back to the queue automatically:
+
+- `client.models.register()`
+- `client.models.update_baseline()`
+- `client.predictions.log()`
+- `client.predictions.log_batch()`
+
+**Only a genuine connection failure triggers the fallback.** This distinction matters: if the
+backend received your request and rejected it — a validation error, an expired credential, a
+missing model — that raises normally, as it should. Queueing a request the server has already
+refused would just replay the same rejection later while hiding the error from you now.
 
 ## Quick Start
 
@@ -28,8 +52,13 @@ client = WhiteBoxXAI(
     offline_dir="./offline_queue"
 )
 
-# Operations are automatically queued when API is unavailable
-# Auto-sync runs in background every 60 seconds (default)
+# Operations are queued automatically when the API is unreachable.
+# Auto-sync runs in the background every 60 seconds (default).
+client.predictions.log(
+    model_id=model_id,
+    input_data={"amount": 150.50},
+    output_data={"prediction": 0, "probability": 0.92},
+)
 
 # Check offline status
 status = client.get_offline_status()
@@ -169,12 +198,18 @@ client.cleanup_offline_queue(older_than_days=0)
 
 ```python
 # Get failed operations for investigation
-failed_ops = client._offline_manager._queue.get_failed_operations()
+failed_ops = client._offline_manager.queue.get_failed_operations()
 
 for op in failed_ops:
     print(f"Operation {op['id']}: {op['last_error']}")
     print(f"Retry count: {op['retry_count']}")
 ```
+
+!!! note "Queue inspection uses a private attribute"
+    The client's day-to-day offline methods are public — `get_offline_status()`,
+    `sync_offline_queue()`, `cleanup_offline_queue()`. Reaching the queue object itself for
+    inspection or requeueing still goes through `client._offline_manager`, which is private
+    and may change. You don't need it for normal operation.
 
 ## Error Handling
 
@@ -199,19 +234,31 @@ manager = OfflineManager(
 
 ### Handling Permanent Failures
 
-```python
-# Retrieve permanently failed operations
-failed = client._offline_manager._queue.get_failed_operations()
+An operation that exhausts `max_retries` is marked `failed` and won't be retried on its own.
+Use `requeue_failed()` to reset those operations back to `pending` for another attempt —
+typically after you've fixed whatever was causing them to fail:
 
-# Investigate and potentially re-queue
-for op in failed:
+```python
+queue = client._offline_manager.queue
+
+# Investigate first
+for op in queue.get_failed_operations():
     print(f"Failed: {op['operation_type']}")
     print(f"Error: {op['last_error']}")
     print(f"Data: {op['data']}")
 
-    # Could re-queue after fixing issue:
-    # client._offline_manager._queue.enqueue(...)
+# Reset all permanently-failed operations to pending
+count = queue.requeue_failed()
+print(f"Requeued {count} operations")
+
+# Then sync
+client.sync_offline_queue()
 ```
+
+!!! tip "Check the error before requeueing"
+    `requeue_failed()` resets everything that's failed. If the failures were caused by a
+    genuine problem with the data rather than by connectivity, they'll simply fail again —
+    read `last_error` first.
 
 ## Production Patterns
 
@@ -304,8 +351,8 @@ for batch in batches:
     try:
         client.predictions.log(
             model_id=model_id,
-            inputs=batch,
-            outputs=y_pred
+            input_data=batch,
+            output_data=y_pred
         )
     except Exception:
         # Automatically queued in offline mode
@@ -449,18 +496,23 @@ client.cleanup_offline_queue(older_than_days: int = 7)
 
 ### OfflineQueue
 
+You don't normally construct this yourself — the client creates one via `OfflineManager`.
+Note that it takes a `db_path`, not a directory (`offline_dir` is `OfflineManager`'s
+parameter).
+
 ```python
 from whiteboxxai.offline import OfflineQueue
 
 queue = OfflineQueue(
-    offline_dir="./queue",
-    max_queue_size=10000
+    db_path="./queue/queue.db",
+    max_queue_size=10000,
+    auto_sync=True,
 )
 
 queue.enqueue(operation_type, data, priority) -> int
 """Add operation to queue."""
 
-queue.dequeue(limit=100) -> List[Dict]
+queue.dequeue(limit=100) -> List[Tuple[int, OperationType, Dict]]
 """Get pending operations."""
 
 queue.mark_success(operation_id: int)
@@ -469,11 +521,23 @@ queue.mark_success(operation_id: int)
 queue.mark_failure(operation_id: int, error: str, max_retries: int = 3)
 """Mark operation as failed, retry if under limit."""
 
+queue.get_queue_size(status: str = "pending") -> int
+"""Count operations in a given state."""
+
 queue.get_statistics() -> Dict[str, int]
 """Get queue statistics."""
 
 queue.get_failed_operations() -> List[Dict]
 """Get permanently failed operations."""
+
+queue.requeue_failed() -> int
+"""Reset permanently-failed operations to pending. Returns the count reset."""
+
+queue.clear_completed(older_than_days: int = 7)
+"""Remove completed operations older than the cutoff."""
+
+queue.clear_all()
+"""Empty the queue entirely."""
 ```
 
 ### OfflineManager
@@ -503,6 +567,12 @@ manager.sync(batch_size=100) -> Dict[str, int]
 
 manager.get_status() -> Dict[str, Any]
 """Get status and statistics."""
+
+manager.cleanup(older_than_days: int = 7)
+"""Remove old completed operations."""
+
+manager.queue
+"""The underlying OfflineQueue instance."""
 ```
 
 ## Examples
@@ -523,15 +593,17 @@ See `sdk/examples/offline_mode_example.py` for complete examples:
 2. **Monitor Queue Size**: Set up alerts for large queues
 3. **Regular Cleanup**: Clean old operations to prevent disk bloat
 4. **Persistent Location**: Use `/var/lib` or similar for queue storage
-5. **Error Monitoring**: Track failed operations and investigate patterns
+5. **Error Monitoring**: Track failed operations and investigate patterns —
+   `requeue_failed()` only helps once you've fixed the cause
 6. **Test Offline Scenarios**: Verify behavior when API is unavailable
 7. **Context Managers**: Use `with` statement for proper cleanup
+8. **Upgrade to 1.0.0+**: Earlier versions queued nothing and could not sync
 
 ## Security
 
 The offline queue stores operation data in SQLite:
 
-- Database file location: `{offline_dir}/offline_queue.db`
+- Database file location: `{offline_dir}/queue.db`
 - Contains API call data (inputs, outputs, metadata)
 - Ensure appropriate file permissions in production
 - Consider encryption for sensitive data directories

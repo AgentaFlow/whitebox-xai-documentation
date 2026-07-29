@@ -16,18 +16,62 @@ Complete API documentation for the WhiteBoxXAI platform.
 6. [Explainability (XAI)](#explainability-xai)
 7. [Bias & Fairness](#bias--fairness)
 8. [LLM Monitoring](#llm-monitoring)
-9. [Alerts](#alerts)
-10. [Reports](#reports)
-11. [Users & RBAC](#users--rbac)
-12. [Dashboard](#dashboard)
-13. [Error Handling](#error-handling)
+9. [Trust Score](#trust-score)
+10. [Risk Register](#risk-register)
+11. [Governance Review Boards](#governance-review-boards)
+12. [Alerts](#alerts)
+13. [Exports & Reports](#exports--reports)
+14. [Users & RBAC](#users--rbac)
+15. [Dashboard](#dashboard)
+16. [Error Handling](#error-handling)
 
 ---
 
 ## Authentication
 
 ### Overview
-WhiteBoxXAI uses JWT (JSON Web Token) based authentication. All API requests (except login/register) require a valid JWT token in the `Authorization` header.
+
+Every request (except login and register) needs a bearer token in the `Authorization`
+header. Two kinds of token are accepted, and they're sent identically:
+
+```http
+GET /models
+Authorization: Bearer <token>
+```
+
+| Token | Lifetime | Use for |
+| --- | --- | --- |
+| **API key** (`wbx_live_...`) | Until revoked, or its optional expiry | The SDK, CI/CD, pipelines, the MCP server, webhooks |
+| **Login JWT** | ~30 minutes | Interactive scripts and the dashboard |
+
+For anything running unattended, use an API key. A JWT expires after about 30 minutes and
+carries the full privileges of a human account, which is the wrong credential for a nightly
+job.
+
+### API keys
+
+Creation and revocation are admin-only, since a key is an organization-wide credential.
+
+```http
+POST /api-keys
+Content-Type: application/json
+
+{
+  "name": "CI pipeline",
+  "scopes": ["read", "write"],
+  "expires_in_days": 365
+}
+```
+
+The `201` response contains `raw_key` — the **only** time the key material is available.
+Store it immediately.
+
+```http
+GET    /api-keys            # List keys (metadata only, never key material)
+DELETE /api-keys/{key_id}   # Revoke a key -> 204, effective immediately
+```
+
+See [API Keys](../account/api-keys.md) for the full reference.
 
 ### Login
 ```http
@@ -45,7 +89,7 @@ Content-Type: application/json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "bearer",
-  "expires_in": 3600,
+  "expires_in": 1800,
   "user": {
     "id": "uuid",
     "username": "user@example.com",
@@ -65,14 +109,6 @@ Content-Type: application/json
   "password": "secure_password",
   "full_name": "John Doe"
 }
-```
-
-### Using Authentication
-Include the JWT token in all subsequent requests:
-
-```http
-GET /models
-Authorization: Bearer ...
 ```
 
 ---
@@ -124,37 +160,32 @@ Content-Type: application/json
 
 ### List Models
 ```http
-GET /models?status=active&model_type=classification&page=1&page_size=20
+GET /models?status_filter=ACTIVE&model_type=classification&skip=0&limit=100
 Authorization: Bearer {token}
 ```
 
 **Query Parameters:**
-- `status` (optional): Filter by status (active, inactive, archived)
+- `status_filter` (optional): Filter by status (`ACTIVE`, `INACTIVE`, `DEPRECATED`, `ARCHIVED`)
 - `model_type` (optional): Filter by type (classification, regression, clustering, llm)
-- `framework` (optional): Filter by framework
-- `page` (optional): Page number (default: 1)
-- `page_size` (optional): Items per page (default: 20, max: 100)
+- `owner_id` (optional): Filter by owner UUID
+- `tags` (optional): Comma-separated list of tags
+- `search` (optional): Search term matched against name and description
+- `skip` (optional): Number of results to skip (default: 0)
+- `limit` (optional): Items per page (default: 100, max: 1000)
 
-**Response (200 OK):**
+**Response (200 OK):** a JSON array of model objects.
 ```json
-{
-  "total": 45,
-  "page": 1,
-  "page_size": 20,
-  "models": [
-    {
-      "id": "model_uuid",
-      "name": "fraud_detection_v1",
-      "model_type": "classification",
-      "framework": "scikit-learn",
-      "version": "1.0.0",
-      "status": "active",
-      "created_at": "2025-12-05T10:00:00Z",
-      "last_prediction": "2025-12-05T15:30:00Z",
-      "prediction_count": 15420
-    }
-  ]
-}
+[
+  {
+    "id": "model_uuid",
+    "name": "fraud_detection_v1",
+    "model_type": "classification",
+    "framework": "scikit-learn",
+    "version": "1.0.0",
+    "status": "ACTIVE",
+    "created_at": "2025-12-05T10:00:00Z"
+  }
+]
 ```
 
 ### Get Model Details
@@ -192,29 +223,57 @@ Authorization: Bearer {token}
 
 ### Update Model
 ```http
-PUT /models/{model_id}
+PATCH /models/{model_id}
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "description": "Updated description",
-  "monitoring_config": {
-    "sampling_rate": 0.2
-  }
+  "description": "Updated description"
 }
 ```
 
-### Archive Model
+### Update Model Status
+```http
+PATCH /models/{model_id}/status
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "status": "DEPRECATED"
+}
+```
+
+### Update Baseline
+Refresh a model's baseline metrics, e.g. after retraining.
+
+```http
+PATCH /models/{model_id}/baseline
+Authorization: Bearer {token}
+```
+
+### Versions
+```http
+GET /models/{model_name}/versions   # All versions, newest first
+GET /models/{model_name}/latest     # Most recent version
+Authorization: Bearer {token}
+```
+
+### Archive and Restore Model
 ```http
 POST /models/{model_id}/archive
+POST /models/{model_id}/restore
 Authorization: Bearer {token}
 ```
 
 ### Delete Model
+Permanent. Prefer archiving.
+
 ```http
 DELETE /models/{model_id}
 Authorization: Bearer {token}
 ```
+
+Returns `204`.
 
 ---
 
@@ -231,36 +290,42 @@ Content-Type: application/json
 {
   "model_id": "model_uuid",
   "prediction_id": "pred_12345",
-  "inputs": {
+  "input_data": {
     "amount": 150.50,
     "merchant_category": "grocery",
     "time_of_day": "afternoon"
   },
-  "output": {
+  "output_data": {
     "prediction": 0,
     "probability": 0.92,
     "class": "not_fraud"
   },
+  "latency_ms": 12.4,
   "metadata": {
     "user_id": "user_789",
     "request_id": "req_xyz"
-  },
-  "timestamp": "2025-12-05T15:30:00Z"
+  }
 }
 ```
+
+!!! warning "Field names are `input_data` and `output_data`"
+    Not `inputs`/`output`. A request using the wrong names is rejected as a validation error.
 
 **Response (201 Created):**
 ```json
 {
-  "id": "prediction_uuid",
   "model_id": "model_uuid",
   "prediction_id": "pred_12345",
-  "status": "logged",
+  "input_data": { "amount": 150.50 },
+  "output_data": { "prediction": 0, "probability": 0.92 },
+  "latency_ms": 12.4,
   "timestamp": "2025-12-05T15:30:00Z"
 }
 ```
 
 ### Batch Log Predictions
+Up to 1,000 predictions per call.
+
 ```http
 POST /predictions/log/batch
 Authorization: Bearer {token}
@@ -270,32 +335,69 @@ Content-Type: application/json
   "model_id": "model_uuid",
   "predictions": [
     {
+      "model_id": "model_uuid",
       "prediction_id": "pred_001",
-      "inputs": {...},
-      "output": {...}
+      "input_data": {...},
+      "output_data": {...}
     },
     {
+      "model_id": "model_uuid",
       "prediction_id": "pred_002",
-      "inputs": {...},
-      "output": {...}
+      "input_data": {...},
+      "output_data": {...}
     }
   ]
 }
 ```
 
-### Get Predictions
+### Get a Prediction
 ```http
-GET /predictions?model_id={model_id}&start_date=2025-12-01&end_date=2025-12-05&page=1&page_size=50
+GET /predictions/{prediction_id}
 Authorization: Bearer {token}
 ```
 
-**Query Parameters:**
-- `model_id` (required): Model UUID
-- `start_date` (optional): Start date (ISO 8601)
-- `end_date` (optional): End date (ISO 8601)
-- `prediction_id` (optional): Filter by prediction ID
-- `page` (optional): Page number
-- `page_size` (optional): Items per page
+### Query Predictions
+Filtering is a `POST` with a JSON body, not query-string parameters.
+
+```http
+POST /predictions/query
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "model_id": "model_uuid",
+  "start_time": "2025-12-01T00:00:00Z",
+  "end_time": "2025-12-05T00:00:00Z",
+  "limit": 100,
+  "offset": 0
+}
+```
+
+**Body Parameters:**
+
+- `model_id` (optional): Model UUID
+- `start_time` / `end_time` (optional): ISO 8601 timestamps
+- `limit` (optional): Max results (default: 100, max: 1000)
+- `offset` (optional): Results to skip (default: 0)
+
+**Response (200 OK):** a JSON array of prediction objects.
+
+### Prediction Statistics
+```http
+GET /predictions/models/{model_id}/stats?start_time=2025-12-01T00:00:00Z&end_time=2025-12-05T00:00:00Z
+Authorization: Bearer {token}
+```
+
+Returns `total_predictions`, the time period, and latency statistics
+(`avg_latency_ms`, `min_latency_ms`, `max_latency_ms`, `predictions_per_hour`).
+
+### Recent Predictions
+```http
+GET /predictions/models/{model_id}/recent?limit=10
+Authorization: Bearer {token}
+```
+
+`limit` defaults to 10, max 100.
 
 ---
 
@@ -740,139 +842,299 @@ Content-Type: application/json
 
 ---
 
-## Alerts
+## Trust Score
 
-### Create Alert Rule
+A 0–100 index per model over fairness, drift, and explainability signals. See [Trust
+Score](../user-guide/trust-score.md) for the methodology.
+
+### Get a Model's Trust Score
 ```http
-POST /alerts/rules
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "name": "High Error Rate Alert",
-  "description": "Trigger when error rate exceeds 5%",
-  "model_id": "model_uuid",
-  "conditions": [
-    {
-      "metric": "error_rate",
-      "operator": "greater_than",
-      "threshold": 0.05,
-      "aggregation": "avg",
-      "time_window": "5m"
-    }
-  ],
-  "severity": "high",
-  "channels": ["slack", "email"],
-  "enabled": true
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "id": "rule_uuid",
-  "name": "High Error Rate Alert",
-  "status": "active",
-  "created_at": "2025-12-05T15:30:00Z"
-}
-```
-
-### List Alert Rules
-```http
-GET /alerts/rules?model_id={model_id}&enabled=true
-Authorization: Bearer {token}
-```
-
-### Get Active Alerts
-```http
-GET /alerts?status=active&severity=high
+GET /trust-score/{model_id}
 Authorization: Bearer {token}
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "total": 3,
-  "alerts": [
-    {
-      "id": "alert_uuid",
-      "rule_id": "rule_uuid",
-      "model_id": "model_uuid",
-      "severity": "high",
-      "status": "active",
-      "message": "Error rate (7.2%) exceeds threshold (5.0%)",
-      "triggered_at": "2025-12-05T15:25:00Z",
-      "acknowledged": false
-    }
-  ]
+  "model_id": "model_uuid",
+  "model_name": "fraud-detection-v3",
+  "trust_score": 78.5,
+  "fairness_component": 85.0,
+  "drift_component": 80.0,
+  "explainability_component": 66.0,
+  "inputs_available": { "fairness": true, "drift": true, "explainability": true },
+  "last_bias_audit_at": "2026-07-21T09:12:00Z",
+  "last_drift_report_at": "2026-07-28T02:00:00Z",
+  "explained_predictions_ratio": 0.66,
+  "weights": { "fairness": 0.4, "drift": 0.3, "explainability": 0.3 },
+  "methodology_note": "..."
 }
 ```
 
-### Acknowledge Alert
+`trust_score` is `null` when none of the three inputs exist for the model. Weights are
+renormalized over whichever inputs are available.
+
+### Portfolio Rollup
 ```http
-POST /alerts/{alert_id}/acknowledge
+GET /trust-score/portfolio
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "org_average_trust_score": 81.2,
+  "models": [ { "model_id": "...", "model_name": "...", "trust_score": 78.5 } ],
+  "models_with_insufficient_data": 2,
+  "methodology_note": "..."
+}
+```
+
+### Score History
+```http
+GET /trust-score/{model_id}/history
+Authorization: Bearer {token}
+```
+
+Returns `data_points` (each with `snapshot_at` and the component values) and
+`trend_direction` — `improving`, `declining`, `stable`, or `null` with fewer than two points.
+
+### Weight Configuration
+```http
+GET /trust-score/config
+PUT /trust-score/config          # org admin only
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "notes": "Investigating the issue"
+  "fairness_weight": 0.5,
+  "drift_weight": 0.3,
+  "explainability_weight": 0.2
 }
+```
+
+`GET` returns the weights in use plus `is_default`, which is `true` when no override is on
+file.
+
+---
+
+## Risk Register
+
+Structured AI risk inventory with owners, scoring, workflow, and audit trail. See [AI Risk
+Register](../user-guide/risk-register.md).
+
+### Create a Risk Entry
+```http
+POST /risk-register
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "title": "Credit model may under-approve rural applicants",
+  "description": "Fairness audit showed a 9% approval gap by geography.",
+  "category": "bias",
+  "likelihood": 4,
+  "impact": 4,
+  "owner_id": "user_uuid",
+  "mitigation_plan": "Retrain with balanced sampling; re-audit before release.",
+  "target_resolution_date": "2026-09-30",
+  "review_cadence_days": 30,
+  "model_ids": ["model_uuid"]
+}
+```
+
+**Response (201 Created):** the entry with computed `risk_score` (16) and `severity`
+(`high`), plus `status` (`identified`) and `next_review_at`.
+
+`likelihood` and `impact` are 1–5. `category` must be in your organization's taxonomy.
+
+### List Risk Entries
+```http
+GET /risk-register?status=identified&category=bias&skip=0&limit=50
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{ "items": [ ... ], "total": 137, "skip": 0, "limit": 50 }
+```
+
+### Get / Update a Risk Entry
+```http
+GET   /risk-register/{entry_id}
+PATCH /risk-register/{entry_id}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "status": "mitigated",
+  "status_reason": "Retrained v4.1 closed the gap to 1.2%; re-audit passed."
+}
+```
+
+`status_reason` is **required** whenever `status` is included — it becomes the audit-trail
+entry. Changing `likelihood` or `impact` recomputes `risk_score` and `severity`.
+
+Valid statuses: `identified`, `assessed`, `mitigation_planned`, `mitigated`, `closed`.
+
+### Entry History
+```http
+GET /risk-register/{entry_id}/history
+Authorization: Bearer {token}
+```
+
+Returns every create, edit, and status change with the acting user and timestamp.
+
+### Portfolio Heat Map
+```http
+GET /risk-register/portfolio
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "heatmap": [ { "likelihood": 4, "impact": 4, "count": 3 } ],
+  "top_risks": [ ... ],
+  "open_count": 41,
+  "open_by_severity": { "critical": 2, "high": 9, "medium": 21, "low": 9 }
+}
+```
+
+### Scoring Configuration
+```http
+GET /risk-register/config
+PUT /risk-register/config        # org admin only
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "category_taxonomy": ["bias", "drift", "security", "regulatory", "model_risk"],
+  "severity_thresholds": { "critical": 20, "high": 12, "medium": 6 }
+}
+```
+
+Also accepts `likelihood_scale` and `impact_scale`. `GET` includes `is_default`.
+
+---
+
+## Governance Review Boards
+
+Multi-party approval workflows with an immutable decision archive. The full endpoint list and
+the governance guarantees are documented in [Governance Review
+Boards](../user-guide/governance.md).
+
+```http
+POST   /governance/review-boards
+GET    /governance/review-boards
+GET|PUT|DELETE /governance/review-boards/{board_id}
+POST   /governance/review-boards/{board_id}/members
+POST   /governance/review-boards/requests
+POST   /governance/review-boards/requests/{request_id}/submit
+POST   /governance/review-boards/requests/{request_id}/decisions
+GET    /governance/review-boards/requests/{request_id}/status
+POST   /governance/review-boards/requests/{request_id}/finalize
+GET    /governance/review-boards/my-reviews
+POST   /governance/review-boards/archive/search
+POST   /governance/review-boards/archive/export
 ```
 
 ---
 
-## Reports
+## Alerts
 
-### Generate Report
+!!! warning "Not available yet"
+    The alerts REST API is not registered on the backend. Requests to `/api/v1/alerts` and
+    `/api/v1/alerts/rules` return `404`.
+
+    The SDK exposes `client.alerts.create()` / `client.alerts.list()` and
+    `ModelMonitor.create_alert_rule()` / `get_active_alerts()`, but these call the endpoints
+    above and will fail until they ship. Manage alert rules in the dashboard under
+    **Observability → Alerts** for now.
+
+    Drift and bias thresholds *are* configurable through the API — see [Drift
+    Detection](#drift-detection) and [Bias & Fairness](#bias--fairness). A `high` or
+    `critical` result there auto-drafts a [risk register](#risk-register) entry.
+
+---
+
+## Exports & Reports
+
+Report generation lives under `/export/*`. There is no `/reports` endpoint — it returns `404`.
+
+See [Evidence & Reports](../user-guide/index.md#evidence--reports) for the dashboard
+walkthrough.
+
+**Formats:** `pdf`, `csv`, `excel`, `json`, `html`, `markdown`.
+
+**Report categories:** `model_performance`, `drift_analysis`, `bias_audit`, `compliance`,
+`explainability`, `llm_monitoring`, `risk_register`, `trust_score`, `custom`.
+
+### Generate an Export
 ```http
-POST /reports/generate
+POST /export/exports
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "template": "model_performance",
-  "model_id": "model_uuid",
-  "config": {
-    "start_date": "2025-11-01",
-    "end_date": "2025-12-05",
-    "include_sections": ["metrics", "drift", "explanations"],
-    "format": "pdf"
-  }
-}
-```
-
-**Response (202 Accepted):**
-```json
-{
-  "report_id": "report_uuid",
-  "status": "generating",
-  "estimated_time": 30
-}
-```
-
-### Get Report Status
-```http
-GET /reports/{report_id}
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": "report_uuid",
-  "status": "completed",
-  "template": "model_performance",
+  "template_id": "template_uuid",
   "format": "pdf",
-  "download_url": "/reports/report_uuid/download",
-  "created_at": "2025-12-05T15:30:00Z",
-  "completed_at": "2025-12-05T15:30:30Z"
+  "model_ids": ["model_uuid"],
+  "date_from": "2026-07-01",
+  "date_to": "2026-07-31"
 }
 ```
 
-### Download Report
+Queue several at once with `POST /export/exports/bulk`.
+
+### Check Export Status
 ```http
-GET /reports/{report_id}/download
+GET /export/exports/{export_id}
 Authorization: Bearer {token}
+```
+
+`status` moves through `pending` → `in_progress` → `completed`, or `failed`. Also
+`cancelled` if you cancel it.
+
+### List and Download
+```http
+GET /export/exports
+GET /export/exports/{export_id}/download
+Authorization: Bearer {token}
+```
+
+### Templates and Configurations
+```http
+GET|POST       /export/templates
+GET|PUT|DELETE /export/templates/{template_id}
+GET|POST       /export/configs
+GET|PUT|DELETE /export/configs/{config_id}
+```
+
+Templates define report contents; configurations define how a report is produced and
+delivered. Delivery methods: `download`, `email`, `webhook`, `s3`, `sftp`, `api`.
+
+### Scheduled Reports
+```http
+GET|POST       /export/scheduled-reports
+GET|PUT|DELETE /export/scheduled-reports/{report_id}
+POST           /export/scheduled-reports/{report_id}/run
+```
+
+```json
+{
+  "name": "Weekly Performance Summary",
+  "template_id": "template_uuid",
+  "format": "pdf",
+  "cron_expression": "0 9 * * 1",
+  "recipients": ["team@company.com"]
+}
+```
+
+### Third-Party Integrations
+```http
+GET|POST       /export/integrations
+GET|PUT|DELETE /export/integrations/{integration_id}
 ```
 
 ---
@@ -1105,8 +1367,8 @@ model = client.models.register(
 # Log prediction
 client.predictions.log(
     model_id=model.id,
-    inputs={"feature": 1.5},
-    output={"prediction": 0}
+    input_data={"feature": 1.5},
+    output_data={"prediction": 0}
 )
 ```
 

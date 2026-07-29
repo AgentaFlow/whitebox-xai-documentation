@@ -105,6 +105,8 @@ nav:
   - User Guide:
       - user-guide/index.md
       - Features: user-guide/features.md
+      - Trust Score: user-guide/trust-score.md
+      - AI Risk Register: user-guide/risk-register.md
       - Governance Review Boards: user-guide/governance.md
   - SDK & API:
       - sdk/index.md
@@ -114,6 +116,7 @@ nav:
       - API Reference: sdk/api-reference.md
   - Integrations:
       - Integration Examples: integrations/examples.md
+      - MCP Server: integrations/mcp.md
       - GitHub: integrations/github.md
       - GitHub Quick Reference: integrations/github-quick-reference.md
       - GitHub Diff Reviews: integrations/github-diff.md
@@ -125,6 +128,7 @@ nav:
       - n8n Webhooks: integrations/n8n-webhooks.md
       - CLI Git Tracking: integrations/cli-git-tracking.md
   - Account & Compliance:
+      - API Keys: account/api-keys.md
       - Two-Factor Authentication: account/two-factor-authentication.md
       - AI Regulations: account/ai-regulations.md
   - Learn:

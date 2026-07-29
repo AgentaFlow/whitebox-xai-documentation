@@ -127,16 +127,21 @@ Contact sales@whiteboxxai.com to enable.
 
 1. Go to **Profile** → **API Keys**
 2. Click **"Generate New Key"**
-3. Enter key name and permissions
+3. Enter a key name, scopes, and an optional expiry
 4. If 2FA is enabled, enter your current 6-digit code
-5. Copy key (shown only once!)
-6. Store securely
+5. Copy the key — shown only once
+6. Store it securely
+
+Keys look like `wbx_live_...`. Creation and revocation are admin-only, since a key is an
+organization-wide credential. Revoking a key takes effect immediately. Full reference:
+[API Keys](../account/api-keys.md).
 
 **Security tips:**
-- Use separate keys for dev/staging/prod
-- Rotate keys every 90 days
+- Use separate keys for dev/staging/prod, and one per consumer
+- Set an expiry (`expires_in_days`) for temporary access
+- Check `last_used_at` before revoking, and revoke anything unused
 - Never commit keys to Git
-- Use environment variables
+- Use environment variables or a secrets manager
 
 **Note:** API keys work independently of 2FA. Once generated, they don't require 2FA codes for SDK/API requests. 2FA only protects web login.
 
@@ -316,8 +321,8 @@ Yes, but **archiving** is recommended instead:
 ```python
 client.predictions.log(
     model_id="model-uuid",
-    inputs={"feature1": value1, "feature2": value2},
-    output={"prediction": pred, "probability": prob}
+    input_data={"feature1": value1, "feature2": value2},
+    output_data={"prediction": pred, "probability": prob}
 )
 ```
 
@@ -941,6 +946,11 @@ Yes!
 
 ## Alerts
 
+!!! note "Alerts are managed in the dashboard"
+    There's no public REST API for alerts yet — `/api/v1/alerts` returns `404`, and the SDK's
+    `client.alerts.*` helpers call it. Create and manage alert rules under **Observability →
+    Alerts**. See [Managing Alerts](../user-guide/index.md#managing-alerts).
+
 ### What can I set alerts for?
 
 **Performance:**
@@ -1073,24 +1083,32 @@ Yes, **Maintenance Mode:**
 
 ### What report types are available?
 
-1. **Performance Report** - Metrics, trends, predictions
-2. **Drift Report** - Data/concept drift analysis
-3. **Fairness Report** - Bias audit results
-4. **Compliance Report** - Regulatory documentation
-5. **LLM Report** - Usage, cost, safety
-6. **Executive Summary** - High-level overview
-7. **Custom Report** - Choose sections (Enterprise)
+1. **Model performance** - Metrics, trends, predictions
+2. **Drift analysis** - Data/concept drift analysis
+3. **Bias audit** - Fairness audit results
+4. **Explainability** - SHAP/LIME explanation summaries
+5. **Compliance** - Regulatory documentation and audit trail
+6. **LLM monitoring** - Usage, cost, safety
+7. **Risk register** - [AI Risk Register](../user-guide/risk-register.md) entries
+8. **Trust score** - [Trust Score](../user-guide/trust-score.md) values and breakdowns
+9. **Custom** - Choose sections yourself
+
+Output formats: PDF, CSV, Excel, JSON, HTML, and Markdown.
 
 ### How do I generate a report?
 
-1. Go to **Reports** → **Generate Report**
+1. Go to **Governance & Evidence** → **Evidence & Reports** → **Generate Report**
 2. Select:
    - Template (Performance, Drift, etc.)
    - Models to include
    - Date range
-   - Output format (PDF, Excel, CSV)
+   - Output format
 3. Click **"Generate"**
 4. Download when ready (~30-300 seconds)
+
+From the API, this is `POST /api/v1/export/exports` — see [Exports &
+Reports](../sdk/api-reference.md#exports--reports). Note the path is `/export/*`, not
+`/reports`.
 
 ### Can I schedule reports?
 
@@ -1149,52 +1167,49 @@ Contact support for setup.
 
 ### What plans are available?
 
-**Free Trial:**
-- 14 days
-- Up to 3 models
-- 10,000 predictions/month
-- All features
+**Demo (free):**
+- Read-only showcase with preloaded sample data
+- Unmetered — browse freely
+- Every premium feature viewable
+
+**Free ($0 forever):**
+- 1,000 API calls per month
 - No credit card required
+- Full monitoring, drift detection, and SHAP/LIME explainability
+- No premium features, no dedicated workspace
 
-**Starter ($99/month):**
-- Up to 10 models
-- 100,000 predictions/month
-- 30-day data retention
-- Email support
+**Business Cloud ($599/month):**
+- Dedicated workspace on its own subdomain, with isolated data
+- Higher included API allowance, with pay-as-you-grow billing past it
+- More CPU, GPU, and memory
+- All premium features, including AI-driven architecture review
+- GRC and audit logging; SSO and RBAC available
+- Dedicated support and SLAs
 
-**Professional ($499/month):**
-- Up to 50 models
-- 1M predictions/month
-- 90-day data retention
-- Slack integration
-- Custom metrics
-- Priority support
+**Enterprise Edition (custom, lifetime license):**
+- Deployed on your own cloud or data center
+- Air-gapped deployment available
+- ISO 42001, NIST AI RMF, GDPR, EU AI Act, and CCPA governance
+- SSO, RBAC, audit trails
+- Professional installation, support, and training
 
-**Enterprise (Custom pricing):**
-- Unlimited models
-- Unlimited predictions
-- Custom retention
-- SSO, RBAC
-- On-premise deployment
-- SLA, dedicated support
-- Custom integrations
-
-**Pricing calculator:** https://whiteboxxai.com/pricing
+Full detail: [Plans & Limits](../get-started/plans.md). Current pricing:
+[whiteboxxai.com/pricing](https://whiteboxxai.com/pricing).
 
 ### How is billing calculated?
 
-**Base price:** Monthly subscription
-**Overage charges:**
-- $0.01 per 1,000 predictions over plan limit
-- $0.10 per explanation over plan limit
+**Free:** nothing to bill. Requests past the 1,000-call monthly allowance are paused until
+the next cycle.
 
-**Example (Professional plan):**
-```
-Base: $499/month (includes 1M predictions)
-Used: 1.5M predictions
-Overage: 500k predictions × $0.01/1k = $5
-Total: $504/month
-```
+**Business Cloud:** a $599/month subscription with an included monthly API allowance.
+Requests beyond the allowance are **not blocked** — they go through, and the overage is
+reported as metered usage and billed on your next invoice. A production pipeline shouldn't
+stop logging predictions because it had a busy month.
+
+**Enterprise Edition:** a lifetime license with optional yearly maintenance and support.
+Not metered.
+
+Your current usage and remaining included allowance are shown in your account settings.
 
 ### What payment methods are accepted?
 
@@ -1224,29 +1239,23 @@ Yes, anytime:
 
 ### Is there a discount for annual billing?
 
-Yes! Save 20% with annual billing:
-
-- Starter: $950/year (vs $1,188)
-- Professional: $4,790/year (vs $5,988)
-- Enterprise: Contact sales
+Contact **[sales@whiteboxxai.com](mailto:sales@whiteboxxai.com)** to discuss annual billing
+or an Enterprise Edition license.
 
 ### What happens if I exceed my plan limits?
 
-**Predictions:**
-- Overage charges apply ($0.01 per 1,000)
-- Automatic, no service interruption
+**On the Free plan:** past the 1,000-call monthly allowance, further API requests are paused
+until the next cycle. Your existing data and dashboards stay fully accessible — nothing is
+deleted, and reads keep working. Upgrade at any time to resume immediately.
 
-**Models:**
-- Register up to limit
-- Need more? Upgrade plan
+**On Business Cloud:** requests past your included allowance are **allowed through**, not
+blocked. The overage is reported as metered usage and appears on your next invoice.
 
-**Storage:**
-- Oldest data archived
-- Still accessible, not counted
+**Enterprise Edition** isn't metered.
 
-**No surprise bills:**
-- Set overage cap in billing settings
-- Get alert at 80%, 100%
+Check your current usage and remaining allowance in your account settings at any time. See
+[Plans & Limits](../get-started/plans.md#understanding-api-usage) for ways to reduce your call
+volume — sampling, batching, and offline buffering all help.
 
 ---
 
@@ -1258,13 +1267,20 @@ Yes! Save 20% with annual billing:
 - Model management
 - Prediction logging
 - Metrics retrieval
-- Alert management
-- Report generation
+- Drift detection and bias/fairness auditing
+- Explanations (SHAP/LIME)
+- Trust Score and Risk Register
+- Governance review boards
+- Export and report generation
 
-**WebSocket API:**
-- Real-time metrics
-- Live alerts
-- Dashboard updates
+Alert management is dashboard-only for now — see the [Alerts](#alerts) note above.
+
+**WebSocket:**
+- `/api/v1/dashboard/ws` for live dashboard updates
+
+**MCP server:**
+- Use WhiteBoxXAI as a tool from Claude Desktop, Claude Code, LangChain agents, or any
+  MCP-compatible client — see [MCP Server](../integrations/mcp.md)
 
 **GraphQL (Beta):**
 - Flexible queries
