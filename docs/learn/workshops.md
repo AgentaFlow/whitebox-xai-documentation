@@ -31,7 +31,7 @@ These workshops combine theory with practice, allowing participants to learn by 
 
 **Part 1: Environment Setup (15 min)**
 1. Install Python and create virtual environment
-2. Install WhiteBoxXAI SDK: `pip install whiteboxxai-sdk`
+2. Install WhiteBoxXAI SDK: `pip install whitebox-xai-sdk`
 3. Verify installation
 4. Configure authentication with API key
 5. Test connection to platform

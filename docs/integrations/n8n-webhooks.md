@@ -45,7 +45,7 @@ Response:
 ```json
 {
   "webhook_url": "https://api.whiteboxxai.com/api/v1/webhooks/n8n/execution",
-  "api_key": "wbai_...",
+  "api_key": "wbx_live_...",
   "track_all_nodes": true,
   "min_execution_time_ms": 0
 }
@@ -515,7 +515,7 @@ Include relevant metadata for filtering and analysis:
 **Symptoms:** 401 Unauthorized responses
 
 **Solutions:**
-1. Verify API key format: `Bearer wbai_...`
+1. Verify API key format: `Bearer wbx_live_...`
 2. Check organization access for API key
 3. Ensure API key has `webhooks:write` permission
 4. Test API key with `/api/v1/webhooks/n8n/config` endpoint
@@ -562,7 +562,7 @@ Get webhook configuration and setup instructions.
 ```json
 {
   "webhook_url": "https://api.whiteboxxai.com/api/v1/webhooks/n8n/execution",
-  "api_key": "wbai_...",
+  "api_key": "wbx_live_...",
   "track_all_nodes": true,
   "min_execution_time_ms": 0
 }

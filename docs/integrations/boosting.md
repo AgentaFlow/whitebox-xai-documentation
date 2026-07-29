@@ -6,13 +6,13 @@ Quick reference for monitoring gradient boosting models (XGBoost and LightGBM) w
 
 ```bash
 # XGBoost
-pip install whiteboxxai xgboost
+pip install whitebox-xai-sdk xgboost
 
 # LightGBM
-pip install whiteboxxai lightgbm
+pip install whitebox-xai-sdk lightgbm
 
 # Both
-pip install whiteboxxai xgboost lightgbm
+pip install whitebox-xai-sdk xgboost lightgbm
 ```
 
 ## Basic Setup

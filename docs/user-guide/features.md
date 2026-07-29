@@ -105,7 +105,7 @@ print(f"Model registered with ID: {model.id}")
 #### Via REST API
 
 ```bash
-curl -X POST https://api.whiteboxxai.com/api/v1/models/register \
+curl -X POST https://api.whiteboxxai.com/api/v1/models \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -290,8 +290,8 @@ probability = model.predict_proba([list(features.values())])[0][1]
 # Log to WhiteBoxXAI
 response = client.predictions.log(
     model_id="model-uuid",
-    inputs=features,
-    output={
+    input_data=features,
+    output_data={
         "prediction": int(prediction),
         "probability": float(probability)
     },

@@ -35,7 +35,7 @@ WhiteBoxXAI's Python SDK can automatically detect and track Git repository infor
 
 ```bash
 # Install WhiteBoxXAI SDK with Git support
-pip install whiteboxxai
+pip install whitebox-xai-sdk
 
 # Git tracking requires GitPython (automatically installed)
 # Or install manually:
@@ -130,7 +130,7 @@ model = client.models.register(
 ```python
 from whiteboxxai import WhiteBoxXAI
 
-client = WhiteBoxXAI(api_key="wbai_...")
+client = WhiteBoxXAI(api_key="wbx_live_...")
 
 # Register with auto-detection
 model = client.models.register(
@@ -235,7 +235,7 @@ import asyncio
 from whiteboxxai import WhiteBoxXAI
 
 async def register_models():
-    client = WhiteBoxXAI(api_key="wbai_...")
+    client = WhiteBoxXAI(api_key="wbx_live_...")
 
     # Async registration with Git detection
     model = await client.models.aregister(

@@ -5,7 +5,7 @@ Quick reference for monitoring Hugging Face Transformers models with WhiteBoxXAI
 ## Installation
 
 ```bash
-pip install whiteboxxai[transformers]
+pip install whitebox-xai-sdk[huggingface]
 ```
 
 ## Basic Setup

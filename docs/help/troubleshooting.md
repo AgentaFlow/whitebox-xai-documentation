@@ -38,10 +38,14 @@ your imports use `from whiteboxxai import WhiteBoxXAI`.
 
 ### "401 Unauthorized: Invalid API key"
 
-- Double-check the key was copied correctly, with no leading/trailing spaces or newlines.
-- Confirm you're using an active key: in the dashboard, go to **Profile → API Keys**.
+- Double-check the key was copied correctly, with no leading/trailing spaces or newlines. Keys
+  start with `wbx_live_`.
+- Confirm you're using an active key: in the dashboard, go to **Profile → API Keys** and check
+  it hasn't been revoked or passed its expiry.
 - If in doubt, generate a new key and update your integration. Remember that a key is shown
   in full only once, at creation time.
+- **If you're using a login token instead of an API key**, it has expired — JWTs last about 30
+  minutes. Switch to an [API key](../account/api-keys.md), which doesn't expire on a schedule.
 
 ```python
 import os
@@ -50,9 +54,23 @@ print(os.getenv("WHITEBOXXAI_API_KEY"))  # verify the key your app is actually u
 
 ### "403 Forbidden: Insufficient permissions"
 
-Your account or API key doesn't have permission for that action. Check your role under
-**Settings → Team**, and note that **demo** accounts are read-only — they can view data but
-can't create, edit, or delete. See [Plans & Limits](../get-started/plans.md).
+Your account or API key doesn't have permission for that action:
+
+- **API key scopes.** The key may not carry the scope the operation needs. Check its scopes
+  under **Profile → API Keys** and issue a new key if needed.
+- **Your role.** Check it under **Settings → Team**. Issuing and revoking API keys is
+  admin-only.
+- **Demo accounts are read-only** — they can view data but can't create, edit, or delete. See
+  [Plans & Limits](../get-started/plans.md).
+
+### "404 Not Found" on `/api/v1/alerts` or `/api/v1/reports`
+
+These endpoints aren't available. Alerts are managed in the dashboard under **Observability →
+Alerts**; report generation lives at `/api/v1/export/*`. See [Exports &
+Reports](../sdk/api-reference.md#exports--reports).
+
+The SDK's `client.alerts.*`, `ModelMonitor.create_alert_rule()`, and
+`ModelMonitor.get_active_alerts()` call the alerts endpoint and will fail for this reason.
 
 ## Predictions aren't appearing
 

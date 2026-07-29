@@ -52,8 +52,8 @@ for i in range(10):
     # Log to WhiteBoxXAI
     prediction_id = client.predictions.log(
         model_id=model_id,
-        inputs=features,
-        output={
+        input_data=features,
+        output_data={
             "prediction": int(prediction),
             "probability": float(probability)
         }

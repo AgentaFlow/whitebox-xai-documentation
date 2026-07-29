@@ -52,9 +52,17 @@ soon as you can.
 
 ## API keys and 2FA
 
-2FA protects interactive logins to the dashboard. It does **not** affect API keys, so your
-[SDK](../sdk/index.md) and API integrations keep working without any changes. Continue to
-keep API keys secret and rotate them if you suspect they've been exposed.
+2FA protects interactive logins to the dashboard. It does **not** affect
+[API keys](api-keys.md), so your [SDK](../sdk/index.md) and API integrations keep working
+without any changes.
+
+The flip side is that an API key is a standalone credential — 2FA won't protect it. Keep keys
+secret, and revoke any key you suspect has been exposed; revocation is immediate.
+
+!!! note "One exception: MCP service accounts"
+    The [MCP server's](../integrations/mcp.md) email/password authentication mode can't
+    complete a headless 2FA challenge, so an account used that way must have 2FA disabled.
+    Use API-key authentication instead and keep 2FA on.
 
 ## Lost access to your account?
 

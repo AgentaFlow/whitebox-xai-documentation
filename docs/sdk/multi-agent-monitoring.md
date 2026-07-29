@@ -31,7 +31,7 @@ Track agent executions, interactions, task completions, costs, and performance b
 ### Installation
 
 ```bash
-pip install whiteboxxai
+pip install whitebox-xai-sdk
 ```
 
 ### CrewAI Example
@@ -214,7 +214,7 @@ A **task** represents a discrete unit of work in the workflow.
 ### Installation
 
 ```bash
-pip install whiteboxxai crewai
+pip install whitebox-xai-sdk crewai
 ```
 
 ### Basic Usage
@@ -1020,7 +1020,7 @@ agent_id = monitor._register_agent(custom_agent)
 **Solution:** Ensure LLM callbacks are configured:
 
 ```python
-from langchain.callbacks import WhiteBoxXAICallbackHandler
+from whiteboxxai.integrations import WhiteBoxXAICallbackHandler
 
 llm = ChatOpenAI(
     model="gpt-4",

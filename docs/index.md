@@ -52,7 +52,7 @@ compliant — with confidence.
     ---
 
     Native support for scikit-learn, PyTorch, TensorFlow, Hugging Face, LangChain, XGBoost,
-    LightGBM, GitHub, and n8n.
+    LightGBM, GitHub, n8n — and an [MCP server](integrations/mcp.md) for any AI client.
 
 </div>
 
@@ -86,7 +86,21 @@ compliant — with confidence.
     ---
 
     Multi-party [governance review boards](user-guide/governance.md), automated periodic
-    reviews, and a searchable decision archive — aligned with ISO 42001 and the EU AI Act.
+    reviews, and an immutable decision archive — aligned with ISO 42001 and the EU AI Act.
+
+-   :material-shield-alert: **Track AI risk**
+
+    ---
+
+    A structured [AI Risk Register](user-guide/risk-register.md) with owners, likelihood ×
+    impact scoring, and a full audit trail — the artifact ISO 42001 and the EU AI Act ask for.
+
+-   :material-speedometer: **Report one number**
+
+    ---
+
+    A [Trust Score](user-guide/trust-score.md) per model, combining fairness, drift, and
+    explainability into a single 0–100 index your board can actually read.
 
 </div>
 

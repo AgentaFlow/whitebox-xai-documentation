@@ -59,31 +59,47 @@ Before you begin, ensure you have:
 
 1. Enter your email and password
 2. Click **"Log In"**
-3. You'll see the onboarding wizard
+3. You'll land on the dashboard with a welcome modal
 
 > **Note:** For enhanced security, you can enable Two-Factor Authentication (2FA) later in your profile settings. See the [Security Best Practices](#enabling-two-factor-authentication-recommended) section below.
 
-### Step 4: Complete Onboarding
+### Step 4: First-Run Experience
 
-The wizard will guide you through:
+A welcome modal offers you two things:
 
-**Profile Setup:**
-- Upload avatar (optional)
-- Set job title
-- Choose your role (Data Scientist, ML Engineer, etc.)
+**A guided tour.** A walkthrough of the sidebar, stopping at each area to explain what it's
+for — Models, Performance, Drift Detection, Explainability, Fairness, Alerts, and Compliance.
+You can take it, skip it, or exit partway through. It won't reappear once you've finished or
+skipped it.
 
-**Use Case:**
-- What type of models will you monitor?
-- What's your primary goal? (Performance, Explainability, Compliance)
+**Sample data.** Optionally seed your workspace with realistic demo models, predictions,
+drift events, and bias audits, so the dashboards have something in them while you're finding
+your way around. Seeding runs in the background and takes a moment — the dashboard shows a
+`seeding` state and switches to `ready` when it's done.
 
-**Integration:**
-- Choose how you'll integrate (SDK, API, or both)
+!!! tip "Sample data is separate from your real data"
+    Seeded demo records are clearly marked and can be removed at any time from **Settings →
+    Demo Data**, which is also where you re-seed if you want a clean set. If you'd rather
+    start from a genuinely empty workspace, just skip it — WhiteBoxXAI never fabricates
+    numbers in your dashboards, so an empty account shows empty states rather than fake
+    metrics.
 
-**Notifications:**
-- Email preferences
-- Slack integration (optional)
+If you'd rather drive this from the API:
 
-Click **"Finish Setup"** and you're ready!
+```bash
+# Where am I in onboarding?
+GET  /api/v1/onboarding/status
+# -> { "onboarding_completed": false, "demo_data_status": null, "model_count": 0 }
+
+# Seed sample data
+POST /api/v1/onboarding/seed-demo-data
+# -> { "already_seeded": false, "demo_data_status": "seeding" }
+
+# Mark the tour finished or skipped
+POST /api/v1/onboarding/complete
+```
+
+`demo_data_status` is `seeding`, `ready`, `failed`, or `null` if never requested.
 
 ---
 
@@ -149,20 +165,20 @@ The WhiteBoxXAI SDK makes integration simple.
 Open your terminal and run:
 
 ```bash
-pip install whiteboxxai-sdk
+pip install whitebox-xai-sdk
 ```
 
 **For specific ML frameworks:**
 
 ```bash
 # With scikit-learn support
-pip install whiteboxxai-sdk[sklearn]
+pip install whitebox-xai-sdk[sklearn]
 
 # With PyTorch support
-pip install whiteboxxai-sdk[torch]
+pip install whitebox-xai-sdk[pytorch]
 
 # With all integrations
-pip install whiteboxxai-sdk[all]
+pip install whitebox-xai-sdk[all]
 ```
 
 ### Verify Installation
@@ -170,7 +186,7 @@ pip install whiteboxxai-sdk[all]
 ```python
 import whiteboxxai
 print(whiteboxxai.__version__)
-# Output: 0.1.0
+# Output: 1.0.0
 ```
 
 ### Get Your API Key
@@ -179,9 +195,15 @@ print(whiteboxxai.__version__)
 2. Go to **Profile** → **API Keys**
 3. Click **"Generate New Key"**
 4. Enter a name: `"My Development Key"`
-5. Select permissions: **All permissions** (for getting started)
-6. Click **"Generate"**
-7. **Copy the key immediately** (shown only once!)
+5. Select scopes: **read** and **write** (for getting started)
+6. Leave the expiry blank for a key that doesn't expire, or set one
+7. Click **"Generate"**
+8. **Copy the key immediately** — it's shown only once
+
+Your key looks like `wbx_live_...`. Key creation is admin-only, so if you don't see the
+option, ask an organization admin to issue one for you. See [API
+Keys](../account/api-keys.md) for the full reference, including how to issue and revoke keys
+through the API.
 
 ### Configure SDK
 
@@ -332,7 +354,7 @@ prediction = model.predict(features)
 # Log to WhiteBoxXAI
 client.predictions.log(
     model_id="550e8400-e29b-41d4-a716-446655440000",
-    inputs={
+    input_data={
         "credit_score": 720,
         "income": 75000,
         "debt_ratio": 0.35,
@@ -341,7 +363,7 @@ client.predictions.log(
         "loan_amount": 25000,
         "payment_history": 0.95
     },
-    output={
+    output_data={
         "prediction": 0,  # No default
         "probability": 0.12  # 12% risk
     },
@@ -491,11 +513,17 @@ Click the **"Predictions"** tab to see:
 
 ## Setting Up Alerts
 
-Stay informed when your model needs attention.
+Stay informed when your model needs attention. Alert rules are created and managed in the
+dashboard.
+
+!!! note "Dashboard only for now"
+    There's no public REST API for alerts yet — `/api/v1/alerts` returns `404`, and the SDK's
+    `client.alerts.*` and `ModelMonitor.create_alert_rule()` call it, so they won't work.
+    Create alert rules in the dashboard.
 
 ### Create Your First Alert
 
-1. Go to **"Alerts"** in sidebar
+1. Go to **Observability → Alerts** in the sidebar
 2. Click **"Create Alert Rule"**
 
 **Configure Alert:**
@@ -527,8 +555,14 @@ The alert will trigger if average accuracy over the past hour drops below 0.85.
 
 **To test:**
 1. Wait for enough predictions (or generate test predictions)
-2. Check **Alerts** page for triggers
-3. You'll receive email notification when alert fires
+2. Check the **Alerts** page for triggers
+3. You'll receive an email notification when the alert fires
+
+!!! tip "Drift and bias thresholds also feed your risk register"
+    A drift report or bias audit that lands at `high` or `critical` severity automatically
+    drafts an entry in your [AI Risk Register](../user-guide/risk-register.md) — so a
+    threshold breach becomes a tracked, owned risk rather than just a notification you
+    might miss.
 
 ### Recommended Starter Alerts
 
@@ -563,7 +597,7 @@ Severity: Critical
 
 ### Create a Performance Report
 
-1. Go to **"Reports"** in sidebar
+1. Go to **Governance & Evidence → Evidence & Reports** in the sidebar
 2. Click **"Generate Report"**
 
 **Configure:**
@@ -624,6 +658,30 @@ Your report will include:
 - Alert history
 - Top features by importance
 
+### Generating reports from the API
+
+The same thing from code — note the path is `/api/v1/export/*`, not `/api/v1/reports`:
+
+```bash
+# Start an export
+curl -X POST https://api.whiteboxxai.com/api/v1/export/exports \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"template_id": "...", "format": "pdf", "model_ids": ["..."]}'
+
+# Poll until status is "completed"
+curl https://api.whiteboxxai.com/api/v1/export/exports/{export_id} \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+
+# Download
+curl -L -o report.pdf \
+  https://api.whiteboxxai.com/api/v1/export/exports/{export_id}/download \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+```
+
+See [Evidence & Reports](../user-guide/index.md#evidence--reports) for the full surface,
+including scheduled reports and delivery integrations.
+
 ---
 
 ## Next Steps
@@ -647,11 +705,19 @@ Congratulations! You've successfully:
 - ⚖️ [Auditing for Bias](../user-guide/index.md#auditing-for-bias) - Check for bias
 - 🤖 [Monitoring LLMs](../user-guide/index.md#monitoring-llms) - If using language models
 
+**Governance & Compliance:**
+- 🎯 [Trust Score](../user-guide/trust-score.md) - One 0–100 index per model
+- 🛡️ [AI Risk Register](../user-guide/risk-register.md) - Structured risk inventory
+- ⚖️ [Governance Review Boards](../user-guide/governance.md) - Multi-party approval workflows
+
 **SDK & API:**
 - [SDK Documentation](../sdk/index.md) - Full SDK reference
 - [API Reference](../sdk/api-reference.md) - REST API endpoints
+- [API Keys](../account/api-keys.md) - Issuing and revoking credentials
+- [MCP Server](../integrations/mcp.md) - Use WhiteBoxXAI from non-Python clients and agents
 
 **More help:**
+- [Plans & Limits](plans.md) - API allowances and what each plan includes
 - [Troubleshooting](../help/troubleshooting.md) - Common issues
 - [Two-Factor Authentication](../account/two-factor-authentication.md) - 2FA setup and management
 
@@ -691,7 +757,7 @@ prediction = model.predict(features)
 
 # After (one line added)
 prediction = model.predict(features)
-client.predictions.log(model_id, inputs=features, output=prediction)
+client.predictions.log(model_id, input_data=features, output_data=prediction)
 ```
 
 **Or use decorator for zero code changes:**
@@ -715,7 +781,7 @@ def predict(features):
 ```python
 client.predictions.log(
     model_id=model_id,
-    inputs={
+    input_data={
         "credit_score": 720,
         # Don't log: "customer_name": "John Doe"
         # Don't log: "ssn": "123-45-6789"
@@ -745,15 +811,19 @@ client.predictions.log(
 ### "API key invalid" error
 
 **Solution:**
-1. Check your API key in Profile → API Keys
-2. Ensure no extra spaces or newlines
-3. Regenerate key if needed
+1. Check your API key in Profile → API Keys — confirm it hasn't been revoked or expired
+2. Ensure no extra spaces or newlines, and that you copied the whole `wbx_live_...` value
+3. Issue a new key if needed (the old one can't be retrieved — only revoked)
 
 ```python
 # Verify key is set
 import os
 print(os.getenv("WHITEBOXXAI_API_KEY"))
 ```
+
+If you get a `403` instead of a `401`, the key is valid but its scopes don't cover the
+operation — issue a new key with the scopes you need. See [API
+Keys](../account/api-keys.md#troubleshooting).
 
 ### Predictions not appearing
 
@@ -774,7 +844,7 @@ print(f"Prediction ID: {response.prediction_id}")
 ```bash
 # Reinstall SDK
 pip uninstall whiteboxxai-sdk
-pip install whiteboxxai-sdk
+pip install whitebox-xai-sdk
 
 # Verify installation
 pip show whiteboxxai-sdk

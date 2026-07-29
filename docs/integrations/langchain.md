@@ -5,7 +5,7 @@ Quick reference for monitoring LangChain applications with WhiteBoxXAI.
 ## Installation
 
 ```bash
-pip install whiteboxxai langchain openai
+pip install whitebox-xai-sdk langchain openai
 ```
 
 ## Basic Setup

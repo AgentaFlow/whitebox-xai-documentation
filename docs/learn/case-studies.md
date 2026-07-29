@@ -988,7 +988,7 @@ async def detect_fraud(transaction):
 
     # Log asynchronously (non-blocking)
     asyncio.create_task(
-        client.predictions.log_async(
+        client.predictions.alog(
             model_id=model_id,
             features=features,
             prediction={

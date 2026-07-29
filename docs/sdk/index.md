@@ -44,13 +44,17 @@ The WhiteBoxXAI SDK provides a lightweight Python interface for integrating AI o
 
 ```bash
 # Base SDK
-pip install whiteboxxai-sdk
+pip install whitebox-xai-sdk
 
 # With framework support
-pip install whiteboxxai-sdk[sklearn]    # Scikit-learn
-pip install whiteboxxai-sdk[pytorch]    # PyTorch
-pip install whiteboxxai-sdk[tensorflow] # TensorFlow (future)
-pip install whiteboxxai-sdk[all]        # All integrations
+pip install whitebox-xai-sdk[sklearn]     # Scikit-learn
+pip install whitebox-xai-sdk[pytorch]     # PyTorch
+pip install whitebox-xai-sdk[tensorflow]  # TensorFlow
+pip install whitebox-xai-sdk[xgboost]     # XGBoost
+pip install whitebox-xai-sdk[lightgbm]    # LightGBM
+pip install whitebox-xai-sdk[huggingface] # Hugging Face Transformers
+pip install whitebox-xai-sdk[langchain]   # LangChain
+pip install whitebox-xai-sdk[all]         # All integrations
 ```
 
 ---
@@ -147,15 +151,29 @@ config = Config(
 client = WhiteBoxXAI(config=config)
 ```
 
-**Obtaining API Keys:**
+**Authentication:**
 
-API keys are obtained from your WhiteBoxXAI account dashboard:
-1. Log in to the WhiteBoxXAI web application (2FA may be required if enabled)
-2. Navigate to Settings → API Keys
-3. Generate a new API key with appropriate permissions
-4. Store securely and use in your SDK configuration
+`api_key` (or the `WHITEBOXXAI_API_KEY` environment variable) is sent as
+`Authorization: Bearer <api_key>`. Two credential types work:
 
-**Note:** API keys are separate from user account authentication. Once obtained, API keys authenticate SDK requests without requiring 2FA for each call.
+- **A dedicated API key** (`wbx_live_...`) — scoped, revocable, and doesn't expire on a fixed
+  schedule. This is what you want for the SDK.
+- **A login JWT** from `POST /api/v1/auth/login` — convenient for a quick interactive script,
+  but it expires in about 30 minutes and carries a human account's full privileges. Don't put
+  one in a pipeline.
+
+To obtain a key:
+
+1. Log in to the WhiteBoxXAI web application
+2. Navigate to **Profile → API Keys**
+3. Generate a new key with the scopes you need and an optional expiry
+4. Copy it immediately — it's shown only once — and store it in your secrets manager
+
+Key creation is admin-only, since a key is an organization-wide credential. Full reference:
+[API Keys](../account/api-keys.md).
+
+**Note:** API keys authenticate on their own. Enabling 2FA on your account protects
+interactive logins and does not affect existing SDK integrations.
 
 **Methods:**
 
@@ -163,28 +181,54 @@ API keys are obtained from your WhiteBoxXAI account dashboard:
 # Models
 client.models.register(name, version, model_type, **kwargs)
 client.models.get(model_id)
-client.models.list(filters)
+client.models.list(**filters)
 client.models.update(model_id, **kwargs)
+client.models.update_status(model_id, new_status)
+client.models.update_baseline(model_id, ...)
+client.models.get_versions(model_name)
+client.models.get_latest(model_name)
+client.models.archive(model_id)
+client.models.restore(model_id)
 client.models.delete(model_id)
 
 # Predictions
-client.predictions.log(model_id, inputs, output, **kwargs)
+client.predictions.log(model_id, input_data, output_data, **kwargs)
 client.predictions.log_batch(model_id, predictions)
 client.predictions.get(prediction_id)
-client.predictions.list(model_id, filters)
-
-# Metrics
-client.metrics.get(model_id, metric_names, date_range)
-client.metrics.aggregate(model_id, aggregation, granularity)
+client.predictions.query(model_id, start_time, end_time, limit, offset)
+client.predictions.get_stats(model_id, ...)
+client.predictions.get_recent(model_id, limit=10)
 
 # Drift
-client.drift.detect(model_id, data)
-client.drift.get_latest(model_id)
+client.drift.detect(model_id, ...)
+client.drift.create_report(model_id, window_size=1000)
+client.drift.get_reports(model_id, limit=10, skip=0)
+client.drift.get_report(model_id, report_id)
+client.drift.get_trend(model_id, days=7)
 
 # Explanations
 client.explanations.generate(prediction_id, method)
 client.explanations.get(explanation_id)
+
+# Fairness
+client.fairness.audit(model_id, ...)
+client.fairness.get_audit(audit_id)
+client.fairness.list_audits(...)
+client.fairness.get_bias_history(model_id, days=30)
+client.fairness.get_metric_history(model_id, metric_type, days=30)
+client.fairness.get_latest_audit(model_id)
+
+# Alerts — see the warning under ModelMonitor; the backend endpoint is not live
+client.alerts.create(...)
+client.alerts.list(model_id=None)
 ```
+
+Every method has an `a`-prefixed async twin — `client.models.aregister()`,
+`client.predictions.alog()`, `client.drift.aget_reports()`, and so on.
+
+!!! note "There is no `client.metrics`"
+    Metrics are read through the [REST API](api-reference.md#metrics) directly. The SDK
+    client exposes `models`, `predictions`, `explanations`, `drift`, `fairness`, and `alerts`.
 
 ### 2. ModelMonitor
 
@@ -196,9 +240,17 @@ Core monitoring logic for model predictions.
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
 
 client = WhiteBoxXAI(api_key="your-api-key")
-monitor = ModelMonitor(client, model_id="existing-model-id")
 
-# Or register new model
+monitor = ModelMonitor(
+    client,
+    model_id=123,              # Existing model
+    model_name=None,           # Or look up / register by name
+    auto_explain=False,        # Generate an explanation for every prediction
+    sampling_rate=1.0,         # Log this fraction of predictions
+    buffer_size=None,          # Buffer locally and send as batches
+)
+
+# Or register a new model
 monitor = ModelMonitor(client)
 model_id = monitor.register_model(
     name="my_model",
@@ -224,32 +276,70 @@ model_id = monitor.register_model(
     metadata: Dict = None
 ) -> str
 
-# Log single prediction
+# Log single prediction. Returns the prediction data, or None if it was
+# buffered or skipped by sampling.
 monitor.log_prediction(
-    inputs: Dict[str, Any],
-    output: Dict[str, Any],
-    metadata: Dict[str, Any] = None,
-    timestamp: datetime = None
-) -> str  # Returns prediction_id
+    inputs: Any,
+    output: Any,
+    explain: bool = None,          # Defaults to the monitor's auto_explain
+    metadata: Dict[str, Any] = None
+) -> Optional[Dict[str, Any]]
 
-# Log batch predictions
-monitor.log_batch(
-    predictions: List[Dict],
-    parallel: bool = True
-) -> List[str]  # Returns list of prediction_ids
+# Log batch predictions. Each item takes inputs/output or
+# input_data/output_data keys.
+monitor.log_batch(predictions: List[Dict]) -> Dict[str, Any]
+
+# Send buffered predictions now
+monitor.flush() -> Optional[Dict[str, Any]]
+await monitor.aflush()
+
+# Convenience reads
+monitor.get_prediction_count() -> int
+monitor.get_drift_reports(limit: int = 10, skip: int = 0) -> List[Dict]
 
 # Set baseline data
-monitor.set_baseline(
-    baseline_data: Union[pd.DataFrame, np.ndarray],
-    feature_names: List[str] = None
-)
+monitor.set_baseline(data: np.ndarray)
 
-# Enable drift detection
-monitor.enable_drift_detection(
-    threshold: float = 0.1,
-    window_size: int = 1000
-)
+# Drift detection
+monitor.detect_drift(...)
 ```
+
+`log_prediction(explain=True)` really does generate an explanation — in versions before
+1.0.0 the flag was accepted and silently dropped.
+
+!!! warning "Alert helpers don't work yet"
+    `monitor.create_alert_rule()` and `monitor.get_active_alerts()` call `/api/v1/alerts`,
+    which is not registered on the backend and returns `404`. Manage alert rules in the
+    dashboard — see [Managing Alerts](../user-guide/index.md#managing-alerts).
+
+**Local buffering:**
+
+Set `buffer_size` to accumulate predictions locally and send them as batches, which costs far
+fewer API calls than one request per prediction:
+
+```python
+monitor = ModelMonitor(client, model_id=123, buffer_size=100)
+
+for row in stream:
+    monitor.log_prediction(inputs=row.features, output=row.prediction)
+    # Flushes automatically every 100 predictions
+
+monitor.flush()  # Send whatever's left
+```
+
+Prefer the context manager, which flushes on exit even if the block raises:
+
+```python
+with ModelMonitor(client, model_id=123, buffer_size=100) as monitor:
+    for row in stream:
+        monitor.log_prediction(inputs=row.features, output=row.prediction)
+# Buffer flushed here
+```
+
+As a backstop, the monitor also registers a weakly-referenced `atexit` hook that makes a
+best-effort flush when the interpreter shuts down, so a process that exits without an explicit
+`flush()` doesn't silently lose its buffer. Treat it as a safety net, not a strategy — an
+explicit `flush()` or `with` block is what you should write.
 
 **Configuration:**
 
@@ -257,16 +347,8 @@ monitor.enable_drift_detection(
 # Sampling rate (log N% of predictions)
 monitor.sampling_rate = 0.1  # 10%
 
-# Batch size for batch logging
-monitor.batch_size = 100
-
-# Enable/disable caching
-monitor.use_cache = True
-monitor.cache_ttl = 300  # seconds
-
-# Privacy settings
-monitor.mask_pii = True
-monitor.allowed_fields = ["amount", "category"]
+# Explanation generation for every logged prediction
+monitor.auto_explain = True
 ```
 
 ### 3. Framework Integrations
@@ -542,13 +624,13 @@ prediction_id = client.predictions.log(
 ```python
 prediction_id = client.predictions.log(
     model_id="model-uuid",
-    inputs={
+    input_data={
         "transaction_amount": 250.00,
         "merchant_category": "electronics",
         "time_of_day": 14,
         "customer_age": 35
     },
-    output={
+    output_data={
         "prediction": "legitimate",
         "fraud_probability": 0.08,
         "confidence": 0.92
@@ -606,35 +688,30 @@ prediction_ids = client.predictions.log_batch(
 
 ### Metrics API
 
-#### get_metrics()
+There is no `client.metrics` resource. Read metrics through the REST API — see
+[Metrics](api-reference.md#metrics) in the API reference — or use the monitoring dashboards.
 
-Retrieve metrics for a model.
+For drift and fairness history, which is what most metric queries are actually after, the SDK
+does have first-class support:
 
 ```python
-metrics = client.metrics.get(
-    model_id: str,
-    metric_names: List[str],
-    date_range: str = "last_7_days",  # or "YYYY-MM-DD:YYYY-MM-DD"
-    aggregation: str = "mean"  # "mean", "median", "min", "max"
-) -> Dict
+# Drift over time
+client.drift.get_trend(model_id="model-uuid", days=7)
+client.drift.get_reports(model_id="model-uuid", limit=10)
+
+# Fairness over time
+client.fairness.get_bias_history(model_id="model-uuid", days=30)
+client.fairness.get_metric_history(
+    model_id="model-uuid",
+    metric_type="demographic_parity",
+    days=30,
+)
 ```
 
-**Example:**
+To call the metrics endpoints directly with the client's authenticated session:
 
 ```python
-metrics = client.metrics.get(
-    model_id="model-uuid",
-    metric_names=["accuracy", "precision", "recall"],
-    date_range="2025-12-01:2025-12-05",
-    aggregation="mean"
-)
-
-# Returns:
-{
-    "accuracy": 0.89,
-    "precision": 0.87,
-    "recall": 0.84
-}
+metrics = client.request("GET", "/api/v1/metrics", params={"model_id": "model-uuid"})
 ```
 
 ### Drift Detection API
@@ -813,10 +890,10 @@ client = WhiteBoxXAI(api_key="your-api-key")
 async def log_predictions_async():
     tasks = []
     for prediction in predictions:
-        task = client.predictions.log_async(
+        task = client.predictions.alog(
             model_id="model-uuid",
-            inputs=prediction["inputs"],
-            output=prediction["output"]
+            input_data=prediction["input_data"],
+            output_data=prediction["output_data"]
         )
         tasks.append(task)
 
@@ -912,51 +989,86 @@ for prediction in high_volume_predictions:
 
 ```python
 from whiteboxxai.exceptions import (
-    WhiteBoxXAIError,          # Base exception
-    AuthenticationError,     # Invalid API key
-    APIError,                # API request failed
-    ValidationError,         # Invalid input data
-    RateLimitError,          # Rate limit exceeded
-    NetworkError,            # Network/connectivity issue
-    TimeoutError            # Request timeout
+    WhiteBoxXAIError,      # Base exception — catch this to catch everything
+    APIError,              # API request failed
+    AuthenticationError,   # Invalid or expired credential
+    ValidationError,       # Invalid input data
+    RateLimitError,        # Rate limit exceeded
+    NotFoundError,         # Resource does not exist
+    ConfigurationError,    # Bad SDK configuration
+    IntegrationError,      # Framework integration failure
+    CacheError,            # Cache layer failure
 )
 ```
+
+### Exception Metadata
+
+Exceptions carry structured attributes rather than just a message, so you can branch on them
+instead of parsing strings:
+
+| Exception | Attributes |
+| --- | --- |
+| `APIError` | `status_code`, `response`, `request_id` |
+| `AuthenticationError` | `status_code` |
+| `RateLimitError` | `retry_after` (seconds) |
+| `ValidationError` | `fields` (per-field error detail) |
+
+```python
+from whiteboxxai.exceptions import RateLimitError, ValidationError, APIError
+import time
+
+try:
+    client.predictions.log(model_id=model_id, input_data=x, output_data=y)
+except RateLimitError as e:
+    time.sleep(e.retry_after or 60)
+except ValidationError as e:
+    for field, problem in e.fields.items():
+        print(f"{field}: {problem}")
+except APIError as e:
+    print(f"{e.status_code} (request {e.request_id})")
+```
+
+`request_id` is worth logging — it's what support will ask for.
 
 ### Error Handling Patterns
 
 ```python
-from whiteboxxai import WhiteBoxXAI
-from whiteboxxai.exceptions import (
-    AuthenticationError,
-    RateLimitError,
-    NetworkError
-)
 import time
+
+import httpx
+
+from whiteboxxai import WhiteBoxXAI
+from whiteboxxai.exceptions import AuthenticationError, RateLimitError
 
 client = WhiteBoxXAI(api_key="your-api-key")
 
-def log_with_retry(inputs, output, max_retries=3):
+def log_with_retry(input_data, output_data, max_retries=3):
     """Log prediction with custom retry logic."""
     for attempt in range(max_retries):
         try:
             return client.predictions.log(
                 model_id="model-uuid",
-                inputs=inputs,
-                output=output
+                input_data=input_data,
+                output_data=output_data,
             )
         except AuthenticationError:
-            # Don't retry auth errors
+            # Don't retry auth errors — the credential won't fix itself
             raise
         except RateLimitError as e:
-            # Respect rate limit
-            time.sleep(e.retry_after)
-        except NetworkError:
-            # Exponential backoff
+            time.sleep(e.retry_after or 60)
+        except httpx.TransportError:
+            # Connection-level failure: exponential backoff
             if attempt < max_retries - 1:
                 time.sleep(2 ** attempt)
             else:
                 raise
 ```
+
+!!! tip "Or just let offline mode handle it"
+    Connection failures on `predictions.log()`, `predictions.log_batch()`,
+    `models.register()`, and `models.update_baseline()` are exactly what [offline
+    mode](offline-mode.md) is for — enable it and the operation is queued and retried for you,
+    no retry loop required.
 
 ### Graceful Degradation
 
@@ -970,8 +1082,8 @@ def monitored_predict(X):
     try:
         client.predictions.log(
             model_id="model-uuid",
-            inputs=X.to_dict(),
-            output={"prediction": prediction}
+            input_data=X.to_dict(),
+            output_data={"prediction": prediction}
         )
     except Exception as e:
         # Log error but continue
@@ -1027,7 +1139,7 @@ import asyncio
 
 async def process_predictions():
     tasks = [
-        client.predictions.log_async(...)
+        client.predictions.alog(...)
         for _ in range(1000)
     ]
     await asyncio.gather(*tasks)
@@ -1275,5 +1387,5 @@ See `/examples` directory for complete examples:
 ---
 
 *Last Updated: December 30, 2025*
-*SDK Version: 0.1.0*
+*SDK Version: 1.0.0*
 *Recent Updates: Added API key generation instructions with 2FA note*
