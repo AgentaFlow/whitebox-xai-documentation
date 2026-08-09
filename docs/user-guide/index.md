@@ -21,9 +21,9 @@ Welcome to WhiteBoxXAI! This comprehensive guide will help you understand and us
 
 **Governance & compliance features have their own pages:**
 
-- [Trust Score](trust-score.md) — the 0–100 index over fairness, drift, and explainability
-- [AI Risk Register](risk-register.md) — structured risk inventory with owners and workflow
-- [Governance Review Boards](governance.md) — multi-party approval and decision archive
+- [Trust Score](/user-guide/trust-score/) — the 0–100 index over fairness, drift, and explainability
+- [AI Risk Register](/user-guide/risk-register/) — structured risk inventory with owners and workflow
+- [Governance Review Boards](/user-guide/governance/) — multi-party approval and decision archive
 
 ---
 
@@ -54,9 +54,9 @@ WhiteBoxXAI is an AI Observability & Explainability platform that helps you:
 ✅ Automatic drift detection
 ✅ Bias and fairness auditing
 ✅ LLM observability
-✅ [Trust Score](trust-score.md) — one 0–100 index per model
-✅ [AI Risk Register](risk-register.md) with owners, workflow, and audit trail
-✅ [Governance review boards](governance.md) with an immutable decision archive
+✅ [Trust Score](/user-guide/trust-score/) — one 0–100 index per model
+✅ [AI Risk Register](/user-guide/risk-register/) with owners, workflow, and audit trail
+✅ [Governance review boards](/user-guide/governance/) with an immutable decision archive
 ✅ Compliance evidence exports
 ✅ Customizable alerts
 
@@ -121,13 +121,13 @@ The default dashboard gives you a high-level operational view of your AI systems
     with a quick-start snippet rather than numbers. WhiteBoxXAI never displays placeholder or
     sample figures in your own workspace: every value you see is computed from your data.
     If you want to explore a populated dashboard, [seed demo
-    data](../get-started/getting-started.md#step-4-first-run-experience) or browse the
-    read-only [Demo plan](../get-started/plans.md#demo).
+    data](/get-started/getting-started/#step-4-first-run-experience) or browse the
+    read-only [Demo plan](/get-started/plans/#demo).
 
 ### Executive Dashboard
 
 A board-ready summary aimed at stakeholders who don't work in the platform day to day:
-portfolio [Trust Score](trust-score.md), lowest-scoring models, risk posture, and ROI
+portfolio [Trust Score](/user-guide/trust-score/), lowest-scoring models, risk posture, and ROI
 framing. Find it at **Overview → Executive Dashboard**.
 
 ### Navigation
@@ -156,9 +156,9 @@ The sidebar is organized into five groups:
 **Governance & Evidence**
 
 - **Compliance** - Regulatory framework coverage, including ISO 42001
-- **Risk Register** - [Structured AI risk inventory](risk-register.md)
+- **Risk Register** - [Structured AI risk inventory](/user-guide/risk-register/)
 - **Evidence & Reports** - Exports and scheduled reports
-- **Review Boards** - [Governance review boards](governance.md)
+- **Review Boards** - [Governance review boards](/user-guide/governance/)
 - **My Requests** - Review requests you submitted or need to vote on
 - **Decisions Archive** - Searchable, immutable record of finalized decisions
 
@@ -732,8 +732,8 @@ your configured notification channels.
     and will fail until it ships. Create and manage alert rules in the dashboard for now.
 
     Drift and bias thresholds *are* configurable via the API, and a `high` or `critical`
-    result there will auto-draft an entry in your [AI Risk Register](risk-register.md) — see
-    [Automatic risk drafting](risk-register.md#automatic-risk-drafting).
+    result there will auto-draft an entry in your [AI Risk Register](/user-guide/risk-register/) — see
+    [Automatic risk drafting](/user-guide/risk-register/#automatic-risk-drafting).
 
 ### Alert Dashboard
 
@@ -857,94 +857,13 @@ Customize how you receive alerts:
 ## Evidence & Reports
 
 Exports turn what the platform has computed into an artifact you can hand to someone — a
-stakeholder, an auditor, or another system. Find them at **Governance & Evidence → Evidence
-& Reports**, or drive them through the `/api/v1/export/*` API.
+stakeholder, an auditor, or another system — with every number traceable back to real
+computed data, not a template. Find them at **Governance & Evidence → Evidence & Reports**,
+or drive them through the `/api/v1/export/*` API.
 
-### Report categories
-
-| Category | Contents |
-| --- | --- |
-| **Model performance** | Metrics over time, prediction volume, error analysis, comparison to baseline |
-| **Drift analysis** | Data and concept drift, feature distribution changes, time series |
-| **Bias audit** | Fairness audit results, per-metric group comparisons, recommendations |
-| **Explainability** | SHAP and LIME explanation summaries and feature importance |
-| **LLM monitoring** | Usage, cost, safety, and quality metrics |
-| **Compliance** | Regulatory status, audit trail, model documentation |
-| **Risk register** | [AI Risk Register](risk-register.md) entries with owners, scores, and status |
-| **Trust score** | [Trust Score](trust-score.md) values and component breakdowns |
-| **Custom** | A template you define yourself |
-
-### Output formats
-
-`pdf`, `csv`, `excel`, `json`, `html`, and `markdown`. PDF for sharing and audit packages,
-CSV or Excel for analysis, JSON for feeding another system.
-
-### Generating an export
-
-In the dashboard: pick a template, choose the models and date range, pick a format, and
-generate. Processing takes roughly 30–300 seconds depending on data volume; the export moves
-through `pending` → `in_progress` → `completed` (or `failed`).
-
-Via the API:
-
-```bash
-# Kick off an export
-POST /api/v1/export/exports
-{
-  "template_id": "...",
-  "format": "pdf",
-  "model_ids": ["..."],
-  "date_from": "2026-07-01",
-  "date_to": "2026-07-31"
-}
-
-# Check status
-GET /api/v1/export/exports/{export_id}
-
-# Download when completed
-GET /api/v1/export/exports/{export_id}/download
-```
-
-Use `POST /api/v1/export/exports/bulk` to queue several at once — useful when you're
-assembling a full evidence package across models.
-
-### Templates and configurations
-
-Templates define what a report contains; configurations define how it's produced and
-delivered.
-
-```bash
-GET|POST    /api/v1/export/templates
-GET|PUT|DELETE /api/v1/export/templates/{template_id}
-
-GET|POST    /api/v1/export/configs
-GET|PUT|DELETE /api/v1/export/configs/{config_id}
-```
-
-### Delivery
-
-Exports can be delivered by `download`, `email`, `webhook`, `s3`, `sftp`, or `api`.
-Configure third-party delivery integrations under `/api/v1/export/integrations`.
-
-### Scheduled reports
-
-Send a report automatically on a recurring basis — the usual pattern for a monthly compliance
-package or a weekly performance summary:
-
-```bash
-POST /api/v1/export/scheduled-reports
-{
-  "name": "Weekly Performance Summary",
-  "template_id": "...",
-  "format": "pdf",
-  "cron_expression": "0 9 * * 1",
-  "recipients": ["team@company.com"]
-}
-```
-
-Manage them with `GET /api/v1/export/scheduled-reports`, `PUT` and `DELETE` on
-`/{report_id}`, and trigger one immediately with
-`POST /api/v1/export/scheduled-reports/{report_id}/run`.
+**Full guide: [Audit & Explanation Reports](/user-guide/reports/)** — report categories,
+output formats, the dashboard and API walkthroughs, scheduled reports, and delivery options
+all live there now.
 
 !!! note "Endpoint path"
     Report generation lives under `/api/v1/export/*`, not `/api/v1/reports`. The latter is
@@ -1003,7 +922,7 @@ Scoped, revocable keys (`wbx_live_...`) for the SDK, CI/CD, and the MCP server.
 - Revoke unused keys — revocation takes effect immediately
 
 Key creation and revocation are admin-only, since a key is an organization-wide credential.
-See [API Keys](../account/api-keys.md) for the full reference, the REST endpoints, and how
+See [API Keys](/account/api-keys/) for the full reference, the REST endpoints, and how
 keys differ from login tokens.
 
 ### Notification Preferences
@@ -1068,24 +987,24 @@ keys differ from login tokens.
 ## Getting Help
 
 ### Documentation
-- **Getting Started:** [Getting Started guide](../get-started/getting-started.md)
-- **SDK Guide:** [SDK Documentation](../sdk/index.md)
-- **API Reference:** [REST API Reference](../sdk/api-reference.md)
-- **API Keys:** [Issuing and revoking API keys](../account/api-keys.md)
-- **Plans & Limits:** [Plans and API allowances](../get-started/plans.md)
-- **FAQ:** [Frequently Asked Questions](../help/faq.md)
-- **Troubleshooting:** [Troubleshooting guide](../help/troubleshooting.md)
+- **Getting Started:** [Getting Started guide](/get-started/getting-started/)
+- **SDK Guide:** [SDK Documentation](/sdk/)
+- **API Reference:** [REST API Reference](/sdk/api-reference/)
+- **API Keys:** [Issuing and revoking API keys](/account/api-keys/)
+- **Plans & Limits:** [Plans and API allowances](/get-started/plans/)
+- **FAQ:** [Frequently Asked Questions](/help/faq/)
+- **Troubleshooting:** [Troubleshooting guide](/help/troubleshooting/)
 
 ### Governance & compliance
-- [Trust Score](trust-score.md)
-- [AI Risk Register](risk-register.md)
-- [Governance Review Boards](governance.md)
+- [Trust Score](/user-guide/trust-score/)
+- [AI Risk Register](/user-guide/risk-register/)
+- [Governance Review Boards](/user-guide/governance/)
 
 ### Integration quick references
-- [MCP Server](../integrations/mcp.md)
-- [TensorFlow](../integrations/tensorflow.md)
-- [Hugging Face](../integrations/huggingface.md)
-- [LangChain](../integrations/langchain.md)
+- [MCP Server](/integrations/mcp/)
+- [TensorFlow](/integrations/tensorflow/)
+- [Hugging Face](/integrations/huggingface/)
+- [LangChain](/integrations/langchain/)
 
 ### Support
 - **Email:** [support@whiteboxxai.com](mailto:support@whiteboxxai.com)

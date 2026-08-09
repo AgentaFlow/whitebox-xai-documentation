@@ -6,28 +6,28 @@ certification.
 
 <div class="grid cards" markdown>
 
--   :material-book-open-variant: **[Case Studies](case-studies.md)**
+-   :material-book-open-variant: **[Case Studies](/learn/case-studies/)**
 
     ---
 
     See how teams use WhiteBoxXAI to monitor models, catch drift, and pass audits — with
     the patterns and outcomes behind each story.
 
--   :material-hammer-wrench: **[Hands-On Workshops](workshops.md)**
+-   :material-hammer-wrench: **[Hands-On Workshops](/learn/workshops/)**
 
     ---
 
     Step-by-step exercises that walk you through monitoring, explainability, drift
     detection, and bias auditing on real scenarios.
 
--   :material-play-circle: **[Interactive Demos](interactive-demos.md)**
+-   :material-play-circle: **[Interactive Demos](/learn/interactive-demos/)**
 
     ---
 
     Guided, click-through demos of the platform's core workflows — a fast way to explore
     what's possible.
 
--   :material-certificate: **[Certification Program](certification.md)**
+-   :material-certificate: **[Certification Program](/learn/certification/)**
 
     ---
 
@@ -38,5 +38,5 @@ certification.
 
 ## New to WhiteBoxXAI?
 
-If you're just getting started, begin with the [Getting Started guide](../get-started/getting-started.md)
-and the [User Guide](../user-guide/index.md), then come back here to go deeper.
+If you're just getting started, begin with the [Getting Started guide](/get-started/getting-started/)
+and the [User Guide](/user-guide/), then come back here to go deeper.

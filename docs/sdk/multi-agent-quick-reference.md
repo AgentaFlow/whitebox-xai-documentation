@@ -501,7 +501,7 @@ export WhiteBoxXAI_API_URL="https://api.whiteboxxai.com"  # Optional
 
 ## Links
 
-- [Full Documentation](multi-agent-monitoring.md)
-- [API Reference](api-reference.md)
+- [Full Documentation](/sdk/multi-agent-monitoring/)
+- [API Reference](/sdk/api-reference/)
 - [Dashboard](https://app.whiteboxxai.com)
 - [Python SDK on GitHub](https://github.com/AgentaFlow/whitebox-python-sdk)

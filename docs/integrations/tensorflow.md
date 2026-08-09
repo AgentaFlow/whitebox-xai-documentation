@@ -278,6 +278,6 @@ mixed_precision.set_global_policy('mixed_float16')
 
 ## Resources
 
-- [WhiteBoxXAI SDK Documentation](../sdk/index.md)
-- [API Reference](../sdk/api-reference.md)
+- [WhiteBoxXAI SDK Documentation](/sdk/)
+- [API Reference](/sdk/api-reference/)
 - [TensorFlow Documentation](https://www.tensorflow.org/api_docs)

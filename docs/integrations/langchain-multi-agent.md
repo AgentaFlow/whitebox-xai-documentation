@@ -723,10 +723,10 @@ client.agent_workflows.create_execution(
 
 ## Additional Resources
 
-- [Multi-Agent Monitoring Overview](../sdk/multi-agent-monitoring.md)
-- [Multi-Agent Quick Reference](../sdk/multi-agent-quick-reference.md)
-- [CrewAI Integration Guide](../sdk/multi-agent-monitoring.md#crewai-integration)
-- [REST API Documentation](../sdk/multi-agent-quick-reference.md#api-endpoints)
+- [Multi-Agent Monitoring Overview](/sdk/multi-agent-monitoring/)
+- [Multi-Agent Quick Reference](/sdk/multi-agent-quick-reference/)
+- [CrewAI Integration Guide](/sdk/multi-agent-monitoring/#crewai-integration)
+- [REST API Documentation](/sdk/multi-agent-quick-reference/#api-endpoints)
 - [LangChain Documentation](https://python.langchain.com/docs/modules/callbacks/)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 

@@ -111,7 +111,7 @@ Free 14-day trial, no credit card required.
 - ✅ Secures access to production models and data
 - ✅ Recommended for all admin accounts
 
-See [Two-Factor Authentication](../account/two-factor-authentication.md) for the complete setup guide.
+See [Two-Factor Authentication](/account/two-factor-authentication/) for the complete setup guide.
 
 ### Can I use SSO (Single Sign-On)?
 
@@ -134,7 +134,7 @@ Contact sales@whiteboxxai.com to enable.
 
 Keys look like `wbx_live_...`. Creation and revocation are admin-only, since a key is an
 organization-wide credential. Revoking a key takes effect immediately. Full reference:
-[API Keys](../account/api-keys.md).
+[API Keys](/account/api-keys/).
 
 **Security tips:**
 - Use separate keys for dev/staging/prod, and one per consumer
@@ -241,7 +241,7 @@ client.models.register(
 )
 ```
 
-See the [Getting Started guide](../get-started/getting-started.md#registering-your-first-model) for details.
+See the [Getting Started guide](/get-started/getting-started/#registering-your-first-model) for details.
 
 ### What information do I need to register a model?
 
@@ -337,7 +337,7 @@ curl -X POST https://api.whiteboxxai.com/api/v1/predictions/log \
   }'
 ```
 
-See the [Getting Started guide](../get-started/getting-started.md#logging-predictions) for examples.
+See the [Getting Started guide](/get-started/getting-started/#logging-predictions) for examples.
 
 ### Do I need to log every prediction?
 
@@ -949,7 +949,7 @@ Yes!
 !!! note "Alerts are managed in the dashboard"
     There's no public REST API for alerts yet — `/api/v1/alerts` returns `404`, and the SDK's
     `client.alerts.*` helpers call it. Create and manage alert rules under **Observability →
-    Alerts**. See [Managing Alerts](../user-guide/index.md#managing-alerts).
+    Alerts**. See [Managing Alerts](/user-guide/#managing-alerts).
 
 ### What can I set alerts for?
 
@@ -1081,85 +1081,24 @@ Yes, **Maintenance Mode:**
 
 ## Reports
 
-### What report types are available?
-
-1. **Model performance** - Metrics, trends, predictions
-2. **Drift analysis** - Data/concept drift analysis
-3. **Bias audit** - Fairness audit results
-4. **Explainability** - SHAP/LIME explanation summaries
-5. **Compliance** - Regulatory documentation and audit trail
-6. **LLM monitoring** - Usage, cost, safety
-7. **Risk register** - [AI Risk Register](../user-guide/risk-register.md) entries
-8. **Trust score** - [Trust Score](../user-guide/trust-score.md) values and breakdowns
-9. **Custom** - Choose sections yourself
-
-Output formats: PDF, CSV, Excel, JSON, HTML, and Markdown.
+The full guide — report categories, output formats, the dashboard and API walkthroughs,
+scheduling, delivery, retention, and branding — now lives at
+[Audit & Explanation Reports](/user-guide/reports/). A couple of quick answers that come up
+often:
 
 ### How do I generate a report?
 
-1. Go to **Governance & Evidence** → **Evidence & Reports** → **Generate Report**
-2. Select:
-   - Template (Performance, Drift, etc.)
-   - Models to include
-   - Date range
-   - Output format
-3. Click **"Generate"**
-4. Download when ready (~30-300 seconds)
-
-From the API, this is `POST /api/v1/export/exports` — see [Exports &
-Reports](../sdk/api-reference.md#exports--reports). Note the path is `/export/*`, not
+Go to **Governance & Evidence → Evidence & Reports → Generate Report**, pick a template,
+the models and date range, and a format. From the API it's
+`POST /api/v1/export/exports` — see [Exports &
+Reports](/sdk/api-reference/#exports--reports). Note the path is `/export/*`, not
 `/reports`.
 
 ### Can I schedule reports?
 
-Yes!
-
-1. Generate a report
-2. Click **"Schedule"**
-3. Configure:
-   - Frequency: Daily, Weekly, Monthly
-   - Day/time
-   - Recipients
-   - Format
-
-**Example:**
-```
-Report: Weekly Performance Summary
-Schedule: Every Monday at 9 AM
-Recipients: team@company.com, cto@company.com
-Format: PDF attached to email
-```
-
-### What formats are available?
-
-- **PDF** - Best for sharing, presentations
-- **Excel** - Best for further analysis
-- **CSV** - Best for data export, automation
-- **JSON** - Best for API integration
-- **HTML** - Best for embedding in webpages
-
-### Are reports stored?
-
-Yes, all generated reports saved:
-- Accessible in **Report History**
-- Searchable by date/type
-- Downloadable anytime
-- Subject to retention policy
-
-**Retention:**
-- Free/Starter: 30 days
-- Professional: 90 days
-- Enterprise: Unlimited
-
-### Can I customize report branding?
-
-Yes, on Enterprise plan:
-- Add company logo
-- Custom color scheme
-- Custom footer text
-- White-label option (remove WhiteBoxXAI branding)
-
-Contact support for setup.
+Yes — generate a report once, click **Schedule**, and set a frequency, recipients, and
+format. See [Scheduled reports](/user-guide/reports/#scheduled-reports) for the full
+walkthrough and the API equivalent.
 
 ---
 
@@ -1193,7 +1132,7 @@ Contact support for setup.
 - SSO, RBAC, audit trails
 - Professional installation, support, and training
 
-Full detail: [Plans & Limits](../get-started/plans.md). Current pricing:
+Full detail: [Plans & Limits](/get-started/plans/). Current pricing:
 [whiteboxxai.com/pricing](https://whiteboxxai.com/pricing).
 
 ### How is billing calculated?
@@ -1254,7 +1193,7 @@ blocked. The overage is reported as metered usage and appears on your next invoi
 **Enterprise Edition** isn't metered.
 
 Check your current usage and remaining allowance in your account settings at any time. See
-[Plans & Limits](../get-started/plans.md#understanding-api-usage) for ways to reduce your call
+[Plans & Limits](/get-started/plans/#understanding-api-usage) for ways to reduce your call
 volume — sampling, batching, and offline buffering all help.
 
 ---
@@ -1280,13 +1219,13 @@ Alert management is dashboard-only for now — see the [Alerts](#alerts) note ab
 
 **MCP server:**
 - Use WhiteBoxXAI as a tool from Claude Desktop, Claude Code, LangChain agents, or any
-  MCP-compatible client — see [MCP Server](../integrations/mcp.md)
+  MCP-compatible client — see [MCP Server](/integrations/mcp/)
 
 **GraphQL (Beta):**
 - Flexible queries
 - Efficient data fetching
 
-**Full docs:** [API Reference](../sdk/api-reference.md)
+**Full docs:** [API Reference](/sdk/api-reference/)
 
 ### What SDK languages are supported?
 
@@ -1567,7 +1506,7 @@ date
 **Documentation:**
 - Search docs: https://docs.whiteboxxai.com
 - FAQ: This document
-- API Reference: [API Reference](../sdk/api-reference.md)
+- API Reference: [API Reference](/sdk/api-reference/)
 
 **Community:**
 - Forum: https://community.whiteboxxai.com

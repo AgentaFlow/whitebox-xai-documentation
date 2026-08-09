@@ -637,10 +637,10 @@ A: Yes, modify the Code node to filter nodes before sending. You can also use `m
 
 ## Related Documentation
 
-- [Multi-Agent Workflow Observability](../sdk/multi-agent-monitoring.md)
-- [API Reference](../sdk/api-reference.md)
-- [CrewAI Integration](../sdk/multi-agent-monitoring.md#crewai-integration)
-- [LangChain Integration](langchain-multi-agent.md)
+- [Multi-Agent Workflow Observability](/sdk/multi-agent-monitoring/)
+- [API Reference](/sdk/api-reference/)
+- [CrewAI Integration](/sdk/multi-agent-monitoring/#crewai-integration)
+- [LangChain Integration](/integrations/langchain-multi-agent/)
 
 ---
 

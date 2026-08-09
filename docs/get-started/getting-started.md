@@ -2,6 +2,11 @@
 
 Welcome! This tutorial will guide you through your first steps with WhiteBoxXAI, from account setup to monitoring your first model.
 
+!!! note "Just need a compliance report, not the full SDK walkthrough?"
+    Jump straight to [Audit & Explanation Reports](/user-guide/reports/) — no Python
+    required, generated entirely from the dashboard. Come back here when you're ready to
+    connect your own models.
+
 ---
 
 ## Table of Contents
@@ -202,7 +207,7 @@ print(whiteboxxai.__version__)
 
 Your key looks like `wbx_live_...`. Key creation is admin-only, so if you don't see the
 option, ask an organization admin to issue one for you. See [API
-Keys](../account/api-keys.md) for the full reference, including how to issue and revoke keys
+Keys](/account/api-keys/) for the full reference, including how to issue and revoke keys
 through the API.
 
 ### Configure SDK
@@ -560,7 +565,7 @@ The alert will trigger if average accuracy over the past hour drops below 0.85.
 
 !!! tip "Drift and bias thresholds also feed your risk register"
     A drift report or bias audit that lands at `high` or `critical` severity automatically
-    drafts an entry in your [AI Risk Register](../user-guide/risk-register.md) — so a
+    drafts an entry in your [AI Risk Register](/user-guide/risk-register/) — so a
     threshold breach becomes a tracked, owned risk rather than just a notification you
     might miss.
 
@@ -595,92 +600,17 @@ Severity: Critical
 
 ## Generating Your First Report
 
-### Create a Performance Report
+1. Go to **Governance & Evidence → Evidence & Reports** in the sidebar.
+2. Click **Generate Report**, pick a template (e.g. Performance Report), the models and
+   date range to cover, and an output format.
+3. Click **Generate Report** again to confirm — processing takes ~30–300 seconds — then
+   **View Report**, **Download**, or **Share** it directly with a stakeholder.
 
-1. Go to **Governance & Evidence → Evidence & Reports** in the sidebar
-2. Click **"Generate Report"**
+That's the same thing you'd do from the API via `POST /api/v1/export/exports` (note the
+path — `/api/v1/reports` returns `404`).
 
-**Configure:**
-
-```
-Template: Performance Report
-
-Models: Credit Risk Model
-Date Range: Last 7 Days
-
-Sections:
-  ✓ Executive Summary
-  ✓ Prediction Volume
-  ✓ Performance Metrics
-  ✓ Trend Analysis
-  ✓ Alert History
-
-Detail Level: Standard
-Format: PDF
-```
-
-Click **"Generate Report"**
-
-### Wait for Processing
-
-Processing takes ~30-60 seconds. You'll see:
-```
-⏳ Generating report...
-📊 Collecting metrics...
-📈 Creating visualizations...
-✅ Report ready!
-```
-
-### View and Download
-
-1. Click **"View Report"** to preview in browser
-2. Click **"Download PDF"** to save locally
-3. Click **"Share"** to email to stakeholders
-
-### Report Contents
-
-Your report will include:
-
-**Executive Summary:**
-- Total predictions this week
-- Average accuracy
-- Drift status
-- Recommendations
-
-**Charts:**
-- Prediction volume over time
-- Accuracy trend
-- Precision/Recall curves
-- Distribution of predictions
-
-**Tables:**
-- Daily metrics summary
-- Alert history
-- Top features by importance
-
-### Generating reports from the API
-
-The same thing from code — note the path is `/api/v1/export/*`, not `/api/v1/reports`:
-
-```bash
-# Start an export
-curl -X POST https://api.whiteboxxai.com/api/v1/export/exports \
-  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"template_id": "...", "format": "pdf", "model_ids": ["..."]}'
-
-# Poll until status is "completed"
-curl https://api.whiteboxxai.com/api/v1/export/exports/{export_id} \
-  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
-
-# Download
-curl -L -o report.pdf \
-  https://api.whiteboxxai.com/api/v1/export/exports/{export_id}/download \
-  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
-```
-
-See [Evidence & Reports](../user-guide/index.md#evidence--reports) for the full surface,
-including scheduled reports and delivery integrations.
+**Full guide: [Audit & Explanation Reports](/user-guide/reports/)** — report contents,
+the API walkthrough, scheduled reports, and delivery options.
 
 ---
 
@@ -699,27 +629,27 @@ Congratulations! You've successfully:
 ### Continue Learning
 
 **Explore Advanced Features:**
-- 📚 [User Guide](../user-guide/index.md) - Complete feature documentation
-- 🔍 [Understanding Explanations](../user-guide/index.md#understanding-explanations) - Understand model decisions
-- 📊 [Detecting Drift](../user-guide/index.md#detecting-drift) - Monitor data distribution changes
-- ⚖️ [Auditing for Bias](../user-guide/index.md#auditing-for-bias) - Check for bias
-- 🤖 [Monitoring LLMs](../user-guide/index.md#monitoring-llms) - If using language models
+- 📚 [User Guide](/user-guide/) - Complete feature documentation
+- 🔍 [Understanding Explanations](/user-guide/#understanding-explanations) - Understand model decisions
+- 📊 [Detecting Drift](/user-guide/#detecting-drift) - Monitor data distribution changes
+- ⚖️ [Auditing for Bias](/user-guide/#auditing-for-bias) - Check for bias
+- 🤖 [Monitoring LLMs](/user-guide/#monitoring-llms) - If using language models
 
 **Governance & Compliance:**
-- 🎯 [Trust Score](../user-guide/trust-score.md) - One 0–100 index per model
-- 🛡️ [AI Risk Register](../user-guide/risk-register.md) - Structured risk inventory
-- ⚖️ [Governance Review Boards](../user-guide/governance.md) - Multi-party approval workflows
+- 🎯 [Trust Score](/user-guide/trust-score/) - One 0–100 index per model
+- 🛡️ [AI Risk Register](/user-guide/risk-register/) - Structured risk inventory
+- ⚖️ [Governance Review Boards](/user-guide/governance/) - Multi-party approval workflows
 
 **SDK & API:**
-- [SDK Documentation](../sdk/index.md) - Full SDK reference
-- [API Reference](../sdk/api-reference.md) - REST API endpoints
-- [API Keys](../account/api-keys.md) - Issuing and revoking credentials
-- [MCP Server](../integrations/mcp.md) - Use WhiteBoxXAI from non-Python clients and agents
+- [SDK Documentation](/sdk/) - Full SDK reference
+- [API Reference](/sdk/api-reference/) - REST API endpoints
+- [API Keys](/account/api-keys/) - Issuing and revoking credentials
+- [MCP Server](/integrations/mcp/) - Use WhiteBoxXAI from non-Python clients and agents
 
 **More help:**
-- [Plans & Limits](plans.md) - API allowances and what each plan includes
-- [Troubleshooting](../help/troubleshooting.md) - Common issues
-- [Two-Factor Authentication](../account/two-factor-authentication.md) - 2FA setup and management
+- [Plans & Limits](/get-started/plans/) - API allowances and what each plan includes
+- [Troubleshooting](/help/troubleshooting/) - Common issues
+- [Two-Factor Authentication](/account/two-factor-authentication/) - 2FA setup and management
 
 **Community:**
 - Join discussions at https://community.whiteboxxai.com
@@ -823,7 +753,7 @@ print(os.getenv("WHITEBOXXAI_API_KEY"))
 
 If you get a `403` instead of a `401`, the key is valid but its scopes don't cover the
 operation — issue a new key with the scopes you need. See [API
-Keys](../account/api-keys.md#troubleshooting).
+Keys](/account/api-keys/#troubleshooting).
 
 ### Predictions not appearing
 
@@ -869,9 +799,9 @@ pip show whiteboxxai-sdk
 ## Need Help?
 
 **Documentation:**
-- 📖 [User Guide](../user-guide/index.md)
-- 🔧 [API Reference](../sdk/api-reference.md)
-- ❓ [FAQ](../help/faq.md)
+- 📖 [User Guide](/user-guide/)
+- 🔧 [API Reference](/sdk/api-reference/)
+- ❓ [FAQ](/help/faq/)
 
 **Support:**
 - ✉️ Email: support@whiteboxxai.com

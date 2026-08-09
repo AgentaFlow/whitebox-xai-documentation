@@ -11,7 +11,7 @@ place to map technical controls to the NIST AI Risk Management Framework.
 
 You can manage everything from **Governance & Evidence → Risk Register** in the dashboard,
 or through the REST API. API examples below use the base URL
-`https://api.whiteboxxai.com` and require an [API key](../account/api-keys.md)
+`https://api.whiteboxxai.com` and require an [API key](/account/api-keys/)
 (`Authorization: Bearer YOUR_API_KEY`).
 
 ## Core concepts
@@ -269,15 +269,15 @@ Send only the parts you want to override. In the dashboard this lives at
 
 Risk register data is available as an export category, so the register can be included in
 the compliance evidence package you hand to an auditor alongside bias audits, drift
-reports, and governance decisions. See [Evidence & Reports](index.md#evidence--reports).
+reports, and governance decisions. See [Evidence & Reports](/user-guide/#evidence--reports).
 
 ## Related
 
-- [Trust Score](trust-score.md) — the aggregate 0–100 index over fairness, drift, and
+- [Trust Score](/user-guide/trust-score/) — the aggregate 0–100 index over fairness, drift, and
   explainability signals.
-- [Governance Review Boards](governance.md) — multi-party approval workflows, one of the
+- [Governance Review Boards](/user-guide/governance/) — multi-party approval workflows, one of the
   three sources that auto-draft risk entries.
-- [AI Regulations](../account/ai-regulations.md) — background on the wider regulatory
+- [AI Regulations](/account/ai-regulations/) — background on the wider regulatory
   landscape.
 
 !!! info "Two different risk views"

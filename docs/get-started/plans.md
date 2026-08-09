@@ -114,17 +114,17 @@ them; the Demo lets you view them; the Free plan doesn't include them.
 
 ## Understanding API usage
 
-Most actions through the [SDK](../sdk/index.md) or [REST API](../sdk/api-reference.md) count
+Most actions through the [SDK](/sdk/) or [REST API](/sdk/api-reference/) count
 as API calls — registering models, logging predictions, requesting explanations, and
 generating exports. A few ways to make the most of your allowance:
 
 - **Sample high-volume models.** For a model serving thousands of predictions per day, log a
   representative sample (1–10%) rather than every prediction. You still get statistically
-  meaningful monitoring. See [Getting Started](getting-started.md#common-questions).
+  meaningful monitoring. See [Getting Started](/get-started/getting-started/#common-questions).
 - **Batch your logging.** Sending predictions in batches costs far fewer calls than one per
-  prediction. The SDK supports [local buffering and batch flush](../sdk/index.md).
+  prediction. The SDK supports [local buffering and batch flush](/sdk/).
 - **Use offline buffering.** The SDK can queue operations locally and sync them later — see
-  [Offline Mode](../sdk/offline-mode.md).
+  [Offline Mode](/sdk/offline-mode/).
 - **Check your usage anytime.** Current usage and remaining allowance are in your account
   settings.
 

@@ -170,7 +170,7 @@ To obtain a key:
 4. Copy it immediately — it's shown only once — and store it in your secrets manager
 
 Key creation is admin-only, since a key is an organization-wide credential. Full reference:
-[API Keys](../account/api-keys.md).
+[API Keys](/account/api-keys/).
 
 **Note:** API keys authenticate on their own. Enabling 2FA on your account protects
 interactive logins and does not affect existing SDK integrations.
@@ -227,7 +227,7 @@ Every method has an `a`-prefixed async twin — `client.models.aregister()`,
 `client.predictions.alog()`, `client.drift.aget_reports()`, and so on.
 
 !!! note "There is no `client.metrics`"
-    Metrics are read through the [REST API](api-reference.md#metrics) directly. The SDK
+    Metrics are read through the [REST API](/sdk/api-reference/#metrics) directly. The SDK
     client exposes `models`, `predictions`, `explanations`, `drift`, `fairness`, and `alerts`.
 
 ### 2. ModelMonitor
@@ -310,7 +310,7 @@ monitor.detect_drift(...)
 !!! warning "Alert helpers don't work yet"
     `monitor.create_alert_rule()` and `monitor.get_active_alerts()` call `/api/v1/alerts`,
     which is not registered on the backend and returns `404`. Manage alert rules in the
-    dashboard — see [Managing Alerts](../user-guide/index.md#managing-alerts).
+    dashboard — see [Managing Alerts](/user-guide/#managing-alerts).
 
 **Local buffering:**
 
@@ -689,7 +689,7 @@ prediction_ids = client.predictions.log_batch(
 ### Metrics API
 
 There is no `client.metrics` resource. Read metrics through the REST API — see
-[Metrics](api-reference.md#metrics) in the API reference — or use the monitoring dashboards.
+[Metrics](/sdk/api-reference/#metrics) in the API reference — or use the monitoring dashboards.
 
 For drift and fairness history, which is what most metric queries are actually after, the SDK
 does have first-class support:
@@ -1067,7 +1067,7 @@ def log_with_retry(input_data, output_data, max_retries=3):
 !!! tip "Or just let offline mode handle it"
     Connection failures on `predictions.log()`, `predictions.log_batch()`,
     `models.register()`, and `models.update_baseline()` are exactly what [offline
-    mode](offline-mode.md) is for — enable it and the operation is queued and retried for you,
+    mode](/sdk/offline-mode/) is for — enable it and the operation is queued and retried for you,
     no retry loop required.
 
 ### Graceful Degradation
