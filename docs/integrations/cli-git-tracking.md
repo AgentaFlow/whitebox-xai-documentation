@@ -525,6 +525,6 @@ model = client.models.register(
 
 ## Next Steps
 
-- [GitHub Integration](github.md)
-- [SDK Documentation](../sdk/index.md)
-- [API Reference](../sdk/api-reference.md)
+- [GitHub Integration](/integrations/github/)
+- [SDK Documentation](/sdk/)
+- [API Reference](/sdk/api-reference/)

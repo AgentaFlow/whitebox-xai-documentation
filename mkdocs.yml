@@ -99,15 +99,18 @@ extra:
 
 nav:
   - Home: index.md
+  - Audit & Explanation Reports:
+      - user-guide/reports.md
+      - Trust Score: user-guide/trust-score.md
+      - AI Risk Register: user-guide/risk-register.md
+      - Governance Review Boards: user-guide/governance.md
+      - AI Regulations: account/ai-regulations.md
   - Get Started:
       - Getting Started: get-started/getting-started.md
       - Plans & Limits: get-started/plans.md
   - User Guide:
       - user-guide/index.md
       - Features: user-guide/features.md
-      - Trust Score: user-guide/trust-score.md
-      - AI Risk Register: user-guide/risk-register.md
-      - Governance Review Boards: user-guide/governance.md
   - SDK & API:
       - sdk/index.md
       - Offline Mode: sdk/offline-mode.md
@@ -130,7 +133,6 @@ nav:
   - Account & Compliance:
       - API Keys: account/api-keys.md
       - Two-Factor Authentication: account/two-factor-authentication.md
-      - AI Regulations: account/ai-regulations.md
   - Learn:
       - learn/index.md
       - Case Studies: learn/case-studies.md

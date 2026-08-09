@@ -1047,10 +1047,10 @@ analytics = monitor.get_analytics()
 
 ## Next Steps
 
-- [LangChain Multi-Agent Monitoring](../integrations/langchain-multi-agent.md)
-- [n8n Webhook Integration](../integrations/n8n-webhooks.md)
-- [Multi-Agent Quick Reference](multi-agent-quick-reference.md)
-- [API Reference](api-reference.md)
+- [LangChain Multi-Agent Monitoring](/integrations/langchain-multi-agent/)
+- [n8n Webhook Integration](/integrations/n8n-webhooks/)
+- [Multi-Agent Quick Reference](/sdk/multi-agent-quick-reference/)
+- [API Reference](/sdk/api-reference/)
 
 ---
 

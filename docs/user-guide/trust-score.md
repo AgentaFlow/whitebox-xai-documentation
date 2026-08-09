@@ -10,7 +10,7 @@ methodology is documented in full below on purpose: an unexplainable trustworthi
 would be a strange thing for an explainability platform to ship.
 
 API examples use the base URL `https://api.whiteboxxai.com` and require an
-[API key](../account/api-keys.md) (`Authorization: Bearer YOUR_API_KEY`).
+[API key](/account/api-keys/) (`Authorization: Bearer YOUR_API_KEY`).
 
 ## How the score is calculated
 
@@ -196,12 +196,12 @@ Two things the Trust Score deliberately doesn't do:
   exists to support that claim honestly.
 - **Automated enforcement.** A low score doesn't pause a model or block a deployment. Acting
   on the score is a human decision, routed through [Governance Review
-  Boards](governance.md) if you want approval gates.
+  Boards](/user-guide/governance/) if you want approval gates.
 
 ## Related
 
-- [AI Risk Register](risk-register.md) — the structured risk inventory, including entries
+- [AI Risk Register](/user-guide/risk-register/) — the structured risk inventory, including entries
   auto-drafted from the same bias and drift signals that feed this score.
-- [Auditing for Bias](index.md#auditing-for-bias) — the fairness audits behind the fairness
+- [Auditing for Bias](/user-guide/#auditing-for-bias) — the fairness audits behind the fairness
   component.
-- [Detecting Drift](index.md#detecting-drift) — the drift reports behind the drift component.
+- [Detecting Drift](/user-guide/#detecting-drift) — the drift reports behind the drift component.

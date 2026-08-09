@@ -1,5 +1,11 @@
 # **Global and Regional Regulatory Landscape**
 
+!!! note "Generating a compliance report"
+    Looking for the **Generate Report** button on the Compliance page? See
+    [Audit & Explanation Reports](/user-guide/reports/) — it covers the Compliance report
+    category, what it includes, and how the evidence traces back to real computed data, not
+    a template. This page is the regulatory background that report is measured against.
+
 A growing number of countries and regions are implementing or proposing AI-specific regulations. It is crucial to monitor these developments. Key examples include:
 
 | Region/Country | Key Regulations/Frameworks |

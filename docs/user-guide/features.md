@@ -6,13 +6,27 @@ Comprehensive documentation for all WhiteBoxXAI features and capabilities.
 
 ## Table of Contents
 
-1. [Model Registry](#model-registry)
-2. [Prediction Logging](#prediction-logging)
-3. [Metrics Dashboard](#metrics-dashboard)
-4. [Drift Detection](#drift-detection)
-5. [Explainability Engine](#explainability-engine)
-6. [Bias Detection](#bias-detection)
-7. [LLM Monitoring](#llm-monitoring)
+1. [Audit & Explanation Reports](#audit--explanation-reports)
+2. [Model Registry](#model-registry)
+3. [Prediction Logging](#prediction-logging)
+4. [Metrics Dashboard](#metrics-dashboard)
+5. [Drift Detection](#drift-detection)
+6. [Explainability Engine](#explainability-engine)
+7. [Bias Detection](#bias-detection)
+8. [LLM Monitoring](#llm-monitoring)
+
+---
+
+## Audit & Explanation Reports
+
+Need audit evidence or a plain-English explanation of a decision, not the SDK reference?
+Start here instead: **[Audit & Explanation Reports](/user-guide/reports/)** covers report
+categories, the dashboard walkthrough, and why every number in a report traces back to real
+computed data — not a template.
+
+For the explainability computation itself (SHAP, LIME, feature importance) see
+[Explainability Engine](#explainability-engine) below; for fairness audits see
+[Bias Detection](#bias-detection).
 
 ---
 
@@ -963,6 +977,10 @@ client.models.update_drift_baseline(
 
 Understand why your models make specific predictions.
 
+!!! tip "Looking for an explainability report, not the raw computation?"
+    See [Audit & Explanation Reports](/user-guide/reports/) for how these explanations get
+    packaged into something you can hand to a stakeholder or auditor.
+
 ### Overview
 
 **Purpose:**
@@ -1243,6 +1261,10 @@ if status.completed:
 ## Bias Detection
 
 Audit models for fairness across demographic groups.
+
+!!! tip "Need a bias audit report you can hand to an auditor?"
+    See [Audit & Explanation Reports](/user-guide/reports/) — the fairness results below
+    feed directly into the **Bias audit** report category.
 
 ### Overview
 

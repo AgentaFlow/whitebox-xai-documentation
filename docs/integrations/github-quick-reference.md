@@ -112,4 +112,4 @@ models:
 
 ## Full Documentation
 
-See the [GitHub Integration guide](github.md) for the complete walkthrough.
+See the [GitHub Integration guide](/integrations/github/) for the complete walkthrough.

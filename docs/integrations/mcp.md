@@ -7,7 +7,7 @@ harnesses — to external tools and data.
 WhiteBoxXAI ships an MCP server so any MCP-compatible client can register models, log
 predictions, run drift detection, and run bias/fairness audits without writing integration
 code. It's the recommended path for non-Python clients and for agents that need to reach
-WhiteBoxXAI as a tool. If you're writing Python, use the [SDK](../sdk/index.md) directly
+WhiteBoxXAI as a tool. If you're writing Python, use the [SDK](/sdk/) directly
 instead.
 
 Every tool calls the real WhiteBoxXAI API through the SDK. None of them return mocked or
@@ -17,7 +17,7 @@ placeholder data.
 
 - A WhiteBoxXAI account.
 - Python 3.11+ (for the pip install) or Docker.
-- An [API key](../account/api-keys.md) — see [Authentication](#authentication).
+- An [API key](/account/api-keys/) — see [Authentication](#authentication).
 
 ## Install
 
@@ -56,7 +56,7 @@ Connection settings:
 
 Use an API key for anything long-running. It has a much smaller blast radius than a
 password: a leaked key is revoked with a single call, while a leaked password means a full
-credential rotation. See [API Keys](../account/api-keys.md) for how to issue one.
+credential rotation. See [API Keys](/account/api-keys/) for how to issue one.
 
 ## Connect from a client
 
@@ -155,7 +155,7 @@ Consult that client's own MCP integration docs for its configuration format.
 !!! tip "Drift and fairness tools have side effects"
     `whitebox_drift_create_report` and `whitebox_fairness_audit` persist records — and a
     `high` or `critical` result will auto-draft an entry in your [AI Risk
-    Register](../user-guide/risk-register.md). That's usually what you want, but it's worth
+    Register](/user-guide/risk-register/). That's usually what you want, but it's worth
     knowing before you let an agent call them in a loop.
 
 ## Current limitations
@@ -163,7 +163,7 @@ Consult that client's own MCP integration docs for its configuration format.
 - **Tool coverage.** Only models, predictions, drift, and bias/fairness tools ship today.
   Explanations (SHAP/LIME), LLM/RAG observability, safety, alerts, and multi-agent workflow
   tools are follow-on milestones. To generate explanations now, use the
-  [SDK](../sdk/index.md) or the [REST API](../sdk/api-reference.md#explainability-xai).
+  [SDK](/sdk/) or the [REST API](/sdk/api-reference/#explainability-xai).
 - **Transport.** stdio only. A hosted HTTP endpoint — so clients wouldn't need to run their
   own process — needs a per-connection authentication design, since today's model assumes
   one fixed credential per server process set via environment variables.
@@ -206,6 +206,6 @@ Keys** and issue a new one if needed.
 
 ## Related
 
-- [API Keys](../account/api-keys.md) — issuing and revoking the credential this server uses.
-- [Python SDK](../sdk/index.md) — the direct path for Python callers.
-- [REST API Reference](../sdk/api-reference.md) — the endpoints behind every tool above.
+- [API Keys](/account/api-keys/) — issuing and revoking the credential this server uses.
+- [Python SDK](/sdk/) — the direct path for Python callers.
+- [REST API Reference](/sdk/api-reference/) — the endpoints behind every tool above.

@@ -2,8 +2,8 @@
 
 API keys are the credential your code uses to talk to WhiteBoxXAI. They're scoped,
 individually revocable, and don't expire on a fixed schedule — which makes them the right
-choice for the [SDK](../sdk/index.md), CI/CD pipelines, the [MCP
-server](../integrations/mcp.md), and anything else running unattended.
+choice for the [SDK](/sdk/), CI/CD pipelines, the [MCP
+server](/integrations/mcp/), and anything else running unattended.
 
 Keys look like this:
 
@@ -125,7 +125,7 @@ minute 31.
 
 ## Keys and two-factor authentication
 
-[Two-factor authentication](two-factor-authentication.md) protects interactive dashboard
+[Two-factor authentication](/account/two-factor-authentication/) protects interactive dashboard
 logins. It does **not** affect API keys — a key authenticates on its own, with no 2FA
 challenge. Enabling 2FA won't break your existing integrations, and no code changes are
 needed.
@@ -145,7 +145,7 @@ log output.
 - **Check `last_used_at` before revoking.** And revoke anything that hasn't been used in a
   while — an unused key is pure risk.
 - **Store keys in a secrets manager**, not in `.env` files that get committed. See
-  [Secure configuration](../sdk/index.md#secure-configuration).
+  [Secure configuration](/sdk/#secure-configuration).
 
 ## Troubleshooting
 
@@ -165,6 +165,6 @@ Key creation is admin-only. Ask an organization admin to issue it.
 
 ## Related
 
-- [Two-Factor Authentication](two-factor-authentication.md)
-- [MCP Server](../integrations/mcp.md) — uses an API key via `WHITEBOXXAI_MCP_API_KEY`.
-- [SDK Authentication](../sdk/api-reference.md#authentication)
+- [Two-Factor Authentication](/account/two-factor-authentication/)
+- [MCP Server](/integrations/mcp/) — uses an API key via `WHITEBOXXAI_MCP_API_KEY`.
+- [SDK Authentication](/sdk/api-reference/#authentication)

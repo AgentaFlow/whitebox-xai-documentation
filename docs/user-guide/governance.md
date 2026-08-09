@@ -7,7 +7,7 @@ goes to production — and to keep an auditable record of every decision.
 
 You can manage everything from the **Governance & Evidence** area of the dashboard, or
 automate it through the REST API. API examples below use the base URL
-`https://api.whiteboxxai.com` and require an [API key](../account/api-keys.md)
+`https://api.whiteboxxai.com` and require an [API key](/account/api-keys/)
 (`Authorization: Bearer YOUR_API_KEY`).
 
 ## Core concepts
@@ -194,9 +194,9 @@ POST /api/v1/governance/review-boards/requests/{request_id}/finalize
 
 !!! note "A denied review becomes a tracked risk"
     Denying a request, or sending it back with **request changes**, automatically drafts an
-    entry in your [AI Risk Register](risk-register.md) so the concern is owned and tracked
+    entry in your [AI Risk Register](/user-guide/risk-register/) so the concern is owned and tracked
     rather than left in a vote record. See [Automatic risk
-    drafting](risk-register.md#automatic-risk-drafting).
+    drafting](/user-guide/risk-register/#automatic-risk-drafting).
 
 ## AI-assisted governance
 
@@ -279,7 +279,7 @@ original and any corrections that supersede it.
 - Separation of duties, vote history, and archive immutability are enforced at the database
   layer, not only in application code.
 - API keys are stored hashed and are never returned in API responses after creation. See
-  [API Keys](../account/api-keys.md).
+  [API Keys](/account/api-keys/).
 
 ## Troubleshooting
 
