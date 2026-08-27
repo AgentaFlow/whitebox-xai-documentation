@@ -14,6 +14,9 @@ Comprehensive documentation for all WhiteBoxXAI features and capabilities.
 6. [Explainability Engine](#explainability-engine)
 7. [Bias Detection](#bias-detection)
 8. [LLM Monitoring](#llm-monitoring)
+9. [Alert System](#alert-system)
+10. [Reporting](#reporting)
+11. [Compliance](#compliance)
 
 ---
 
@@ -44,9 +47,8 @@ The Model Registry is your central hub for managing all ML models.
 
 **Key Capabilities:**
 - Register unlimited models (plan-dependent)
-- Version control
-- Model comparison
-- Metadata management
+- Version tracking by name
+- Tags and metadata
 - Model archival
 
 ### Registering Models
@@ -84,10 +86,10 @@ client = WhiteBoxXAI()
 
 model = client.models.register(
     name="Customer Churn Predictor",
-    version="2.1.0",
     model_type="classification",
-    description="Predicts customer churn risk using behavioral data",
+    version="2.1.0",
     framework="xgboost",
+    description="Predicts customer churn risk using behavioral data",
     features=[
         "account_age_days",
         "total_purchases",
@@ -96,7 +98,7 @@ model = client.models.register(
         "customer_service_calls",
         "satisfaction_score"
     ],
-    target="will_churn",
+    target_variable="will_churn",
     baseline_metrics={
         "accuracy": 0.89,
         "precision": 0.85,
@@ -105,16 +107,19 @@ model = client.models.register(
         "auc_roc": 0.93
     },
     tags=["production", "customer-retention", "high-priority"],
-    metadata={
-        "training_data_size": 50000,
-        "training_date": "2025-11-15",
-        "model_path": "s3://models/churn-v2.1.0.pkl",
-        "owner": "data-science-team@company.com"
-    }
 )
 
-print(f"Model registered with ID: {model.id}")
+print(f"Model registered with ID: {model['id']}")
 ```
+
+!!! note "Every SDK call returns a plain `dict`"
+    Not an object with attributes. It's `model["id"]`, not `model.id`, throughout this page —
+    that applies to every SDK response shown below, not just this one.
+
+There's also `auto_detect_git=True`, which reads the current commit, branch, and working-tree
+state from the repository you're registering from and attaches them automatically — the
+Git-side half of the traceability [GitHub Integration](/integrations/github/) provides. Add
+`require_clean_git=True` to refuse registration with uncommitted changes.
 
 #### Via REST API
 
@@ -133,31 +138,31 @@ curl -X POST https://api.whiteboxxai.com/api/v1/models \
 
 ### Model Versioning
 
-**Semantic Versioning:**
-- **Major (1.0.0 → 2.0.0)** - Breaking changes, architecture change
-- **Minor (1.0.0 → 1.1.0)** - New features, retrained with new data
-- **Patch (1.0.0 → 1.0.1)** - Bug fixes, hyperparameter tuning
+Version is a free-text string you choose — semantic versioning (`2.1.0`) is a sane convention,
+not something the platform enforces. Register a new version under the same `name` to track it
+as part of that model's history:
 
-**Version Management:**
 ```python
-# Register new version
-model_v2 = client.models.register(
+# Register a new version under the same name
+client.models.register(
     name="Customer Churn Predictor",
+    model_type="classification",
     version="2.2.0",
-    parent_version="2.1.0"  # Track lineage
+    features=[...],
+    baseline_metrics={...},
 )
 
-# List all versions
-versions = client.models.list_versions(name="Customer Churn Predictor")
+# List every version registered under that name, newest first
+versions = client.models.get_versions(model_name="Customer Churn Predictor")
 for v in versions:
-    print(f"v{v.version} - {v.status} - {v.created_at}")
+    print(f"v{v['version']} - {v['status']} - {v['created_at']}")
 
-# Compare versions
-comparison = client.models.compare(
-    model_ids=[model_v1.id, model_v2.id]
-)
-print(comparison.metrics_diff)
+# Or just the most recent one
+latest = client.models.get_latest(model_name="Customer Churn Predictor")
 ```
+
+There's no built-in model-to-model comparison endpoint — pull each version's metrics and
+compare them yourself, or view them side by side on the **Models** page in the dashboard.
 
 ### Model Metadata
 
@@ -169,92 +174,50 @@ print(comparison.metrics_diff)
 - Active alerts
 - Drift status
 
-**Custom Metadata:**
+**Update model fields:**
+
+`update()` is a partial update — only the fields you pass change. The full field list is
+`description`, `status`, `features`, `baseline_metrics`, `target_variable`,
+`model_framework`, `fairness_attributes`, `protected_groups`, and `tags`; there's no free-form
+`metadata` dict beyond those.
+
 ```python
 client.models.update(
     model_id="model-uuid",
-    metadata={
-        "business_owner": "jane@company.com",
-        "compliance_approved": True,
-        "approval_date": "2025-12-01",
-        "model_card": "https://docs.company.com/models/churn-v2",
-        "risk_level": "medium",
-        "data_sources": ["crm_db", "purchase_history", "support_tickets"]
-    }
+    description="Retrained on Q4 data; approved by risk committee 2026-08-20.",
+    tags=["production", "compliance-approved"],
 )
 ```
 
+If you need to track something not on that list — an owner, a model card URL, a risk
+rating — put it in your own system of record, or as free text in `description`, or as a
+[custom metric](#custom-metrics) if it's numeric and you want it on the dashboard.
+
 ### Model Status Lifecycle
 
-**Statuses:**
-1. **Draft** - Registered but not deployed
-2. **Staging** - Deployed to staging environment
-3. **Production** - Live in production
-4. **Deprecated** - Being phased out
-5. **Archived** - No longer in use, data preserved
+**Statuses:** `active`, `deprecated`, `archived`. There's no separate "draft" or "staging"
+status — a model is either active and monitored, or it isn't.
 
 ```python
 # Update status
-client.models.update_status(
-    model_id="model-uuid",
-    status="production",
-    notes="Deployed to production on 2025-12-05"
-)
+client.models.update_status(model_id="model-uuid", new_status="deprecated")
 
-# Archive old model
-client.models.archive(
-    model_id="old-model-uuid",
-    reason="Replaced by v2.2.0"
-)
+# Archive a model (soft delete — data is preserved, monitoring stops)
+client.models.archive(model_id="old-model-uuid")
+
+# Bring it back
+client.models.restore(model_id="old-model-uuid")
 ```
 
 ### Model Organization
 
 **Tags:**
 ```python
-# Add tags
-client.models.add_tags(model_id, ["production", "high-priority"])
+# Set (replaces the existing tag list)
+client.models.update(model_id="model-uuid", tags=["production", "high-priority"])
 
 # Search by tags
 prod_models = client.models.list(tags=["production"])
-```
-
-**Folders (UI only):**
-- Organize models into folders
-- By team: "Marketing", "Risk", "Product"
-- By use case: "Fraud Detection", "Recommendation", "Forecasting"
-
-**Favorites:**
-- Star frequently accessed models
-- Quick access from dashboard
-
-### Model Comparison
-
-Compare multiple models side-by-side:
-
-**Via UI:**
-1. Go to **Models** page
-2. Select 2-4 models (checkboxes)
-3. Click **Compare** button
-4. View comparison tabs:
-   - **Overview** - Side-by-side info
-   - **Metrics** - Performance comparison
-   - **Trends** - Metrics over time
-   - **Configuration** - Settings differences
-
-**Via SDK:**
-```python
-comparison = client.models.compare(
-    model_ids=["model-1-uuid", "model-2-uuid"],
-    metrics=["accuracy", "precision", "recall"],
-    date_range="last_30_days"
-)
-
-print(f"Accuracy: {comparison.metrics['accuracy']}")
-# Output: {'model-1': 0.89, 'model-2': 0.91}
-
-print(f"Winner: {comparison.best_model}")
-# Output: model-2 (higher accuracy)
 ```
 
 ---
@@ -273,11 +236,14 @@ Track all model predictions for monitoring and analysis.
 - Audit trail for compliance
 
 **What to Log:**
-- Input features
-- Model output (prediction, probability)
-- Timestamp
+- Input features (`input_data`)
+- Model output — prediction, probability, whatever your model returns (`output_data`)
 - Metadata (optional)
-- Ground truth label (when available)
+
+!!! note "No ground-truth label update yet"
+    There's no endpoint today for attaching an actual outcome to a prediction after the fact
+    (a "here's what really happened" update). Accuracy and other metrics that need ground
+    truth work from data you log yourself, joined outside the platform, until that ships.
 
 ### Logging Methods
 
@@ -316,39 +282,49 @@ response = client.predictions.log(
     }
 )
 
-print(f"Logged: {response.prediction_id}")
+print(f"Logged: {response['prediction_id']}")
 ```
 
-#### 2. Decorator Pattern
+#### 2. `ModelMonitor` — the higher-level path
 
-Automatically log by decorating your prediction function:
+For most integrations, `ModelMonitor` is less code than calling `client.predictions.log()`
+directly — it holds the model ID, and adds optional local buffering and sampling. See [SDK
+Documentation](/sdk/#2-modelmonitor) for the full API.
 
 ```python
-from whiteboxxai.decorators import log_predictions
+from whiteboxxai import WhiteBoxXAI, ModelMonitor
 
-@log_predictions(
-    client=client,
-    model_id="model-uuid",
-    feature_names=["age", "income", "credit_score", "debt_ratio"]
+client = WhiteBoxXAI()
+monitor = ModelMonitor(client, model_id="model-uuid")
+
+prediction = model.predict([list(features.values())])[0]
+probability = model.predict_proba([list(features.values())])[0][1]
+
+monitor.log_prediction(
+    inputs=features,
+    output={"prediction": int(prediction), "probability": float(probability)},
 )
-def predict_loan_approval(age, income, credit_score, debt_ratio):
-    """Make prediction - logging happens automatically"""
-    features = np.array([[age, income, credit_score, debt_ratio]])
-    prediction = model.predict(features)[0]
-    probability = model.predict_proba(features)[0][1]
+```
 
-    return {
-        "prediction": int(prediction),
-        "probability": float(probability)
-    }
+Wrap it in a decorator with `monitor_model()` if you'd rather not touch the call site at all:
 
-# Use normally - automatic logging
-result = predict_loan_approval(35, 75000, 720, 0.35)
+```python
+from whiteboxxai.decorators import monitor_model
+
+@monitor_model(monitor, input_keys=["features"])
+def predict_loan_approval(features):
+    prediction = model.predict([features])[0]
+    probability = model.predict_proba([features])[0][1]
+    return {"prediction": int(prediction), "probability": float(probability)}
+
+# Logging happens automatically on every call
+result = predict_loan_approval(features=[35, 75000, 720, 0.35])
 ```
 
 #### 3. Batch Logging
 
-Log multiple predictions at once (more efficient):
+Log multiple predictions in one call — each item needs `input_data`/`output_data`, matching
+the single-prediction shape:
 
 ```python
 predictions = []
@@ -359,93 +335,74 @@ for customer in customers:
     prob = model.predict_proba([features])[0][1]
 
     predictions.append({
-        "inputs": features,
-        "output": {
+        "input_data": features,
+        "output_data": {
             "prediction": int(pred[0]),
             "probability": float(prob)
         },
         "metadata": {"customer_id": customer.id}
     })
 
-# Log batch (up to 1000 per call)
+# Log batch (up to 1,000 per call)
 response = client.predictions.log_batch(
     model_id="model-uuid",
     predictions=predictions
 )
 
-print(f"Logged {response.count} predictions")
+print(f"Logged {response['logged']} of {response['total']} ({response['failed']} failed)")
 ```
 
 #### 4. Framework Integration
 
 **Scikit-learn:**
 ```python
-from whiteboxxai.integrations.sklearn import wrap_model
+from whiteboxxai.integrations.sklearn import SklearnMonitor
 
-monitored_model = wrap_model(
-    model=my_sklearn_model,
-    client=client,
-    model_id="model-uuid",
-    feature_names=["age", "income", "credit_score"]
-)
+sklearn_monitor = SklearnMonitor(client=client, model=my_sklearn_model, model_id="model-uuid")
+monitored_model = sklearn_monitor.wrap_model(my_sklearn_model)
 
-# Use like normal - logging automatic
+# Use like normal — logging is automatic
 predictions = monitored_model.predict(X_test)
 probabilities = monitored_model.predict_proba(X_test)
 ```
 
 **PyTorch:**
 ```python
-from whiteboxxai.integrations.pytorch import MonitoredModel
+from whiteboxxai.integrations.pytorch import TorchMonitor
 
-class MyModel(MonitoredModel):
-    def __init__(self, model, client, model_id):
-        super().__init__(model, client, model_id)
+torch_monitor = TorchMonitor(client=client, model=pytorch_model)
+monitored_model = torch_monitor.wrap_model(pytorch_model)
 
-    def forward(self, x):
-        output = self.model(x)
-        self.log_prediction(x, output)  # Auto-logs
-        return output
+outputs = monitored_model(inputs)  # Forward pass logs automatically
 ```
 
-### Sampling Strategies
+See [SDK Documentation](/sdk/#3-framework-integrations) for `register_from_model()` and the
+full framework-integration reference.
 
-**When to Sample:**
-- High-volume models (>10k predictions/day)
-- Cost optimization
-- Reduce storage
+### Sampling
 
-**Sampling Methods:**
+Set `sampling_rate` on the monitor rather than on the model — it's a client-side decision
+about how much of your own traffic to send, not a server-side model setting:
 
-**1. Uniform Random Sampling:**
 ```python
-client.models.update(
-    model_id="model-uuid",
-    sampling_rate=0.1  # Log 10% randomly
-)
+# Log 10% of predictions, chosen randomly
+monitor = ModelMonitor(client, model_id="model-uuid", sampling_rate=0.1)
 ```
 
-**2. Stratified Sampling:**
+For anything more targeted than uniform random sampling — stratified by confidence, higher
+during business hours, always log the ones you'd actually want to review — decide in your own
+code whether to call `log_prediction()` for a given prediction; there's no server-side
+stratified-sampling config to configure instead.
+
 ```python
-# Log all high-confidence predictions, sample low-confidence
+# Example: always log low-confidence predictions, sample the rest
 if probability > 0.9 or probability < 0.1:
-    sample_rate = 1.0  # Log all
+    should_log = True
 else:
-    sample_rate = 0.05  # Log 5%
+    should_log = random.random() < 0.05
 
-if random.random() < sample_rate:
-    client.predictions.log(...)
-```
-
-**3. Time-based Sampling:**
-```python
-# Log more during business hours
-import datetime
-hour = datetime.datetime.now().hour
-if 9 <= hour <= 17:  # Business hours
-    sample_rate = 0.2
-else:
-    sample_rate = 0.05
+if should_log:
+    monitor.log_prediction(inputs=features, output=output)
 ```
 
 **Recommendations:**
@@ -453,41 +410,6 @@ else:
 - **1k-10k/day:** 10-50%
 - **10k-100k/day:** 1-10%
 - **> 100k/day:** 0.1-1%
-
-### Ground Truth Labels
-
-Provide actual outcomes to calculate accuracy:
-
-**Update Later:**
-```python
-# When ground truth becomes available
-client.predictions.update(
-    prediction_id="pred-uuid",
-    actual_label=1,
-    actual_timestamp="2025-12-10T10:30:00Z"
-)
-```
-
-**Batch Update:**
-```python
-updates = [
-    {"prediction_id": "pred-1", "actual_label": 0},
-    {"prediction_id": "pred-2", "actual_label": 1},
-    {"prediction_id": "pred-3", "actual_label": 0},
-]
-
-client.predictions.update_batch(updates)
-```
-
-**Webhook Integration:**
-```python
-# Configure webhook to receive labels automatically
-client.models.configure_webhook(
-    model_id="model-uuid",
-    url="https://yourapp.com/webhook/ground-truth",
-    events=["label.available"]
-)
-```
 
 ### Metadata Best Practices
 
@@ -639,23 +561,32 @@ Actual  No   TN    FP
 
 ### Custom Metrics
 
-Define business-specific metrics:
+`metric_type` and `metric_name` are free text — log any business-specific number against a
+model, not just the built-in performance metrics:
 
 ```python
-# Log custom metric
-client.metrics.log_custom(
+client.metrics.create(
     model_id="model-uuid",
+    metric_type="business",
     metric_name="revenue_impact",
     metric_value=12500.50,
-    metric_type="currency",
-    timestamp=datetime.now()
 )
 
-# View custom metrics
-metrics = client.metrics.get_custom(
+# Or several at once (max 100 per call)
+client.metrics.create_batch(
     model_id="model-uuid",
-    metric_name="revenue_impact",
-    date_range="last_30_days"
+    metrics=[
+        {"metric_type": "business", "metric_name": "revenue_impact", "metric_value": 12500.50},
+        {"metric_type": "business", "metric_name": "cost_savings", "metric_value": 3200.00},
+    ],
+)
+
+# Read them back
+metrics = client.metrics.get_model_metrics(
+    model_id="model-uuid",
+    metric_type="business",
+    start_date="2026-07-01",
+    end_date="2026-07-31",
 )
 ```
 
@@ -668,31 +599,24 @@ metrics = client.metrics.get_custom(
 
 ### Metric Aggregations
 
-**Time Windows:**
-- Real-time (last 5 minutes)
-- Hourly
-- Daily
-- Weekly
-- Monthly
-- Custom range
-
-**Aggregation Functions:**
-- Average (mean)
-- Median
-- Min/Max
-- Percentiles (p50, p95, p99)
-- Sum
-- Count
-
 ```python
-# Get metrics with aggregation
-metrics = client.metrics.get(
+# Aggregated over a period — "daily", "weekly", etc.
+client.metrics.aggregate(model_id="model-uuid", period="daily", metric_type="accuracy")
+
+# Trend and rolling-window statistics
+client.metrics.trend(model_id="model-uuid", metric_type="accuracy", lookback_days=30)
+client.metrics.rolling(model_id="model-uuid", metric_type="accuracy", window_days=7)
+
+# Raw time series over a required date range
+client.metrics.timeseries(
     model_id="model-uuid",
-    metric_names=["accuracy", "latency"],
-    aggregation="mean",
-    granularity="daily",
-    date_range="last_30_days"
+    metric_type="accuracy",
+    start_date="2026-07-01",
+    end_date="2026-07-31",
 )
+
+# Everything for a model in one call
+client.metrics.summary(model_id="model-uuid", days=30)
 ```
 
 ### Alerts on Metrics
@@ -742,94 +666,69 @@ Income distribution shifted from mean $50k to $75k
 
 **Continuous Features:**
 - **Kolmogorov-Smirnov (KS) Test** - Compares distributions
-- **Wasserstein Distance** - Earth mover's distance
 - **Population Stability Index (PSI)** - Industry standard
 
 **Categorical Features:**
 - **Chi-squared Test** - Compares frequency distributions
-- **Jensen-Shannon Divergence** - Symmetric KL divergence
+- **Jensen-Shannon (JS) Divergence** - Symmetric KL divergence
 
-**Implementation:**
-```python
-# Configure data drift detection
-client.models.configure_drift(
-    model_id="model-uuid",
-    drift_config={
-        "enabled": True,
-        "detection_method": "ks_test",
-        "threshold": 0.1,  # p-value threshold
-        "reference_period": "training",  # or "7d", "30d"
-        "detection_frequency": "daily",
-        "features": ["income", "age", "credit_score"]  # or "all"
-    }
-)
+### Configuring drift detection
+
+Drift configuration is a REST-only surface today — there's no `client.drift_config.*` in the
+SDK yet, so this is `curl` rather than Python:
+
+```bash
+# Create a default config for a model
+curl -X POST https://api.whiteboxxai.com/api/v1/drift-config/{model_id}/default \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+
+# Or the fastest path: apply a sensitivity preset directly
+curl -X POST https://api.whiteboxxai.com/api/v1/drift-config/{model_id}/sensitivity/medium \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
 ```
 
-**Drift Score Interpretation:**
-- **0.0 - 0.05:** No drift (very similar)
-- **0.05 - 0.1:** Low drift (minor changes)
-- **0.1 - 0.2:** Medium drift (investigate)
-- **0.2+:** High drift (action required)
+Three presets ship — `low`, `medium` (recommended default), `high` — each setting the KS,
+chi-squared, JS, and PSI thresholds together along with the concept-drift and severity
+thresholds, rather than tuning each statistical test individually:
+
+```bash
+GET /api/v1/drift-config/presets                # all three, with their actual threshold values
+GET /api/v1/drift-config/presets/{preset_name}   # one preset
+```
+
+For anything more specific than a preset, `PUT /api/v1/drift-config/{model_id}` takes the full
+`feature_configs`, `concept_drift_config`, `alert_config`, `schedule_config`, and
+`threshold_config` objects — see the response from `GET /api/v1/drift-config/{model_id}` for
+the exact shape a given model currently has.
+
+**Drift Score Interpretation:** the `medium` preset's severity thresholds are a reasonable
+default reading — roughly 0.0–0.1 no meaningful drift, 0.1–0.3 worth investigating, 0.3+
+action required — but the exact cutoffs are configurable per preset and per model rather than
+fixed platform-wide.
 
 ### Concept Drift
 
 **Definition:**
-Changes in the relationship between features and target.
+Changes in the relationship between features and target — the same input now predicts a
+different outcome than it used to.
 
 **Example:**
-Credit score of 650 used to have 20% default rate, now has 10% default rate.
+Credit score of 650 used to have a 20% default rate, now has 10%.
 
-**Detection Methods:**
-
-**Error-based:**
-- Track prediction accuracy over time
-- Compare recent vs historical performance
-- Alert on performance degradation
-
-**Distribution-based:**
-- Monitor joint distribution P(X, Y)
-- Use multivariate drift tests
-- Compare conditional distributions P(Y|X)
-
-**Implementation:**
-```python
-# Concept drift detection (automatic with ground truth)
-client.models.configure_drift(
-    model_id="model-uuid",
-    concept_drift={
-        "enabled": True,
-        "method": "performance_degradation",
-        "baseline_window": "30d",
-        "detection_window": "7d",
-        "threshold": 0.05  # 5% accuracy drop
-    }
-)
-```
+**Detection approach:** tracked via `concept_drift_config` on the same drift configuration
+above — performance-degradation-based (comparing recent vs. historical accuracy) and
+distribution-based methods, including ADWIN, are available as part of that config rather than
+as a separate endpoint.
 
 ### Prediction Drift
 
 **Definition:**
-Changes in model output distribution.
+Changes in the model's output distribution, independent of whether the inputs changed —
+useful for catching a model that's started behaving differently even when the input
+population looks the same.
 
 **Example:**
-Fraud rate predictions increased from 5% to 15% of traffic.
-
-**Use Cases:**
-- Detect model behavior changes
-- Identify bias drift
-- Monitor deployed model vs champion
-
-```python
-# Prediction drift monitoring
-client.drift.monitor_predictions(
-    model_id="model-uuid",
-    config={
-        "track_distribution": True,
-        "alert_on_shift": True,
-        "threshold": 0.15  # 15% shift in distribution
-    }
-)
-```
+Fraud-rate predictions increased from 5% to 15% of traffic.
 
 ### Drift Detection Dashboard
 
@@ -912,24 +811,23 @@ Recommendations:
 
 **2. Investigation:**
 ```python
-# Get drift details
-drift = client.drift.get_latest(model_id="model-uuid")
+# List recent drift reports, most recent first
+reports = client.drift.get_reports(model_id="model-uuid", limit=10)
+latest = reports[0]
 
-# View drifted features
-for feature in drift.drifted_features:
-    print(f"{feature.name}: {feature.score} ({feature.severity})")
+# Per-feature statistics live inside the report
+for feature in latest["feature_drifts"]:
+    print(f"{feature['feature_name']}: {feature['drift_score']} ({feature['severity']})")
 
-# Compare distributions
-comparison = client.drift.compare_distributions(
-    model_id="model-uuid",
-    feature="transaction_amount",
-    reference="training",
-    current="last_7d"
-)
+# Trend over time, rather than a single snapshot
+trend = client.drift.get_trend(model_id="model-uuid", days=30)
 
-# View visualization
-comparison.plot()  # Shows overlaid histograms
+# Or run a fresh, ad-hoc check without waiting for the next scheduled one
+result = client.drift.detect(model_id="model-uuid", window_size=1000)
 ```
+
+Compare distributions visually on the model's **Drift** tab in the dashboard — there's no SDK
+method that hands back a chart object; `feature_drifts` above is the raw statistics behind it.
 
 **3. Action:**
 - **Low drift:** Monitor, no action yet
@@ -938,19 +836,20 @@ comparison.plot()  # Shows overlaid histograms
 
 **4. Retraining:**
 ```python
-# After retraining and deploying new version
+# Register the retrained version under the same name
 client.models.register(
     name="Fraud Detection",
-    version="2.3.0",  # New version
-    parent_version="2.2.0",
+    model_type="classification",
+    version="2.3.0",
+    features=[...],
     baseline_metrics={...},  # New baselines
-    metadata={"retrained_due_to": "data_drift"}
+    tags=["retrained-drift-response"],
 )
 
-# Update drift baseline
-client.models.update_drift_baseline(
-    model_id="new-model-uuid",
-    baseline_data="recent"  # Use recent production data
+# Or, refreshing the same model's baseline after retraining in place
+client.models.update_baseline(
+    model_id="model-uuid",
+    baseline_metrics={"accuracy": 0.94, "precision": 0.91},
 )
 ```
 
@@ -993,9 +892,11 @@ Understand why your models make specific predictions.
 **Supported Methods:**
 - SHAP (SHapley Additive exPlanations)
 - LIME (Local Interpretable Model-agnostic Explanations)
-- Feature Importance
-- Partial Dependence Plots
-- Individual Conditional Expectation (ICE)
+
+!!! note "Full method reference lives with the SDK"
+    This section is the concepts and use cases. For the complete, verified method list —
+    `generate_bulk()`, `compare()`, `visualize()`/`visualize_multi()`, `set_config()`, and
+    every parameter — see [SDK Documentation](/sdk/#explanations-api).
 
 ### SHAP Explanations
 
@@ -1010,36 +911,29 @@ Based on game theory (Shapley values), SHAP provides:
 **How it Works:**
 
 For each prediction:
-1. Calculate contribution of each feature
+1. Calculate the contribution of each feature
 2. Base value (average prediction) + feature contributions = final prediction
-3. Positive contribution = pushes prediction higher
-4. Negative contribution = pushes prediction lower
+3. Positive contribution = pushes the prediction higher
+4. Negative contribution = pushes it lower
 
-**Generate SHAP Explanation:**
+**Generate a SHAP explanation:**
 
 ```python
-# Via SDK
 explanation = client.explanations.generate(
-    prediction_id="pred-uuid",
+    model_id="model-uuid",
+    instance={"income": 75000, "credit_score": 780, "debt_ratio": 0.2, "age": 34},
     method="shap",
-    config={
-        "background_samples": 100,  # For TreeSHAP
-        "approximate": False
-    }
 )
 
-# Access results
-print(f"Base value: {explanation.base_value}")
-print(f"Prediction: {explanation.prediction}")
+# Access results — this is a dict, not an object with attributes
+print(f"Base value: {explanation['base_value']}")
+print(f"Score: {explanation['score']}")
 
-for feature, value in explanation.feature_contributions.items():
-    print(f"{feature}: {value:+.3f}")
+for feature, weight in explanation["feature_weights"].items():
+    print(f"{feature}: {weight:+.3f}")
 ```
 
-**Visualizations:**
-
-**1. Waterfall Chart:**
-Shows cumulative feature contributions
+**Waterfall Chart** — shows cumulative feature contributions:
 
 ```
 Base Value: 0.20
@@ -1050,32 +944,9 @@ Base Value: 0.20
 = Final Prediction: 0.65
 ```
 
-**2. Force Plot:**
-Visual representation of forces pushing prediction up/down
-
-```python
-explanation.plot_force()
-```
-
-**3. Summary Plot (Global):**
-Feature importance across all predictions
-
-```python
-client.explanations.plot_summary(
-    model_id="model-uuid",
-    num_predictions=1000
-)
-```
-
-**4. Dependence Plot:**
-Shows relationship between feature value and SHAP value
-
-```python
-client.explanations.plot_dependence(
-    model_id="model-uuid",
-    feature="credit_score"
-)
-```
+Get the chart-ready data behind it (not a rendered image — data for your own UI) with
+`client.explanations.visualize(explanation_id, plot_type="waterfall")`, or `"force"` for a
+force-plot layout of the same contributions.
 
 ### LIME Explanations
 
@@ -1085,30 +956,27 @@ Creates a simple, interpretable model around a specific prediction:
 1. Generate perturbations around the instance
 2. Get model predictions for perturbations
 3. Train a simple linear model on these
-4. Use linear model coefficients as explanations
+4. Use the linear model's coefficients as the explanation
 
 **When to Use LIME:**
 - Faster than SHAP for complex models
 - Good for high-dimensional data
 - Need quick explanations
-- Local understanding sufficient
+- Local understanding is sufficient
 
-**Generate LIME Explanation:**
+**Generate a LIME explanation** — the call is identical to SHAP's, just a different `method`:
 
 ```python
 explanation = client.explanations.generate(
-    prediction_id="pred-uuid",
+    model_id="model-uuid",
+    instance={"credit_score": 720, "income": 75000, "employment_years": 8, "debt_ratio": 0.35},
     method="lime",
-    config={
-        "num_samples": 5000,
-        "num_features": 10  # Top 10 features
-    }
+    num_features=10,
 )
 
-# Feature weights
-for feature, weight in explanation.feature_weights.items():
+for feature, weight in explanation["feature_weights"].items():
     direction = "increases" if weight > 0 else "decreases"
-    print(f"{feature}: {abs(weight):.3f} {direction} prediction")
+    print(f"{feature}: {abs(weight):.3f} {direction} the prediction")
 ```
 
 **Output Example:**
@@ -1120,141 +988,98 @@ Top Contributing Features:
 + income ($75k): +0.28 (sufficient income increases approval)
 + employment_years (8): +0.15 (stable employment increases approval)
 - debt_ratio (0.35): -0.12 (moderate debt decreases approval)
-- recent_inquiries (3): -0.08 (recent credit checks decrease approval)
 ```
 
-### Feature Importance
+### Global feature importance
 
-**Global Model Understanding:**
+There's no single endpoint that returns "global importance across all predictions" —
+aggregate it yourself from explanations you've already generated:
 
 ```python
-# Get global feature importance
-importance = client.explanations.get_feature_importance(
-    model_id="model-uuid",
-    method="shap",  # or "permutation", "gain"
-    num_predictions=1000
-)
+explanations = client.explanations.list_by_model(model_id="model-uuid", method="shap", limit=1000)
 
-# Top features
-for feature, score in importance.items():
-    print(f"{feature}: {score:.3f}")
+totals: dict[str, float] = {}
+for exp in explanations:
+    for feature, weight in exp["feature_weights"].items():
+        totals[feature] = totals.get(feature, 0) + abs(weight)
+
+ranked = sorted(totals.items(), key=lambda item: item[1], reverse=True)
 ```
 
-**Visualization:**
-```python
-importance.plot_bar()  # Horizontal bar chart
-importance.plot_beeswarm()  # SHAP beeswarm plot
-```
+Or, for a comparison across a specific set of already-generated explanations rather than a
+running total, `client.explanations.compare(explanation_ids, comparison_type="feature_importance")`
+does the aggregation server-side.
 
 ### Explanation Use Cases
 
-**1. Debugging:**
+**1. Debugging** — pull recent explanations for a model and look for one relying heavily on a
+feature that shouldn't matter:
+
 ```python
-# Find predictions where model relies heavily on unexpected features
-explanations = client.explanations.get(
+recent = client.explanations.list_by_model(model_id="model-uuid", limit=100)
+
+for exp in recent:
+    top_feature = max(exp["feature_weights"], key=lambda f: abs(exp["feature_weights"][f]))
+    if top_feature == "zip_code":  # shouldn't be driving decisions
+        print(f"Investigate: {exp['id']} (prediction {exp['prediction_id']})")
+```
+
+**2. Contestation** — a customer disputes a denial; generate the explanation behind that
+specific prediction and hand it to them (or route it into a [report](/user-guide/reports/) for
+a formatted document):
+
+```python
+explanation = client.explanations.generate(
     model_id="model-uuid",
-    filter={
-        "top_feature": "zip_code",  # Shouldn't be most important
-        "limit": 100
-    }
-)
-
-# Investigate why zip_code is driving decisions
-```
-
-**2. Contestation:**
-```python
-# Customer disputes loan denial - provide explanation
-explanation = client.explanations.generate(
+    instance=denial_input_data,
     prediction_id=denial_prediction_id,
-    method="shap"
-)
-
-# Generate customer-friendly report
-report = client.explanations.export_report(
-    explanation_id=explanation.id,
-    format="pdf",
-    template="customer_friendly"
-)
-```
-
-**3. Compliance:**
-```python
-# Generate explanation for audit
-explanation = client.explanations.generate(
-    prediction_id="pred-uuid",
     method="shap",
-    metadata={
-        "audit_request_id": "AUD-2025-0123",
-        "requested_by": "compliance@company.com",
-        "purpose": "regulatory_audit"
-    }
 )
-
-# Explanation automatically logged for audit trail
 ```
 
-**4. Model Improvement:**
-```python
-# Identify features with low importance - candidates for removal
-global_importance = client.explanations.get_feature_importance(
-    model_id="model-uuid"
-)
+**3. Compliance** — the same call, generated on demand for an audit request. It's
+automatically retained and searchable via `list_by_model()`/`get_by_prediction()` — there's no
+separate "audit metadata" field to set; the explanation itself *is* the record.
 
-low_importance = [
-    feature for feature, score in global_importance.items()
-    if score < 0.01
-]
-
-print(f"Consider removing: {low_importance}")
-```
+**4. Model improvement** — use the ranked list from [Global feature
+importance](#global-feature-importance) above to spot low-importance features that might be
+candidates for removal.
 
 ### Explanation Configuration
 
+Set per-model defaults — method, auto-generation, caching — with `set_config()`:
+
 ```python
-# Set default explanation method per model
-client.models.update(
+client.explanations.set_config(
     model_id="model-uuid",
-    explanation_config={
-        "default_method": "shap",
-        "auto_generate": False,  # Generate on-demand only
-        "cache_duration": "30d",
-        "background_samples": 100
-    }
+    default_method="shap_kernel",
+    auto_explain=False,     # generate on-demand only
+    cache_enabled=True,
+    cache_ttl_hours=24,
 )
 ```
 
-### Explanation API
+### Bulk and async generation
 
-**Batch Generation:**
+For more than a handful of instances, `generate_bulk()` is non-blocking — you poll for results
+rather than waiting on the request:
+
 ```python
-# Generate explanations for multiple predictions
-results = client.explanations.generate_batch(
-    prediction_ids=["pred-1", "pred-2", "pred-3"],
-    method="shap"
+job = client.explanations.generate_bulk(
+    model_id="model-uuid",
+    instances=[instance_1, instance_2, instance_3],
+    method="shap",
 )
+# {"explanation_ids": [...], "total": 3, "message": "..."}
 
-for result in results:
-    print(f"{result.prediction_id}: {result.status}")
+for explanation_id in job["explanation_ids"]:
+    result = client.explanations.get(explanation_id)
+    if result["status"] != "pending":
+        print(result["feature_weights"])
 ```
 
-**Async Generation:**
-```python
-# For slow explanations, generate asynchronously
-task = client.explanations.generate_async(
-    prediction_id="pred-uuid",
-    method="shap"
-)
-
-# Check status later
-status = client.explanations.get_task_status(task.id)
-if status.completed:
-    explanation = status.result
-```
-
----
-
-*Continued in next message due to length...*
+`generate_async()` is the single-instance equivalent — same non-blocking, poll-with-`get()`
+pattern, for one instance at a time.
 
 ---
 
@@ -1367,41 +1192,52 @@ DI = 52/65 = 0.80 (PASS - exactly at threshold)
 
 **Via SDK:**
 
+`audit()` isn't a data-source query the way drift detection is — it doesn't fetch predictions
+for you. You supply the true labels, predicted labels, and each row's group membership; the
+platform computes the fairness metrics from that. A common pattern is pulling logged
+predictions first, then joining in whatever demographic data you have:
+
 ```python
-# Run comprehensive fairness audit
-audit = client.bias.run_audit(
+predictions = client.predictions.query(model_id="model-uuid", start_time="2026-07-01T00:00:00Z")
+
+# predictions.query() gives you what the model predicted, not the actual outcome or
+# demographic group — join both in from your own records, keyed by prediction_id
+y_pred = [p["output_data"]["prediction"] for p in predictions]
+y_true = [your_ground_truth[p["prediction_id"]] for p in predictions]
+gender = [your_demographics[p["prediction_id"]]["gender"] for p in predictions]
+
+audit = client.fairness.audit(
     model_id="model-uuid",
-    protected_attribute="gender",
-    reference_group="male",
-    metrics=[
-        "demographic_parity",
-        "equal_opportunity",
-        "equalized_odds",
-        "disparate_impact"
-    ],
-    date_range="last_30_days"
+    sensitive_attributes=["gender"],
+    y_true=y_true,
+    y_pred=y_pred,
+    group_data={"gender": gender},
+    metrics_to_compute=["demographic_parity", "equal_opportunity", "equalized_odds", "disparate_impact"],
 )
 
-# Overall fairness score
-print(f"Fairness Score: {audit.overall_score}/100")
+# This is a dict, not an object — same as every other SDK response
+print(f"Fairness score: {audit['overall_fairness_score']:.2f}")
+print(f"Bias detected: {audit['bias_detected']}")
 
-# Per-metric results
-for metric_name, result in audit.metrics.items():
-    print(f"{metric_name}: {result.value:.3f} ({result.status})")
+for metric_name, result in audit["results"].items():
+    print(f"{metric_name}: {result['score']:.3f} ({'PASS' if result['passed'] else 'FAIL'})")
 
-# Recommendations
-for rec in audit.recommendations:
+for rec in audit["recommendations"]:
     print(f"- {rec}")
 ```
 
+Pass more than one attribute in `sensitive_attributes` — and a matching key in `group_data` for
+each — to audit several protected attributes in one call, rather than needing separate calls
+per attribute.
+
 ### Understanding Audit Results
 
-**Overall Fairness Score:** 0-100
-- **90-100:** Excellent (very fair)
-- **80-89:** Good (acceptable for most use cases)
-- **70-79:** Fair (attention needed)
-- **60-69:** Poor (action required)
-- **< 60:** Critical (immediate action)
+**`overall_fairness_score`:** 0.0–1.0 (the dashboard shows it as a percentage)
+- **0.90–1.00:** Excellent (very fair)
+- **0.80–0.89:** Good (acceptable for most use cases)
+- **0.70–0.79:** Fair (attention needed)
+- **0.60–0.69:** Poor (action required)
+- **< 0.60:** Critical (immediate action)
 
 **Example Audit Report:**
 
@@ -1413,7 +1249,7 @@ Protected Attribute: Gender
 Reference Group: Male
 Comparison Group: Female
 
-Overall Fairness Score: 75/100 (Fair)
+Overall Fairness Score: 0.75 (Fair)
 
 Detailed Results:
 
@@ -1462,99 +1298,54 @@ Action Items:
 
 ### Multi-Attribute Audits
 
-Audit multiple protected attributes:
+As shown above, `sensitive_attributes` already takes a list — auditing gender, race, and age
+together is one call, not a separate multi-attribute method:
 
 ```python
-# Audit gender, race, and age simultaneously
-audit = client.bias.run_multi_audit(
+audit = client.fairness.audit(
     model_id="model-uuid",
-    protected_attributes=["gender", "race", "age_group"],
-    reference_groups={
-        "gender": "male",
-        "race": "white",
-        "age_group": "30-50"
-    }
+    sensitive_attributes=["gender", "race", "age_group"],
+    y_true=y_true,
+    y_pred=y_pred,
+    group_data={"gender": gender, "race": race, "age_group": age_group},
 )
-
-# Intersectional analysis
-intersectional = client.bias.analyze_intersectional(
-    model_id="model-uuid",
-    attributes=["gender", "race"],
-    # Analyzes: (Male, White), (Male, Black), (Female, White), (Female, Black)
-)
-
-for group, fairness_score in intersectional.items():
-    print(f"{group}: {fairness_score}")
 ```
+
+For intersectional analysis — fairness across combinations like (Male, White) vs. (Female,
+Black) rather than each attribute independently — construct a combined group column yourself
+(`f"{gender}_{race}"`) and pass it as its own entry in `sensitive_attributes`/`group_data`;
+there's no separate endpoint that cross-tabulates attributes automatically.
 
 ### Bias Mitigation Strategies
 
-**1. Pre-processing (Training Data):**
+WhiteBoxXAI's job here is diagnosis — the audit above tells you *which* metric failed and by
+how much. Fixing it is a modeling decision that happens in your own training pipeline, using
+whatever fairness-aware tooling you already use (or a library like
+[Fairlearn](https://fairlearn.org/) or [AIF360](https://ai-fairness-360.org/)):
 
-```python
-# Rebalance training data
-from sklearn.utils import resample
+- **Pre-processing:** rebalance or reweight training data, and check for features correlated
+  with the protected attribute (a proxy like ZIP code standing in for race) before training.
+- **In-processing:** train with a fairness constraint (e.g. Fairlearn's
+  `ExponentiatedGradient`) if your protected attribute is available at training time.
+- **Post-processing:** adjust decision thresholds per group, and evaluate the tradeoff against
+  overall performance before shipping it.
 
-# Upsample minority group
-female_upsampled = resample(
-    female_data,
-    n_samples=len(male_data),
-    random_state=42
-)
-
-balanced_data = pd.concat([male_data, female_upsampled])
-
-# Remove biased features
-features_to_remove = client.bias.identify_proxy_features(
-    model_id="model-uuid",
-    protected_attribute="gender",
-    correlation_threshold=0.3
-)
-
-print(f"Correlated features: {features_to_remove}")
-# ['zip_code', 'job_title', 'hobby']
-```
-
-**2. In-processing (During Training):**
-
-```python
-from whiteboxxai.fairness import FairClassifier
-
-# Train with fairness constraints
-model = FairClassifier(
-    base_model=LogisticRegression(),
-    protected_attribute="gender",
-    fairness_constraint="demographic_parity",
-    epsilon=0.05  # Allow 5% deviation
-)
-
-model.fit(X_train, y_train, sensitive_features=A_train)
-```
-
-**3. Post-processing (Adjust Predictions):**
-
-```python
-# Adjust decision thresholds per group
-thresholds = client.bias.optimize_thresholds(
-    model_id="model-uuid",
-    protected_attribute="gender",
-    fairness_metric="equal_opportunity",
-    optimize_for="f1_score"  # Maintain performance
-)
-
-print(f"Threshold for male: {thresholds['male']}")
-print(f"Threshold for female: {thresholds['female']}")
-
-# Apply in production
-def fair_predict(features, gender):
-    probability = model.predict_proba(features)[1]
-    threshold = thresholds[gender]
-    return 1 if probability >= threshold else 0
-```
+Whichever you use, re-run [`client.fairness.audit()`](#running-fairness-audits) against the
+retrained or adjusted model to confirm the fix actually worked — see [Explanation Use
+Cases](#explanation-use-cases) above for the same "verify against real computed data, not
+before-the-fact assumptions" pattern applied to explanations.
 
 ### Continuous Fairness Monitoring
 
-**Set up alerts:**
+**Trend and history**, without re-running a full audit each time:
+
+```python
+client.fairness.get_bias_history(model_id="model-uuid", days=30)
+client.fairness.get_metric_history(model_id="model-uuid", metric_type="demographic_parity", days=30)
+client.fairness.get_latest_audit(model_id="model-uuid")
+```
+
+**Alert when fairness drops:**
 
 ```python
 client.alerts.create(
@@ -1563,32 +1354,85 @@ client.alerts.create(
     severity="high",
     model_id="model-uuid",
     conditions=[
-        {"metric_name": "fairness_score", "operator": "lt", "threshold": 80, "window_minutes": 10080}
+        {"metric_name": "fairness_score", "operator": "lt", "threshold": 0.8, "window_minutes": 10080}
     ],
     notification_channels=[{"type": "email", "target": "compliance@company.com"}],
 )
 ```
 
-**Schedule regular audits:**
-
-```python
-client.bias.schedule_audit(
-    model_id="model-uuid",
-    frequency="weekly",  # or "daily", "monthly"
-    protected_attributes=["gender", "race"],
-    recipients=["ml-team@company.com", "compliance@company.com"]
-)
-```
+There's no built-in scheduler for re-running an audit itself on a cadence — `audit()` needs
+ground truth and group data you supply, so "run this weekly" means your own scheduled job
+calling it, not a platform-side schedule. [Governance Review Boards' automated periodic
+reviews](/user-guide/governance/#automated-periodic-reviews) are the closest built-in
+equivalent if what you actually want is a recurring human review rather than a recurring
+computation.
 
 ---
-
-*Due to length, continuing with remaining features...*
 
 ## LLM Monitoring
 
-[Content for LLM Monitoring, Alert System, Reporting, and Compliance features would follow the same detailed format as above, covering all aspects of each feature]
+Token, cost, latency, safety, and RAG-quality tracking for LLM calls — the LLM equivalent of
+prediction logging above. For the dashboard walkthrough (Conversations, Tokens, Costs, Safety,
+RAG Quality tabs), see [Monitoring LLMs](/user-guide/#monitoring-llms) in the User Guide; this
+section is the SDK surface behind it.
+
+```python
+client.llm.log_call(
+    provider="openai",
+    model_name="gpt-4o",
+    prompt="Summarize this customer complaint...",
+    completion="The customer is reporting...",
+    latency_ms=842,
+    prompt_tokens=120,
+    completion_tokens=45,
+    model_id="model-uuid",   # optional — associates the call with a registered model
+)
+
+# Cost, latency, and volume, aggregated
+client.llm.usage_stats(start_time="2026-07-01T00:00:00Z", end_time="2026-07-31T23:59:59Z")
+client.llm.cost_breakdown()
+client.llm.trends_tokens(model_id="model-uuid", granularity="day")
+
+# Safety — toxicity, PII, and harmful-content scoring on a piece of content
+client.safety.analyze(content="...")
+
+# RAG retrieval quality — pass ground_truth_ids to get precision/recall/MRR/NDCG computed
+# server-side at log time
+client.rag.log_retrieval(
+    query="What's our refund policy?",
+    results=[{"document_id": "doc-1", "rank": 1, "score": 0.92}],
+    top_k=5,
+    retrieval_method="vector",
+    model_id="model-uuid",
+)
+client.rag.stats(model_id="model-uuid")
+```
+
+`client.llm`, `client.safety`, and `client.rag` are each their own resource with a larger
+method surface than shown here (batch logging, threshold-based alerting, trend queries) — see
+the [MCP Server tool reference](/integrations/mcp/#llm-monitoring) for the equivalent tool
+list, which mirrors the SDK method-for-method.
+
+## Alert System
+
+Covered in full in the User Guide's [Managing Alerts](/user-guide/#managing-alerts) and the
+[Alerts API reference](/sdk/api-reference/#alerts) — this page's [Alerts on
+Metrics](#alerts-on-metrics) and [Continuous Fairness
+Monitoring](#continuous-fairness-monitoring) sections above show it applied to specific
+features.
+
+## Reporting
+
+Covered in full in [Audit & Explanation Reports](/user-guide/reports/) — report categories,
+generating one from the dashboard or the API, scheduling, external sharing, and branding.
+
+## Compliance
+
+Covered in full in [AI Regulations](/account/ai-regulations/) (the regulatory landscape) and
+[Governance Review Boards](/user-guide/governance/) (approval workflows and the decision
+archive). The **Compliance** [report category](/user-guide/reports/#report-categories) is
+where regulatory evidence gets packaged for an auditor.
 
 ---
 
-*Last Updated: December 5, 2025*
-*Version: 1.0*
+*Last Updated: August 27, 2026*
