@@ -722,18 +722,15 @@ If using Retrieval-Augmented Generation:
 
 ## Managing Alerts
 
-Alerts are managed from the dashboard at **Observability → Alerts**, and delivered through
-your configured notification channels.
+Alerts are managed from the dashboard at **Observability → Alerts**, delivered through your
+configured notification channels, and available through the [Alerts
+API](/sdk/api-reference/#alerts) and `client.alerts.*` in the SDK for anything you'd rather
+automate — rule CRUD, evaluating a rule without triggering it, and acknowledging, resolving,
+or snoozing a triggered instance.
 
-!!! warning "Alerts are dashboard-managed today"
-    There is no public REST API for alerts yet — `/api/v1/alerts` is not available, and
-    requests to it return `404`. The SDK exposes `client.alerts.*` and
-    `ModelMonitor.create_alert_rule()` / `get_active_alerts()`, but those call that endpoint
-    and will fail until it ships. Create and manage alert rules in the dashboard for now.
-
-    Drift and bias thresholds *are* configurable via the API, and a `high` or `critical`
-    result there will auto-draft an entry in your [AI Risk Register](/user-guide/risk-register/) — see
-    [Automatic risk drafting](/user-guide/risk-register/#automatic-risk-drafting).
+Drift and bias thresholds are *separately* configurable via the API, and a `high` or `critical`
+result there will auto-draft an entry in your [AI Risk Register](/user-guide/risk-register/) —
+see [Automatic risk drafting](/user-guide/risk-register/#automatic-risk-drafting).
 
 ### Alert Dashboard
 

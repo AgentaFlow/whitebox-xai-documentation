@@ -6,6 +6,14 @@
     category, what it includes, and how the evidence traces back to real computed data, not
     a template. This page is the regulatory background that report is measured against.
 
+!!! note "Scope note"
+    This page surveys the broader regulatory landscape for context. WhiteBoxXAI's actual
+    product scope is narrower and deliberate: **ISO/IEC 42001, GDPR, CCPA, the EU AI Act, and
+    the NIST AI Risk Management Framework.** Frameworks mentioned below that aren't in that
+    list — HIPAA, the Colorado AI Act, China's regulations, and others — are background
+    context on the regulatory environment, not claims that WhiteBoxXAI supports or targets
+    them.
+
 A growing number of countries and regions are implementing or proposing AI-specific regulations. It is crucial to monitor these developments. Key examples include:
 
 | Region/Country | Key Regulations/Frameworks |

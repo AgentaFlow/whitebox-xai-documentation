@@ -518,13 +518,9 @@ Click the **"Predictions"** tab to see:
 
 ## Setting Up Alerts
 
-Stay informed when your model needs attention. Alert rules are created and managed in the
-dashboard.
-
-!!! note "Dashboard only for now"
-    There's no public REST API for alerts yet — `/api/v1/alerts` returns `404`, and the SDK's
-    `client.alerts.*` and `ModelMonitor.create_alert_rule()` call it, so they won't work.
-    Create alert rules in the dashboard.
+Stay informed when your model needs attention. Create and manage alert rules from the
+dashboard, or through the [Alerts API](/sdk/api-reference/#alerts) / `client.alerts.*` in the
+SDK.
 
 ### Create Your First Alert
 

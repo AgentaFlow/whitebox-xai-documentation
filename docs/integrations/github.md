@@ -9,6 +9,9 @@ The GitHub Integration feature allows WhiteBoxXAI to automatically track AI mode
 - **Version Comparison**: Compare model architectures, parameters, and performance across Git versions
 - **CI/CD Integration**: Validate models in GitHub Actions pipelines
 - **Audit Trail**: Maintain complete lineage from code to production
+- **Branch protection & PR automation**: Require WhiteBoxXAI's model checks before merge, and
+  get validation/comparison results posted as PR comments and check runs — see [CI/PR
+  Automation](#cipr-automation)
 
 ## Table of Contents
 
@@ -17,9 +20,10 @@ The GitHub Integration feature allows WhiteBoxXAI to automatically track AI mode
 3. [Repository Configuration](#repository-configuration)
 4. [Webhook Setup](#webhook-setup)
 5. [Configuration File](#configuration-file)
-6. [API Reference](#api-reference)
-7. [Troubleshooting](#troubleshooting)
-8. [Security](#security)
+6. [CI/PR Automation](#cipr-automation)
+7. [API Reference](#api-reference)
+8. [Troubleshooting](#troubleshooting)
+9. [Security](#security)
 
 ---
 
@@ -231,6 +235,82 @@ version: "1.0"
 models:
   - path: "*.pkl"
     framework: "sklearn"
+```
+
+---
+
+## CI/PR Automation
+
+Once a repository is tracked, WhiteBoxXAI can require its model checks before a merge, and post
+validation and comparison results directly into the pull request — no separate GitHub App to
+install. Every call here reuses the OAuth or PAT token already stored on your connection; there's
+no new credential to configure.
+
+### Branch protection
+
+Require a WhiteBoxXAI check before a branch can be merged into:
+
+```http
+POST /api/v1/github/automation/repositories/{repository_id}/branch-protection/enable
+Content-Type: application/json
+
+{
+  "branches": ["main"],
+  "require_validation": true,
+  "require_comparison": true,
+  "strict": false
+}
+```
+
+Inspect or adjust a branch's protection directly:
+
+```http
+GET    /api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}
+POST   /api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}/required-checks
+DELETE /api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}/required-checks?check_context=...
+```
+
+### Check runs
+
+Report model validation or comparison results as a GitHub check run, attached to a commit:
+
+```http
+POST /api/v1/github/automation/repositories/{repository_id}/checks/validation
+POST /api/v1/github/automation/repositories/{repository_id}/checks/comparison
+Content-Type: application/json
+
+{
+  "head_sha": "abc123...",
+  "model_name": "fraud-detection-v3",
+  "validation_passed": true,
+  "validation_details": { "accuracy": 0.94 },
+  "dashboard_url": "https://app.whiteboxxai.com/dashboard/models/..."
+}
+```
+
+This is what a GitHub Actions workflow calls after running your own validation step, so the
+result shows up as a status check on the PR rather than only in your CI logs.
+
+### PR comments
+
+Post the same results as a comment on the pull request itself:
+
+```http
+POST /api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}/validation
+POST /api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}/comparison
+```
+
+Or manage a single running comment — WhiteBoxXAI updates it in place on subsequent calls
+instead of posting a new one every time, identified by a hidden marker in the comment body:
+
+```http
+PUT /api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}
+Content-Type: application/json
+
+{
+  "comment_body": "## Model Validation\n\n✅ Accuracy 0.94 (baseline 0.91)",
+  "comment_identifier": "<!-- whiteboxxai-bot -->"
+}
 ```
 
 ---
@@ -514,6 +594,10 @@ For additional help:
 ---
 
 ## Changelog
+
+### Version 1.1 (August 2026)
+- CI/PR automation: branch protection, GitHub check runs, and PR comments for model validation
+  and comparison results
 
 ### Version 1.0 (January 2026)
 - Initial GitHub integration release

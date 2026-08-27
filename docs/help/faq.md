@@ -662,11 +662,12 @@ More data = more reliable detection.
 **Via SDK:**
 ```python
 explanation = client.explanations.generate(
-    prediction_id="pred-uuid",
+    model_id="model-uuid",
+    instance={"feature1": 1.5, "feature2": "value"},
     method="shap"  # or "lime"
 )
 
-print(explanation.feature_contributions)
+print(explanation["feature_weights"])
 ```
 
 ### How long does it take to generate explanations?
@@ -946,11 +947,6 @@ Yes!
 
 ## Alerts
 
-!!! note "Alerts are managed in the dashboard"
-    There's no public REST API for alerts yet — `/api/v1/alerts` returns `404`, and the SDK's
-    `client.alerts.*` helpers call it. Create and manage alert rules under **Observability →
-    Alerts**. See [Managing Alerts](/user-guide/#managing-alerts).
-
 ### What can I set alerts for?
 
 **Performance:**
@@ -1211,8 +1207,7 @@ volume — sampling, batching, and offline buffering all help.
 - Trust Score and Risk Register
 - Governance review boards
 - Export and report generation
-
-Alert management is dashboard-only for now — see the [Alerts](#alerts) note above.
+- Alert rule and instance management
 
 **WebSocket:**
 - `/api/v1/dashboard/ws` for live dashboard updates
@@ -1321,18 +1316,16 @@ Yes! Configure in **Settings** → **Webhooks**
 
 ### Is WhiteBoxXAI compliant with regulations?
 
-**Certifications:**
-- ✅ SOC 2 Type II
-- ✅ GDPR (EU)
-- ✅ CCPA (California)
-- ✅ HIPAA (Healthcare) - Enterprise only
-- 🚧 ISO 27001 (in progress)
+WhiteBoxXAI's product scope is deliberately five frameworks: **ISO/IEC 42001, GDPR, CCPA, the
+EU AI Act, and the NIST AI Risk Management Framework.** See [AI
+Regulations](/account/ai-regulations/) for how each maps to platform features, and [Audit &
+Explanation Reports](/user-guide/reports/) for the **Compliance** report category that
+generates evidence against them.
 
-**AI Regulations:**
-- ✅ EU AI Act (High-Risk systems)
-- ✅ US Model Risk Management (SR 11-7)
-- ✅ UK AI Regulation
-- ✅ NIST AI Risk Management Framework
+HIPAA isn't in that list — see the scope note at the top of [AI
+Regulations](/account/ai-regulations/) for why frameworks outside these five (HIPAA, the
+Colorado AI Act, and others) appear on that page as background context, not as something
+WhiteBoxXAI targets or certifies against.
 
 **Audit trail:**
 - All actions logged

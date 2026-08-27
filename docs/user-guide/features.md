@@ -700,14 +700,14 @@ metrics = client.metrics.get(
 Set thresholds to get notified:
 
 ```python
-client.alerts.create_rule(
+client.alerts.create(
     name="Low Accuracy Alert",
+    alert_type="performance",
+    severity="high",
     model_id="model-uuid",
-    metric="accuracy",
-    operator="<",
-    threshold=0.85,
-    window="1h",
-    severity="high"
+    conditions=[
+        {"metric_name": "accuracy", "operator": "lt", "threshold": 0.85, "window_minutes": 60}
+    ],
 )
 ```
 
@@ -1557,15 +1557,15 @@ def fair_predict(features, gender):
 **Set up alerts:**
 
 ```python
-client.alerts.create_rule(
+client.alerts.create(
     name="Fairness Score Alert",
-    model_id="model-uuid",
-    metric="fairness_score",
-    operator="<",
-    threshold=80,
-    window="7d",
+    alert_type="fairness",
     severity="high",
-    notifications=["compliance@company.com"]
+    model_id="model-uuid",
+    conditions=[
+        {"metric_name": "fairness_score", "operator": "lt", "threshold": 80, "window_minutes": 10080}
+    ],
+    notification_channels=[{"type": "email", "target": "compliance@company.com"}],
 )
 ```
 

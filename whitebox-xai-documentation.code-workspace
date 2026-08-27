@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../whitebox-xai-azure"
+		}
+	],
+	"settings": {}
+}
