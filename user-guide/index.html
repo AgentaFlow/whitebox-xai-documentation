@@ -1,0 +1,3908 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="User documentation for WhiteBoxXAI — the AI observability, explainability, and governance platform. Learn how to monitor your models, explain predictions, detect drift, audit for bias, and stay compliant.">
+      
+      
+        <meta name="author" content="AgentaFlow">
+      
+      
+        <link rel="canonical" href="https://docs.whiteboxxai.com/user-guide/">
+      
+      
+        <link rel="prev" href="../get-started/plans/">
+      
+      
+        <link rel="next" href="features/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>WhiteBoxXAI User Guide - WhiteBox XAI Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#whiteboxxai-user-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="WhiteBox XAI Documentation" class="md-header__button md-logo" aria-label="WhiteBox XAI Documentation" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            WhiteBox XAI Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              WhiteBoxXAI User Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AgentaFlow/whitebox-xai-documentation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    whitebox-xai-documentation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="reports/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Audit & Explanation Reports
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../get-started/getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  SDK & API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../integrations/examples/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Integrations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../account/api-keys/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Account & Compliance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../learn/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Learn
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../help/faq/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Help
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="WhiteBox XAI Documentation" class="md-nav__button md-logo" aria-label="WhiteBox XAI Documentation" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    WhiteBox XAI Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AgentaFlow/whitebox-xai-documentation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    whitebox-xai-documentation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit & Explanation Reports
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audit & Explanation Reports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit &amp; Explanation Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="trust-score/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Score
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="risk-register/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Risk Register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Review Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/ai-regulations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Regulations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../get-started/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../get-started/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans & Limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../sdk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK & API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK & API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/offline-mode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline Mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/multi-agent-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Agent Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/multi-agent-quick-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Agent Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Integrations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/github/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/github-quick-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/github-diff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Diff Reviews
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/langchain-multi-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain Multi-Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/tensorflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TensorFlow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/huggingface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hugging Face
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/boosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boosting (XGBoost & LightGBM)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/n8n-webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    n8n Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/cli-git-tracking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Git Tracking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account & Compliance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Account & Compliance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/two-factor-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-Factor Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../learn/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learn
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learn
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn/case-studies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Case Studies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn/workshops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hands-On Workshops
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn/interactive-demos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Demos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn/certification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certification Program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Help
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Help
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../help/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../help/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-whiteboxxai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is WhiteBoxXAI?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#who-should-use-whiteboxxai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who Should Use WhiteBoxXAI?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Started
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-your-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating Your Account
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#first-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-your-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting Up Your Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dashboard-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashboard Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dashboard Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#operations-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#executive-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registering-a-new-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering a New Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-model-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Model Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#editing-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Editing a Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparing-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archiving-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Archiving a Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring Predictions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring Predictions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logging-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Predictions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Predictions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analyzing-prediction-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyzing Prediction Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-explanations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Explanations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding Explanations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-model-explanations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are Model Explanations?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generating-an-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generating an Explanation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-shap-explanations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding SHAP Explanations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-lime-explanations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding LIME Explanations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-feature-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Feature Importance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detecting-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detecting Drift
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detecting Drift">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-model-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Model Drift?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drift-detection-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drift Detection Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-drift-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Drift Reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responding-to-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responding to Drift
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-drift-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuring Drift Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auditing-for-bias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auditing for Bias
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Auditing for Bias">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-bias-in-ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Bias in ML?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-a-fairness-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running a Fairness Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-fairness-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Fairness Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpreting-audit-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting Audit Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taking-action-on-bias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Taking Action on Bias
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-llms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring LLMs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring LLMs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llm-monitoring-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Monitoring Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-conversations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Conversations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-usage-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Usage Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safety-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rag-quality-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAG Quality Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Alerts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alert-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-alert-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating an Alert Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-active-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Active Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alert-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notification-preferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Preferences
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evidence--reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence &amp; Reports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="User Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#profile-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notification-preferences_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Preferences
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explanations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explanations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compliance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Help">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#governance--compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Governance &amp; compliance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-quick-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration quick references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="whiteboxxai-user-guide">WhiteBoxXAI User Guide<a class="headerlink" href="#whiteboxxai-user-guide" title="Anchor link to this section">&para;</a></h1>
+<p>Welcome to WhiteBoxXAI! This comprehensive guide will help you understand and use all features of the platform.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Anchor link to this section">&para;</a></h2>
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#dashboard-overview">Dashboard Overview</a></li>
+<li><a href="#managing-models">Managing Models</a></li>
+<li><a href="#monitoring-predictions">Monitoring Predictions</a></li>
+<li><a href="#understanding-explanations">Understanding Explanations</a></li>
+<li><a href="#detecting-drift">Detecting Drift</a></li>
+<li><a href="#auditing-for-bias">Auditing for Bias</a></li>
+<li><a href="#monitoring-llms">Monitoring LLMs</a></li>
+<li><a href="#managing-alerts">Managing Alerts</a></li>
+<li><a href="#evidence--reports">Evidence &amp; Reports</a></li>
+<li><a href="#user-settings">User Settings</a></li>
+</ol>
+<p><strong>Governance &amp; compliance features have their own pages:</strong></p>
+<ul>
+<li><a href="/user-guide/trust-score/">Trust Score</a> — the 0–100 index over fairness, drift, and explainability</li>
+<li><a href="/user-guide/risk-register/">AI Risk Register</a> — structured risk inventory with owners and workflow</li>
+<li><a href="/user-guide/governance/">Governance Review Boards</a> — multi-party approval and decision archive</li>
+</ul>
+<hr />
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Anchor link to this section">&para;</a></h2>
+<h3 id="what-is-whiteboxxai">What is WhiteBoxXAI?<a class="headerlink" href="#what-is-whiteboxxai" title="Anchor link to this section">&para;</a></h3>
+<p>WhiteBoxXAI is an AI Observability &amp; Explainability platform that helps you:</p>
+<ul>
+<li><strong>Monitor</strong> your ML models in production</li>
+<li><strong>Explain</strong> how your models make predictions</li>
+<li><strong>Detect</strong> when your models drift or degrade</li>
+<li><strong>Audit</strong> your models for bias and fairness</li>
+<li><strong>Comply</strong> with AI regulations and standards</li>
+</ul>
+<h3 id="who-should-use-whiteboxxai">Who Should Use WhiteBoxXAI?<a class="headerlink" href="#who-should-use-whiteboxxai" title="Anchor link to this section">&para;</a></h3>
+<ul>
+<li><strong>Data Scientists</strong> - Monitor model performance and get insights</li>
+<li><strong>ML Engineers</strong> - Debug models and track drift</li>
+<li><strong>Compliance Officers</strong> - Audit models for regulatory compliance</li>
+<li><strong>Product Managers</strong> - Understand model behavior and impact</li>
+<li><strong>Executives</strong> - Get high-level insights into AI systems</li>
+</ul>
+<h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Real-time model monitoring
+✅ SHAP and LIME explanations
+✅ Automatic drift detection
+✅ Bias and fairness auditing
+✅ LLM observability
+✅ <a href="/user-guide/trust-score/">Trust Score</a> — one 0–100 index per model
+✅ <a href="/user-guide/risk-register/">AI Risk Register</a> with owners, workflow, and audit trail
+✅ <a href="/user-guide/governance/">Governance review boards</a> with an immutable decision archive
+✅ Compliance evidence exports
+✅ Customizable alerts</p>
+<hr />
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Anchor link to this section">&para;</a></h2>
+<h3 id="creating-your-account">Creating Your Account<a class="headerlink" href="#creating-your-account" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to <a href="https://app.whiteboxxai.com">app.whiteboxxai.com</a></li>
+<li>Click <strong>Sign Up</strong></li>
+<li>Enter your email and create a password</li>
+<li>Verify your email address</li>
+<li>Log in to your account</li>
+</ol>
+<h3 id="first-login">First Login<a class="headerlink" href="#first-login" title="Anchor link to this section">&para;</a></h3>
+<p>After logging in, you'll see:</p>
+<ul>
+<li><strong>Dashboard</strong> - Overview of your models and metrics</li>
+<li><strong>Navigation Menu</strong> - Access to all features</li>
+<li><strong>Quick Actions</strong> - Press <code>Cmd/Ctrl + K</code> for quick navigation (if enabled)</li>
+</ul>
+<h3 id="setting-up-your-profile">Setting Up Your Profile<a class="headerlink" href="#setting-up-your-profile" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Click your avatar in the top-right corner</li>
+<li>Select <strong>Profile</strong></li>
+<li>Update your information:</li>
+<li>Full name</li>
+<li>Email address</li>
+<li>Avatar image</li>
+<li>Notification preferences</li>
+</ol>
+<hr />
+<h2 id="dashboard-overview">Dashboard Overview<a class="headerlink" href="#dashboard-overview" title="Anchor link to this section">&para;</a></h2>
+<h3 id="operations-dashboard">Operations Dashboard<a class="headerlink" href="#operations-dashboard" title="Anchor link to this section">&para;</a></h3>
+<p>The default dashboard gives you a high-level operational view of your AI systems:</p>
+<p><strong>Key Metrics Cards:</strong>
+- <strong>Total Models</strong> - Number of registered models
+- <strong>Active Models</strong> - Currently monitored models
+- <strong>Total Predictions</strong> - Predictions logged today
+- <strong>Active Alerts</strong> - Current alerts requiring attention</p>
+<p><strong>Charts &amp; Visualizations:</strong>
+- Prediction volume over time
+- Model performance trends
+- Alert history
+- Drift detection summary</p>
+<p><strong>Recent Activity:</strong>
+- Latest predictions
+- Recent alerts
+- New drift detections
+- System notifications</p>
+<div class="admonition note">
+<p class="admonition-title">A new account starts empty — on purpose</p>
+<p>Until you register a model and log predictions, these cards and charts show empty states
+with a quick-start snippet rather than numbers. WhiteBoxXAI never displays placeholder or
+sample figures in your own workspace: every value you see is computed from your data.
+If you want to explore a populated dashboard, <a href="/get-started/getting-started/#step-4-first-run-experience">seed demo
+data</a> or browse the
+read-only <a href="/get-started/plans/#demo">Demo plan</a>.</p>
+</div>
+<h3 id="executive-dashboard">Executive Dashboard<a class="headerlink" href="#executive-dashboard" title="Anchor link to this section">&para;</a></h3>
+<p>A board-ready summary aimed at stakeholders who don't work in the platform day to day:
+portfolio <a href="/user-guide/trust-score/">Trust Score</a>, lowest-scoring models, risk posture, and ROI
+framing. Find it at <strong>Overview → Executive Dashboard</strong>.</p>
+<h3 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Anchor link to this section">&para;</a></h3>
+<p>The sidebar is organized into five groups:</p>
+<p><strong>Overview</strong></p>
+<ul>
+<li><strong>Operations Dashboard</strong> - Day-to-day operational view</li>
+<li><strong>Executive Dashboard</strong> - Portfolio Trust Score and risk posture</li>
+<li><strong>Models</strong> - Manage your models</li>
+</ul>
+<p><strong>Assurance</strong></p>
+<ul>
+<li><strong>Explainability</strong> - SHAP and LIME explanations</li>
+<li><strong>Fairness</strong> - Bias and fairness audits</li>
+<li><strong>Drift Detection</strong> - Data and concept drift</li>
+</ul>
+<p><strong>Observability</strong></p>
+<ul>
+<li><strong>Alerts</strong> - Active alerts and alert rules</li>
+<li><strong>Performance</strong> - Real-time metrics and trends</li>
+<li><strong>LLM Monitoring</strong> - Language model tracking, cost, and safety</li>
+<li><strong>Multi-Agent Workflows</strong> - Agent workflow tracing</li>
+</ul>
+<p><strong>Governance &amp; Evidence</strong></p>
+<ul>
+<li><strong>Compliance</strong> - Regulatory framework coverage, including ISO 42001</li>
+<li><strong>Risk Register</strong> - <a href="/user-guide/risk-register/">Structured AI risk inventory</a></li>
+<li><strong>Evidence &amp; Reports</strong> - Exports and scheduled reports</li>
+<li><strong>Review Boards</strong> - <a href="/user-guide/governance/">Governance review boards</a></li>
+<li><strong>My Requests</strong> - Review requests you submitted or need to vote on</li>
+<li><strong>Decisions Archive</strong> - Searchable, immutable record of finalized decisions</li>
+</ul>
+<p><strong>Configuration</strong></p>
+<ul>
+<li><strong>Documentation</strong> - This site</li>
+<li><strong>Settings</strong> - Organization and account settings</li>
+</ul>
+<p><strong>Quick Actions (Cmd/Ctrl + K):</strong>
+Type to search for:
+- Pages (e.g., "models", "alerts")
+- Actions (e.g., "register model", "create alert")
+- Settings (e.g., "profile", "notifications")</p>
+<hr />
+<h2 id="managing-models">Managing Models<a class="headerlink" href="#managing-models" title="Anchor link to this section">&para;</a></h2>
+<h3 id="registering-a-new-model">Registering a New Model<a class="headerlink" href="#registering-a-new-model" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Step 1: Navigate to Models</strong>
+1. Click <strong>Models</strong> in the sidebar
+2. Click <strong>Register Model</strong> button</p>
+<p><strong>Step 2: Basic Information</strong>
+- <strong>Name</strong> - Descriptive name (e.g., "Fraud Detection v2")
+- <strong>Description</strong> - Purpose and use case
+- <strong>Type</strong> - Classification, Regression, Clustering, or LLM
+- <strong>Framework</strong> - scikit-learn, PyTorch, TensorFlow, etc.
+- <strong>Version</strong> - Model version (e.g., "1.0.0")
+- <strong>Tags</strong> - Labels for organization (e.g., "production", "finance")</p>
+<p><strong>Step 3: Model Metadata</strong>
+- <strong>Target Variable</strong> - What the model predicts
+- <strong>Features</strong> - Input features (comma-separated)
+- <strong>Training Data Size</strong> - Number of training samples
+- <strong>Training Date</strong> - When the model was trained</p>
+<p><strong>Step 4: Baseline Metrics</strong>
+- <strong>Accuracy</strong> - Overall accuracy on test set
+- <strong>Precision</strong> - Positive prediction accuracy
+- <strong>Recall</strong> - True positive rate
+- <strong>F1 Score</strong> - Harmonic mean of precision and recall</p>
+<p><strong>Step 5: Monitoring Configuration</strong>
+- <strong>Sampling Rate</strong> - Percentage of predictions to log (0.0-1.0)
+- <strong>Drift Threshold</strong> - Sensitivity for drift detection
+- <strong>Enable Monitoring</strong> - Start monitoring immediately</p>
+<p><strong>Step 6: Review &amp; Submit</strong>
+- Review all information
+- Click <strong>Register Model</strong>
+- You'll receive a model ID for SDK integration</p>
+<h3 id="viewing-model-details">Viewing Model Details<a class="headerlink" href="#viewing-model-details" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to <strong>Models</strong> page</li>
+<li>Click on any model name</li>
+<li>View tabs:</li>
+<li><strong>Overview</strong> - Basic information and stats</li>
+<li><strong>Predictions</strong> - Recent predictions</li>
+<li><strong>Metrics</strong> - Performance over time</li>
+<li><strong>Drift</strong> - Drift detection results</li>
+<li><strong>Explanations</strong> - Generated explanations</li>
+<li><strong>Configuration</strong> - Model settings</li>
+</ol>
+<h3 id="editing-a-model">Editing a Model<a class="headerlink" href="#editing-a-model" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Open model details</li>
+<li>Click <strong>Edit Model</strong> button</li>
+<li>Update information in tabs:</li>
+<li>Basic Info</li>
+<li>Monitoring settings</li>
+<li>Alert configuration</li>
+<li>Click <strong>Save Changes</strong></li>
+</ol>
+<h3 id="comparing-models">Comparing Models<a class="headerlink" href="#comparing-models" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to <strong>Models</strong> page</li>
+<li>Click <strong>Compare Models</strong> button</li>
+<li>Select 2-4 models to compare</li>
+<li>View comparison tabs:</li>
+<li><strong>Overview</strong> - Side-by-side comparison</li>
+<li><strong>Performance Trends</strong> - Metrics over time</li>
+<li><strong>Metrics Comparison</strong> - Current metrics</li>
+<li><strong>Configuration</strong> - Settings differences</li>
+</ol>
+<h3 id="archiving-a-model">Archiving a Model<a class="headerlink" href="#archiving-a-model" title="Anchor link to this section">&para;</a></h3>
+<p>To archive a model no longer in use:</p>
+<ol>
+<li>Open model details</li>
+<li>Go to <strong>Advanced</strong> tab</li>
+<li>Click <strong>Archive Model</strong></li>
+<li>Confirm the action</li>
+</ol>
+<p><strong>Note:</strong> Archived models retain all data but stop monitoring.</p>
+<hr />
+<h2 id="monitoring-predictions">Monitoring Predictions<a class="headerlink" href="#monitoring-predictions" title="Anchor link to this section">&para;</a></h2>
+<h3 id="logging-predictions">Logging Predictions<a class="headerlink" href="#logging-predictions" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Using the SDK:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">whiteboxxai</span><span class="w"> </span><span class="kn">import</span> <span class="n">WhiteBoxXAI</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">WhiteBoxXAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Log a single prediction</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">client</span><span class="o">.</span><span class="n">predictions</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">model_id</span><span class="o">=</span><span class="s2">"model-uuid"</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">input_data</span><span class="o">=</span><span class="p">{</span><span class="s2">"feature1"</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s2">"feature2"</span><span class="p">:</span> <span class="s2">"value"</span><span class="p">},</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">output_data</span><span class="o">=</span><span class="p">{</span><span class="s2">"prediction"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"probability"</span><span class="p">:</span> <span class="mf">0.92</span><span class="p">}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>Using the API:</strong>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.whiteboxxai.com/api/v1/predictions/log<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer YOUR_TOKEN"</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="s1">    "model_id": "model-uuid",</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s1">    "inputs": {"feature1": 1.5},</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s1">    "output": {"prediction": 0}</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="s1">  }'</span>
+</span></code></pre></div></p>
+<h3 id="viewing-predictions">Viewing Predictions<a class="headerlink" href="#viewing-predictions" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to model details page</li>
+<li>Click <strong>Predictions</strong> tab</li>
+<li>View prediction log table with:</li>
+<li>Prediction ID</li>
+<li>Timestamp</li>
+<li>Input values</li>
+<li>Output values</li>
+<li>Confidence score</li>
+</ol>
+<p><strong>Filters:</strong>
+- Date range
+- Prediction value
+- Confidence threshold
+- Search by ID</p>
+<h3 id="analyzing-prediction-patterns">Analyzing Prediction Patterns<a class="headerlink" href="#analyzing-prediction-patterns" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Prediction Volume:</strong>
+- View chart showing predictions over time
+- Identify traffic patterns
+- Detect anomalies</p>
+<p><strong>Prediction Distribution:</strong>
+- See distribution of predicted values
+- Compare to training distribution
+- Spot unusual patterns</p>
+<p><strong>Latency Analysis:</strong>
+- Track prediction response times
+- Identify performance issues
+- Set latency alerts</p>
+<hr />
+<h2 id="understanding-explanations">Understanding Explanations<a class="headerlink" href="#understanding-explanations" title="Anchor link to this section">&para;</a></h2>
+<h3 id="what-are-model-explanations">What are Model Explanations?<a class="headerlink" href="#what-are-model-explanations" title="Anchor link to this section">&para;</a></h3>
+<p>Explanations help you understand <strong>why</strong> your model made a specific prediction by showing:
+- Which features contributed most
+- How each feature impacted the prediction
+- The direction of influence (positive/negative)</p>
+<h3 id="generating-an-explanation">Generating an Explanation<a class="headerlink" href="#generating-an-explanation" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Method 1: From Prediction Log</strong>
+1. Go to model's <strong>Predictions</strong> tab
+2. Click on a prediction
+3. Click <strong>Generate Explanation</strong>
+4. Select method (SHAP or LIME)
+5. Wait for processing (~5-30 seconds)</p>
+<p><strong>Method 2: From Explanations Page</strong>
+1. Go to <strong>Explanations</strong> in sidebar
+2. Click <strong>New Explanation</strong>
+3. Select model and prediction ID
+4. Choose explanation method
+5. Click <strong>Generate</strong></p>
+<h3 id="understanding-shap-explanations">Understanding SHAP Explanations<a class="headerlink" href="#understanding-shap-explanations" title="Anchor link to this section">&para;</a></h3>
+<p><strong>SHAP (SHapley Additive exPlanations)</strong> shows how each feature contributes to the prediction.</p>
+<p><strong>Waterfall Chart:</strong>
+- Shows cumulative feature contributions
+- Base value (average prediction) → Final prediction
+- Red bars = push prediction higher
+- Blue bars = push prediction lower</p>
+<p><strong>Force Plot:</strong>
+- Visualizes feature forces
+- Features pushing toward/away from threshold
+- Magnitude indicates strength of impact</p>
+<p><strong>Example Interpretation:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Base Value: 0.2 (20% fraud probability)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>+ Amount (high): +0.45
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>+ Time (unusual): +0.15
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>- Merchant (trusted): -0.12
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>= Final Prediction: 0.68 (68% fraud probability)
+</span></code></pre></div></p>
+<h3 id="understanding-lime-explanations">Understanding LIME Explanations<a class="headerlink" href="#understanding-lime-explanations" title="Anchor link to this section">&para;</a></h3>
+<p><strong>LIME (Local Interpretable Model-agnostic Explanations)</strong> creates a simple model around the prediction.</p>
+<p><strong>Feature Weights:</strong>
+- Positive weights increase prediction
+- Negative weights decrease prediction
+- Absolute value = importance</p>
+<p><strong>Example:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Prediction: Approved (0.85 probability)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Top Features:
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>+ Credit Score: +0.35 (high score helps)
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>+ Income: +0.28 (sufficient income)
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>- Debt Ratio: -0.12 (moderate debt)
+</span></code></pre></div></p>
+<h3 id="global-feature-importance">Global Feature Importance<a class="headerlink" href="#global-feature-importance" title="Anchor link to this section">&para;</a></h3>
+<p>View overall feature importance across all predictions:</p>
+<ol>
+<li>Go to <strong>Explanations</strong> page</li>
+<li>Click <strong>Global Importance</strong> tab</li>
+<li>See ranked features with importance scores</li>
+</ol>
+<p><strong>Use Cases:</strong>
+- Understand which features matter most
+- Identify unused or redundant features
+- Validate model behavior
+- Document model decisions for compliance</p>
+<hr />
+<h2 id="detecting-drift">Detecting Drift<a class="headerlink" href="#detecting-drift" title="Anchor link to this section">&para;</a></h2>
+<h3 id="what-is-model-drift">What is Model Drift?<a class="headerlink" href="#what-is-model-drift" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Data Drift:</strong> Input feature distributions change
+<strong>Concept Drift:</strong> Relationship between features and target changes</p>
+<p><strong>Why it Matters:</strong>
+- Models trained on old data may not work on new data
+- Performance degrades over time
+- Predictions become unreliable</p>
+<h3 id="drift-detection-dashboard">Drift Detection Dashboard<a class="headerlink" href="#drift-detection-dashboard" title="Anchor link to this section">&para;</a></h3>
+<p>Access: <strong>Drift Detection</strong> in sidebar</p>
+<p><strong>Overview Cards:</strong>
+- Models with Drift
+- High Severity Detections
+- Recent Drift Events
+- Average Drift Score</p>
+<p><strong>Drift Timeline:</strong>
+- Chronological drift events
+- Severity indicators (Low, Medium, High)
+- Affected features</p>
+<h3 id="understanding-drift-reports">Understanding Drift Reports<a class="headerlink" href="#understanding-drift-reports" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Data Drift Report Shows:</strong>
+- Overall drift score (0-1, higher = more drift)
+- Per-feature drift scores
+- Statistical test results (KS test, Chi-squared)
+- Distribution comparisons
+- Severity classification</p>
+<p><strong>Example:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Model: Fraud Detection v2
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Detection Date: 2025-12-05
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Overall Score: 0.15 (Medium)
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Drifted Features:
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>- transaction_amount: 0.22 (High) - values shifted higher
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>- merchant_category: 0.18 (Medium) - distribution changed
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>- time_of_day: 0.08 (Low) - slight variation
+</span></code></pre></div></p>
+<h3 id="responding-to-drift">Responding to Drift<a class="headerlink" href="#responding-to-drift" title="Anchor link to this section">&para;</a></h3>
+<p><strong>When drift is detected:</strong></p>
+<ol>
+<li><strong>Review the Report</strong></li>
+<li>Which features drifted?</li>
+<li>How severe is the drift?</li>
+<li>
+<p>When did it start?</p>
+</li>
+<li>
+<p><strong>Investigate Root Cause</strong></p>
+</li>
+<li>Business changes (new products, markets)</li>
+<li>Data quality issues</li>
+<li>Seasonal patterns</li>
+<li>
+<p>External events</p>
+</li>
+<li>
+<p><strong>Take Action</strong></p>
+</li>
+<li><strong>Low Severity:</strong> Monitor closely</li>
+<li><strong>Medium Severity:</strong> Plan retraining</li>
+<li>
+<p><strong>High Severity:</strong> Retrain model immediately or revert to previous version</p>
+</li>
+<li>
+<p><strong>Update the Model</strong></p>
+</li>
+<li>Retrain with recent data</li>
+<li>Register new version in WhiteBoxXAI</li>
+<li>Update baseline metrics</li>
+</ol>
+<h3 id="configuring-drift-detection">Configuring Drift Detection<a class="headerlink" href="#configuring-drift-detection" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to model details</li>
+<li>Click <strong>Monitoring</strong> tab</li>
+<li>Configure:</li>
+<li><strong>Detection Frequency</strong> - How often to check (hourly, daily)</li>
+<li><strong>Threshold</strong> - Sensitivity (0.05 = very sensitive, 0.2 = less sensitive)</li>
+<li><strong>Reference Period</strong> - Compare against last 7/30/90 days</li>
+<li><strong>Alert Notifications</strong> - Who to notify when drift detected</li>
+</ol>
+<hr />
+<h2 id="auditing-for-bias">Auditing for Bias<a class="headerlink" href="#auditing-for-bias" title="Anchor link to this section">&para;</a></h2>
+<h3 id="what-is-bias-in-ml">What is Bias in ML?<a class="headerlink" href="#what-is-bias-in-ml" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Bias</strong> occurs when a model performs differently across demographic groups, potentially leading to unfair outcomes.</p>
+<p><strong>Protected Attributes:</strong> Characteristics that should not influence predictions:
+- Race/Ethnicity
+- Gender
+- Age
+- Religion
+- Disability status</p>
+<h3 id="running-a-fairness-audit">Running a Fairness Audit<a class="headerlink" href="#running-a-fairness-audit" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to <strong>Bias &amp; Fairness</strong> page</li>
+<li>Click <strong>Run Audit</strong></li>
+<li>Configure audit:</li>
+<li><strong>Model</strong> - Select model to audit</li>
+<li><strong>Protected Attributes</strong> - Select attributes (e.g., gender, age)</li>
+<li><strong>Reference Group</strong> - Baseline group for comparison</li>
+<li><strong>Fairness Metrics</strong> - Select metrics to calculate</li>
+<li>
+<p><strong>Time Period</strong> - Date range for analysis</p>
+</li>
+<li>
+<p>Click <strong>Run Audit</strong></p>
+</li>
+<li>Wait for processing (~1-3 minutes)</li>
+</ol>
+<h3 id="understanding-fairness-metrics">Understanding Fairness Metrics<a class="headerlink" href="#understanding-fairness-metrics" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Demographic Parity:</strong>
+- Groups should have similar positive prediction rates
+- Example: Approval rates should be similar across genders
+- <strong>Pass:</strong> Ratio between 0.8 and 1.2</p>
+<p><strong>Equal Opportunity:</strong>
+- True positive rates should be similar across groups
+- Example: Qualified applicants approved at similar rates
+- <strong>Pass:</strong> Difference &lt; 0.1</p>
+<p><strong>Equalized Odds:</strong>
+- Both true positive and false positive rates should be equal
+- Strictest fairness criterion
+- <strong>Pass:</strong> Both differences &lt; 0.1</p>
+<h3 id="interpreting-audit-results">Interpreting Audit Results<a class="headerlink" href="#interpreting-audit-results" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Overall Fairness Score:</strong> 0-100
+- <strong>90-100:</strong> Excellent (very fair)
+- <strong>80-89:</strong> Good (acceptable)
+- <strong>70-79:</strong> Fair (needs attention)
+- <strong>&lt;70:</strong> Poor (immediate action required)</p>
+<p><strong>Example Report:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Model: Loan Approval Model
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Audit Date: 2025-12-05
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Overall Score: 75 (Fair)
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Protected Attribute: Gender
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>Reference Group: Male
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>Demographic Parity: FAIL (0.72)
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>- Male approval rate: 65%
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>- Female approval rate: 47%
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>- Ratio: 0.72 (should be 0.8-1.2)
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>Equal Opportunity: PASS (0.88)
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>- Similar approval rates for qualified applicants
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>Recommendations:
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>1. Review training data for gender balance
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>2. Consider reweighting underrepresented groups
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>3. Audit feature selection for gender correlation
+</span></code></pre></div></p>
+<h3 id="taking-action-on-bias">Taking Action on Bias<a class="headerlink" href="#taking-action-on-bias" title="Anchor link to this section">&para;</a></h3>
+<p><strong>If bias is detected:</strong></p>
+<ol>
+<li><strong>Document Finding</strong></li>
+<li>Save audit report</li>
+<li>Share with stakeholders</li>
+<li>
+<p>Create improvement plan</p>
+</li>
+<li>
+<p><strong>Investigate Causes</strong></p>
+</li>
+<li>Imbalanced training data?</li>
+<li>Correlated features (proxies)?</li>
+<li>
+<p>Biased labels?</p>
+</li>
+<li>
+<p><strong>Mitigation Strategies</strong></p>
+</li>
+<li><strong>Pre-processing:</strong> Balance training data, remove biased features</li>
+<li><strong>In-processing:</strong> Use fairness constraints during training</li>
+<li>
+<p><strong>Post-processing:</strong> Adjust decision thresholds per group</p>
+</li>
+<li>
+<p><strong>Re-audit</strong></p>
+</li>
+<li>Train new model with fixes</li>
+<li>Run fairness audit again</li>
+<li>Compare improvements</li>
+</ol>
+<hr />
+<h2 id="monitoring-llms">Monitoring LLMs<a class="headerlink" href="#monitoring-llms" title="Anchor link to this section">&para;</a></h2>
+<h3 id="llm-monitoring-dashboard">LLM Monitoring Dashboard<a class="headerlink" href="#llm-monitoring-dashboard" title="Anchor link to this section">&para;</a></h3>
+<p>Access: <strong>LLM Monitoring</strong> in sidebar</p>
+<p><strong>Overview Metrics:</strong>
+- Total Completions
+- Total Cost
+- Average Latency
+- High-Risk Responses (toxicity)</p>
+<p><strong>Tabs:</strong>
+1. <strong>Overview</strong> - Summary statistics
+2. <strong>Conversations</strong> - Request/response history
+3. <strong>Tokens</strong> - Token usage analysis
+4. <strong>Costs</strong> - Spending tracking
+5. <strong>Safety</strong> - Toxicity detection
+6. <strong>RAG Quality</strong> - Retrieval metrics (if using RAG)</p>
+<h3 id="viewing-conversations">Viewing Conversations<a class="headerlink" href="#viewing-conversations" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Go to <strong>Conversations</strong> tab</li>
+<li>Browse conversation history with:</li>
+<li>Timestamp</li>
+<li>Model name (GPT-4, Claude, etc.)</li>
+<li>Prompt preview</li>
+<li>Response preview</li>
+<li>Tokens used</li>
+<li>
+<p>Cost</p>
+</li>
+<li>
+<p>Click any conversation to view:</p>
+</li>
+<li>Full prompt</li>
+<li>Full completion</li>
+<li>Metadata (temperature, max tokens)</li>
+<li>Toxicity scores</li>
+<li>Performance metrics</li>
+</ol>
+<h3 id="token-usage-analysis">Token Usage Analysis<a class="headerlink" href="#token-usage-analysis" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Token Breakdown:</strong>
+- Input tokens (prompt)
+- Output tokens (completion)
+- Total tokens
+- Cost per request</p>
+<p><strong>Visualizations:</strong>
+- Token usage over time
+- By model comparison
+- By use case distribution</p>
+<p><strong>Optimization Tips:</strong>
+- Reduce prompt length where possible
+- Use appropriate max_tokens limits
+- Choose cost-effective models for simple tasks
+- Cache common responses</p>
+<h3 id="cost-tracking">Cost Tracking<a class="headerlink" href="#cost-tracking" title="Anchor link to this section">&para;</a></h3>
+<p>Monitor LLM spending:</p>
+<p><strong>Cost Metrics:</strong>
+- Total spend (today/week/month)
+- Cost per model
+- Cost per use case
+- Cost trends over time</p>
+<p><strong>Budgets &amp; Alerts:</strong>
+1. Go to <strong>Settings</strong> → <strong>LLM Budget</strong>
+2. Set monthly budget
+3. Configure alerts at 50%, 75%, 90%
+4. Receive notifications when thresholds reached</p>
+<h3 id="safety-monitoring">Safety Monitoring<a class="headerlink" href="#safety-monitoring" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Toxicity Detection:</strong></p>
+<p>Automatically scans completions for:
+- Toxicity
+- Severe toxicity
+- Obscenity
+- Threats
+- Insults
+- Identity attacks</p>
+<p><strong>Safety Score:</strong> 0-1 (lower is better)
+- <strong>0.0-0.3:</strong> Safe
+- <strong>0.3-0.6:</strong> Moderate concern
+- <strong>0.6-1.0:</strong> High risk</p>
+<p><strong>PII Detection:</strong>
+- Automatically detects personal information
+- Email addresses, phone numbers
+- Credit cards, SSNs
+- Names, addresses</p>
+<p><strong>Actions:</strong>
+1. Review high-risk completions
+2. Update prompts to reduce toxic outputs
+3. Implement output filtering
+4. Add safety instructions to system prompts</p>
+<h3 id="rag-quality-metrics">RAG Quality Metrics<a class="headerlink" href="#rag-quality-metrics" title="Anchor link to this section">&para;</a></h3>
+<p>If using Retrieval-Augmented Generation:</p>
+<p><strong>Retrieval Quality:</strong>
+- <strong>Precision@K</strong> - Relevance of retrieved documents
+- <strong>Recall@K</strong> - Coverage of relevant documents
+- <strong>MRR</strong> - Mean Reciprocal Rank
+- <strong>NDCG</strong> - Ranking quality</p>
+<p><strong>Answer Quality:</strong>
+- <strong>Faithfulness</strong> - Answer supported by context
+- <strong>Relevance</strong> - Answer addresses the question
+- <strong>Context Utilization</strong> - How much context was used</p>
+<p><strong>Monitoring:</strong>
+1. Go to <strong>RAG Quality</strong> tab
+2. View metrics over time
+3. Identify retrieval issues
+4. Optimize embedding strategy or retrieval parameters</p>
+<hr />
+<h2 id="managing-alerts">Managing Alerts<a class="headerlink" href="#managing-alerts" title="Anchor link to this section">&para;</a></h2>
+<p>Alerts are managed from the dashboard at <strong>Observability → Alerts</strong>, delivered through your
+configured notification channels, and available through the <a href="/sdk/api-reference/#alerts">Alerts
+API</a> and <code>client.alerts.*</code> in the SDK for anything you'd rather
+automate — rule CRUD, evaluating a rule without triggering it, and acknowledging, resolving,
+or snoozing a triggered instance.</p>
+<p>Drift and bias thresholds are <em>separately</em> configurable via the API, and a <code>high</code> or <code>critical</code>
+result there will auto-draft an entry in your <a href="/user-guide/risk-register/">AI Risk Register</a> —
+see <a href="/user-guide/risk-register/#automatic-risk-drafting">Automatic risk drafting</a>.</p>
+<h3 id="alert-dashboard">Alert Dashboard<a class="headerlink" href="#alert-dashboard" title="Anchor link to this section">&para;</a></h3>
+<p>Access: <strong>Observability → Alerts</strong> in the sidebar</p>
+<p><strong>Overview:</strong>
+- Active Alerts
+- Acknowledged Alerts
+- Resolved Alerts
+- False Positives</p>
+<p><strong>Alert Types:</strong>
+- 🔴 <strong>Critical</strong> - Immediate attention required
+- 🟠 <strong>High</strong> - Attention needed soon
+- 🟡 <strong>Medium</strong> - Monitor closely
+- 🟢 <strong>Low</strong> - Informational</p>
+<h3 id="creating-an-alert-rule">Creating an Alert Rule<a class="headerlink" href="#creating-an-alert-rule" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>Click <strong>Create Alert Rule</strong></li>
+<li>Configure rule:</li>
+</ol>
+<p><strong>Basic Information:</strong>
+- Rule name
+- Description
+- Severity level</p>
+<p><strong>Conditions:</strong>
+- Metric to monitor (accuracy, error rate, drift score)
+- Operator (&gt;, &lt;, =, &gt;=, &lt;=)
+- Threshold value
+- Aggregation (avg, max, min)
+- Time window (5m, 1h, 1d)</p>
+<p><strong>Example:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Alert when:
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  Average accuracy
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  &lt; 0.85
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  over 1 hour
+</span></code></pre></div></p>
+<p><strong>Advanced Conditions (AND/OR logic):</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Alert when:
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  (Accuracy &lt; 0.85 OR Error rate &gt; 0.05)
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  AND
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  Prediction volume &gt; 100
+</span></code></pre></div></p>
+<p><strong>Notification Channels:</strong>
+- ✉️ Email
+- 💬 Slack
+- 📱 SMS
+- 🌐 Webhook</p>
+<p><strong>Recipients:</strong>
+- Add team members
+- Specify escalation contacts</p>
+<ol>
+<li>Click <strong>Create Rule</strong></li>
+</ol>
+<h3 id="managing-active-alerts">Managing Active Alerts<a class="headerlink" href="#managing-active-alerts" title="Anchor link to this section">&para;</a></h3>
+<p><strong>When an alert triggers:</strong></p>
+<ol>
+<li><strong>Review Alert</strong></li>
+<li>What triggered it?</li>
+<li>Current metric value</li>
+<li>
+<p>Historical context</p>
+</li>
+<li>
+<p><strong>Acknowledge</strong></p>
+</li>
+<li>Click <strong>Acknowledge</strong> button</li>
+<li>Add notes about investigation</li>
+<li>
+<p>Assign to team member</p>
+</li>
+<li>
+<p><strong>Investigate</strong></p>
+</li>
+<li>Check model performance</li>
+<li>Review recent predictions</li>
+<li>
+<p>Look for drift or anomalies</p>
+</li>
+<li>
+<p><strong>Resolve</strong></p>
+</li>
+<li>Fix the issue</li>
+<li>Click <strong>Resolve</strong> button</li>
+<li>
+<p>Document resolution notes</p>
+</li>
+<li>
+<p><strong>Or Mark as False Positive</strong></p>
+</li>
+<li>If alert not valid</li>
+<li>Adjust threshold to prevent recurrence</li>
+</ol>
+<h3 id="alert-history">Alert History<a class="headerlink" href="#alert-history" title="Anchor link to this section">&para;</a></h3>
+<p>View past alerts:
+1. Go to <strong>Alert History</strong> tab
+2. Filter by:
+   - Date range
+   - Model
+   - Severity
+   - Status</p>
+<p><strong>Insights:</strong>
+- Alert frequency trends
+- Common alert types
+- Mean time to resolution
+- False positive rate</p>
+<h3 id="notification-preferences">Notification Preferences<a class="headerlink" href="#notification-preferences" title="Anchor link to this section">&para;</a></h3>
+<p>Customize how you receive alerts:</p>
+<ol>
+<li>Go to <strong>Settings</strong> → <strong>Notifications</strong></li>
+<li>Configure preferences:</li>
+<li>Email notifications (on/off)</li>
+<li>Slack integration</li>
+<li>SMS for critical alerts only</li>
+<li>Quiet hours (no alerts)</li>
+<li>Digest emails (daily summary)</li>
+</ol>
+<hr />
+<h2 id="evidence--reports">Evidence &amp; Reports<a class="headerlink" href="#evidence--reports" title="Anchor link to this section">&para;</a></h2>
+<p>Exports turn what the platform has computed into an artifact you can hand to someone — a
+stakeholder, an auditor, or another system — with every number traceable back to real
+computed data, not a template. Find them at <strong>Governance &amp; Evidence → Evidence &amp; Reports</strong>,
+or drive them through the <code>/api/v1/export/*</code> API.</p>
+<p><strong>Full guide: <a href="/user-guide/reports/">Audit &amp; Explanation Reports</a></strong> — report categories,
+output formats, the dashboard and API walkthroughs, scheduled reports, and delivery options
+all live there now.</p>
+<div class="admonition note">
+<p class="admonition-title">Endpoint path</p>
+<p>Report generation lives under <code>/api/v1/export/*</code>, not <code>/api/v1/reports</code>. The latter is
+not available and returns <code>404</code>.</p>
+</div>
+<hr />
+<h2 id="user-settings">User Settings<a class="headerlink" href="#user-settings" title="Anchor link to this section">&para;</a></h2>
+<h3 id="profile-settings">Profile Settings<a class="headerlink" href="#profile-settings" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Personal Information:</strong>
+1. Go to <strong>Profile</strong> → <strong>Profile</strong> tab
+2. Update:
+   - Full name
+   - Email address
+   - Job title
+   - Department
+   - Avatar image</p>
+<h3 id="security-settings">Security Settings<a class="headerlink" href="#security-settings" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Password:</strong>
+1. Go to <strong>Profile</strong> → <strong>Security</strong> tab
+2. Click <strong>Change Password</strong>
+3. Enter current and new password
+4. Click <strong>Update</strong></p>
+<p><strong>Two-Factor Authentication (2FA):</strong>
+1. Go to <strong>Security</strong> tab
+2. Click <strong>Enable 2FA</strong>
+3. Scan QR code with authenticator app
+4. Enter verification code
+5. Save backup codes</p>
+<p><strong>Active Sessions:</strong>
+- View all logged-in devices
+- Revoke access from untrusted devices</p>
+<h3 id="api-keys">API Keys<a class="headerlink" href="#api-keys" title="Anchor link to this section">&para;</a></h3>
+<p>Scoped, revocable keys (<code>wbx_live_...</code>) for the SDK, CI/CD, and the MCP server.</p>
+<p><strong>Creating an API Key:</strong></p>
+<ol>
+<li>Go to <strong>Profile</strong> → <strong>API Keys</strong> tab</li>
+<li>Click <strong>Generate New Key</strong></li>
+<li>Enter a key name, scopes, and an optional expiry</li>
+<li>Copy and save the key securely</li>
+<li><strong>Important:</strong> the key is shown only once</li>
+</ol>
+<p><strong>Managing Keys:</strong></p>
+<ul>
+<li>View all keys with their prefix, scopes, and expiry</li>
+<li>See last used date before deciding whether a key is safe to revoke</li>
+<li>Revoke unused keys — revocation takes effect immediately</li>
+</ul>
+<p>Key creation and revocation are admin-only, since a key is an organization-wide credential.
+See <a href="/account/api-keys/">API Keys</a> for the full reference, the REST endpoints, and how
+keys differ from login tokens.</p>
+<h3 id="notification-preferences_1">Notification Preferences<a class="headerlink" href="#notification-preferences_1" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Email Notifications:</strong>
+- Alert notifications
+- Weekly summary
+- Product updates
+- Security alerts</p>
+<p><strong>Slack Integration:</strong>
+- Connect Slack workspace
+- Choose channels
+- Configure alert routing</p>
+<p><strong>In-App Notifications:</strong>
+- Desktop notifications
+- Badge counts
+- Sound alerts</p>
+<hr />
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Anchor link to this section">&para;</a></h2>
+<h3 id="model-management">Model Management<a class="headerlink" href="#model-management" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Use descriptive model names
+✅ Add detailed descriptions
+✅ Tag models by environment (dev/staging/prod)
+✅ Keep baseline metrics updated
+✅ Archive old model versions</p>
+<h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Set appropriate sampling rates (0.1 for high volume)
+✅ Log predictions immediately
+✅ Include metadata for debugging
+✅ Review dashboards daily
+✅ Investigate anomalies promptly</p>
+<h3 id="alerts">Alerts<a class="headerlink" href="#alerts" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Start with higher thresholds, tune down
+✅ Use clear, actionable alert names
+✅ Set up escalation paths
+✅ Document alert response procedures
+✅ Review and prune unused alert rules</p>
+<h3 id="explanations">Explanations<a class="headerlink" href="#explanations" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Generate explanations for edge cases
+✅ Document explanation findings
+✅ Use SHAP for global understanding
+✅ Use LIME for specific predictions
+✅ Share explanations with stakeholders</p>
+<h3 id="compliance">Compliance<a class="headerlink" href="#compliance" title="Anchor link to this section">&para;</a></h3>
+<p>✅ Run regular fairness audits
+✅ Document bias mitigation steps
+✅ Generate monthly compliance reports
+✅ Keep audit trail complete
+✅ Review and update policies</p>
+<hr />
+<h2 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Anchor link to this section">&para;</a></h2>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Anchor link to this section">&para;</a></h3>
+<ul>
+<li><strong>Getting Started:</strong> <a href="/get-started/getting-started/">Getting Started guide</a></li>
+<li><strong>SDK Guide:</strong> <a href="/sdk/">SDK Documentation</a></li>
+<li><strong>API Reference:</strong> <a href="/sdk/api-reference/">REST API Reference</a></li>
+<li><strong>API Keys:</strong> <a href="/account/api-keys/">Issuing and revoking API keys</a></li>
+<li><strong>Plans &amp; Limits:</strong> <a href="/get-started/plans/">Plans and API allowances</a></li>
+<li><strong>FAQ:</strong> <a href="/help/faq/">Frequently Asked Questions</a></li>
+<li><strong>Troubleshooting:</strong> <a href="/help/troubleshooting/">Troubleshooting guide</a></li>
+</ul>
+<h3 id="governance--compliance">Governance &amp; compliance<a class="headerlink" href="#governance--compliance" title="Anchor link to this section">&para;</a></h3>
+<ul>
+<li><a href="/user-guide/trust-score/">Trust Score</a></li>
+<li><a href="/user-guide/risk-register/">AI Risk Register</a></li>
+<li><a href="/user-guide/governance/">Governance Review Boards</a></li>
+</ul>
+<h3 id="integration-quick-references">Integration quick references<a class="headerlink" href="#integration-quick-references" title="Anchor link to this section">&para;</a></h3>
+<ul>
+<li><a href="/integrations/mcp/">MCP Server</a></li>
+<li><a href="/integrations/tensorflow/">TensorFlow</a></li>
+<li><a href="/integrations/huggingface/">Hugging Face</a></li>
+<li><a href="/integrations/langchain/">LangChain</a></li>
+</ul>
+<h3 id="support">Support<a class="headerlink" href="#support" title="Anchor link to this section">&para;</a></h3>
+<ul>
+<li><strong>Email:</strong> <a href="mailto:support@whiteboxxai.com">support@whiteboxxai.com</a></li>
+<li><strong>Community:</strong> <a href="https://community.whiteboxxai.com">community.whiteboxxai.com</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../get-started/plans/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Plans &amp; Limits">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Plans & Limits
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="features/" class="md-footer__link md-footer__link--next" aria-label="Next: Features">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Features
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 AgentaFlow · WhiteBoxXAI
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/AgentaFlow/whitebox-python-sdk" target="_blank" rel="noopener" title="WhiteBoxXAI Python SDK" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://whiteboxxai.com" target="_blank" rel="noopener" title="whiteboxxai.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M351.9 280H161c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zm-191-48h190.9c-2.8-64.5-17.1-123.9-37.4-167.4-11.4-24.4-23.7-41.8-35.1-52.4C268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4m-48 0c3.5-85.6 25.6-165.1 57.9-217.3C78.7 47.3 10.9 131.2 1.5 232zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3zm111.4-48C501.9 131.2 434.1 47.3 342 14.7c32.3 52.2 54.4 131.7 57.9 217.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
