@@ -1043,18 +1043,40 @@ POST   /governance/review-boards/archive/export
 
 ## Alerts
 
-!!! warning "Not available yet"
-    The alerts REST API is not registered on the backend. Requests to `/api/v1/alerts` and
-    `/api/v1/alerts/rules` return `404`.
+### Alert Rules
 
-    The SDK exposes `client.alerts.create()` / `client.alerts.list()` and
-    `ModelMonitor.create_alert_rule()` / `get_active_alerts()`, but these call the endpoints
-    above and will fail until they ship. Manage alert rules in the dashboard under
-    **Observability → Alerts** for now.
+```http
+POST   /alerts/rules                        # Create a rule (threshold or anomaly-based)
+GET    /alerts/rules                        # List rules for the organization
+GET    /alerts/rules/{rule_id}
+PATCH  /alerts/rules/{rule_id}
+DELETE /alerts/rules/{rule_id}
+POST   /alerts/rules/{rule_id}/evaluate      # Test whether a rule would fire, without creating a real alert
+Authorization: Bearer {token}
+```
 
-    Drift and bias thresholds *are* configurable through the API — see [Drift
-    Detection](#drift-detection) and [Bias & Fairness](#bias--fairness). A `high` or
-    `critical` result there auto-drafts a [risk register](#risk-register) entry.
+### Alert Instances
+
+```http
+GET  /alerts/instances                       # List triggered alerts, with filters
+GET  /alerts/instances/{alert_id}
+POST /alerts/instances/{alert_id}/acknowledge
+POST /alerts/instances/{alert_id}/resolve
+POST /alerts/instances/{alert_id}/snooze
+GET  /alerts/statistics                      # Counts, severity distribution, MTTA/MTTR
+Authorization: Bearer {token}
+```
+
+The SDK exposes this as `client.alerts.create()` / `list()` / `get_rule()` / `update_rule()` /
+`delete_rule()` / `evaluate_rule()` / `list_instances()` / `get_instance()` / `acknowledge()` /
+`resolve()`, and the simpler `ModelMonitor.create_alert_rule()` / `get_active_alerts()` — see
+[SDK Documentation](/sdk/#2-modelmonitor) for the full signatures. All of it is also available
+from the dashboard under **Observability → Alerts**.
+
+Drift and bias thresholds are *separately* configurable through the API — see [Drift
+Detection](#drift-detection) and [Bias & Fairness](#bias--fairness). A `high` or
+`critical` result there auto-drafts a [risk register](#risk-register) entry regardless of
+whether an alert rule is also configured for it.
 
 ---
 

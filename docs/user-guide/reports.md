@@ -76,7 +76,8 @@ and audit packages, CSV or Excel for further analysis, JSON for feeding another 
     4. Click **Generate Report** and wait — processing takes roughly 30–300 seconds
        depending on data volume, moving through `pending` → `in_progress` → `completed`.
     5. **View Report** to preview it in the browser, **Download** to save it locally, or
-       **Share** to email it to a stakeholder directly.
+       **Share** to send it to someone outside your organization — see [Share a report
+       externally](#share-a-report-externally).
 
     A report includes an executive summary (totals, trend, drift status, recommendations),
     charts (volume over time, accuracy trend, precision/recall, prediction distribution),
@@ -117,6 +118,26 @@ and audit packages, CSV or Excel for further analysis, JSON for feeding another 
     See the [API Reference](/sdk/api-reference/#exports--reports) for the full endpoint
     surface, including templates, configurations, and delivery integrations.
 
+### Evidence Pack: one call, everything in scope
+
+For the common case of "I need everything for this audit right now," skip assembling a
+template and call the Evidence Pack endpoint instead:
+
+```bash
+curl -X POST https://api.whiteboxxai.com/api/v1/export/evidence-pack \
+  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "pdf",
+    "model_ids": ["..."]
+  }'
+```
+
+It composes Trust Score, AI Risk Register, and Compliance evidence — plus any model-scoped
+categories you include — into one branded document, using the same [report
+branding](#delivery) as everything else. On the dashboard, it's the **Generate Evidence Pack**
+card on the Evidence & Reports page.
+
 ## Scheduled reports
 
 Send a report automatically on a recurring basis — the usual pattern for a monthly
@@ -143,9 +164,66 @@ Manage schedules with `GET /api/v1/export/scheduled-reports`, `PUT`/`DELETE` on
 Reports can be delivered by `download`, `email`, `webhook`, `s3`, `sftp`, or `api`.
 Configure third-party delivery integrations under `/api/v1/export/integrations`.
 
-On the Enterprise plan, reports can also carry your own branding — logo, color scheme,
-footer text, or a fully white-labeled export with WhiteBoxXAI branding removed. Contact
-support to set this up.
+Reports can also carry your own branding — a logo and a primary color, applied to every
+generated report. It's self-service: any organization admin sets it under **Settings → Report
+Branding**, or through `PATCH /api/v1/organizations/{id}/branding` and
+`POST /api/v1/organizations/{id}/branding/logo`.
+
+## Share a report externally
+
+Handing a report to someone outside your organization — an external auditor, a customer's
+security team — doesn't mean emailing a PDF or creating them a dashboard account. A share link
+authenticates the *recipient*, not just the link:
+
+=== "Dashboard (no code)"
+
+    1. On the Evidence & Reports page, open a completed report and click **Share externally**.
+    2. Enter the recipient's email address.
+    3. They get an email with a link to a page outside the authenticated dashboard
+       (`/share/{share_slug}`). Opening it doesn't show the report — it prompts for a one-time
+       passcode, sent to that same email address, before anything is revealed.
+    4. Track every share's status (pending, verified, revoked), view count, and expiry from
+       the same dialog, and revoke one at any time.
+
+=== "API / SDK"
+
+    ```bash
+    # Create a share for a completed export
+    curl -X POST https://api.whiteboxxai.com/api/v1/export/exports/{export_id}/share \
+      -H "Authorization: Bearer $WHITEBOXXAI_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"recipient_email": "auditor@theirfirm.com"}'
+
+    # List shares for an export
+    curl https://api.whiteboxxai.com/api/v1/export/exports/{export_id}/shares \
+      -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+
+    # Revoke one
+    curl -X POST https://api.whiteboxxai.com/api/v1/export/shares/{share_slug}/revoke \
+      -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+    ```
+
+    The recipient's side of the flow is unauthenticated by design — they don't have a
+    WhiteBoxXAI account — and rate-limited:
+
+    ```bash
+    POST /api/v1/export/shares/{share_slug}/request-otp   # emails a 6-digit code
+    POST /api/v1/export/shares/{share_slug}/verify-otp     # {"otp_code": "123456"}
+    GET  /api/v1/export/shares/{share_slug}/download       # Bearer: the token verify-otp returned
+    ```
+
+Only a completed export can be shared. A few things worth knowing about the security model:
+
+- The share link itself is a **locator, not a credential** — reaching `/share/{share_slug}`
+  reveals nothing. The recipient still has to prove control of their email via a one-time
+  passcode before a download token is minted.
+- That download token is scoped and short-lived (15 minutes) — it authorizes nothing beyond
+  downloading that one report.
+- Revoking a share blocks any further OTP request or verification immediately. A download
+  token already issued before the revocation remains valid only until its own 15-minute
+  expiry.
+- Every step — created, code requested, verified, denied, viewed, revoked — is written to the
+  audit trail.
 
 ## Where this data comes from
 

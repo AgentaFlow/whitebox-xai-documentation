@@ -63,14 +63,13 @@ Your account or API key doesn't have permission for that action:
 - **Demo accounts are read-only** — they can view data but can't create, edit, or delete. See
   [Plans & Limits](/get-started/plans/).
 
-### "404 Not Found" on `/api/v1/alerts` or `/api/v1/reports`
+### "404 Not Found" on `/api/v1/reports`
 
-These endpoints aren't available. Alerts are managed in the dashboard under **Observability →
-Alerts**; report generation lives at `/api/v1/export/*`. See [Exports &
+Report generation lives at `/api/v1/export/*`, not `/api/v1/reports`. See [Exports &
 Reports](/sdk/api-reference/#exports--reports).
 
-The SDK's `client.alerts.*`, `ModelMonitor.create_alert_rule()`, and
-`ModelMonitor.get_active_alerts()` call the alerts endpoint and will fail for this reason.
+Getting a 404 on an alerts endpoint instead? Check the path — rules live under
+`/api/v1/alerts/rules`, not `/api/v1/alerts` directly. See [Alerts](/sdk/api-reference/#alerts).
 
 ## Predictions aren't appearing
 

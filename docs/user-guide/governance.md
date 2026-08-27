@@ -198,6 +198,25 @@ POST /api/v1/governance/review-boards/requests/{request_id}/finalize
     rather than left in a vote record. See [Automatic risk
     drafting](/user-guide/risk-register/#automatic-risk-drafting).
 
+## RACI assignment
+
+Beyond a vote, a review request can carry a RACI assignment — who's Responsible, Accountable,
+Consulted, and Informed — the structure ISO/IEC 42001 Clause 5.3 and Annex A.3 expect for AI
+governance roles and responsibilities.
+
+In the dashboard, this is the **RACI** page under Governance: review requests as cards, each
+showing its assigned roles, with an **Assign role** dialog (role, member, optional notes).
+Filter by board.
+
+```bash
+GET  /api/v1/governance/review-boards/raci-grid       # the full grid, optionally filtered to one board
+POST /api/v1/governance/review-boards/requests/{request_id}/raci
+GET|PATCH|DELETE /api/v1/governance/review-boards/requests/{request_id}/raci/{assignment_id}
+```
+
+The [`whitebox_governance_raci_grid`](/integrations/mcp/#governance-raci) MCP tool exposes the
+same grid read-only for agent clients.
+
 ## AI-assisted governance
 
 WhiteBoxXAI can help boards work faster and more consistently:

@@ -207,7 +207,7 @@ client.drift.get_report(model_id, report_id)
 client.drift.get_trend(model_id, days=7)
 
 # Explanations
-client.explanations.generate(prediction_id, method)
+client.explanations.generate(model_id, instance, method=None, ...)
 client.explanations.get(explanation_id)
 
 # Fairness
@@ -218,9 +218,17 @@ client.fairness.get_bias_history(model_id, days=30)
 client.fairness.get_metric_history(model_id, metric_type, days=30)
 client.fairness.get_latest_audit(model_id)
 
-# Alerts — see the warning under ModelMonitor; the backend endpoint is not live
-client.alerts.create(...)
-client.alerts.list(model_id=None)
+# Alerts
+client.alerts.create(name, alert_type, severity, conditions, model_id=None, ...)
+client.alerts.list(model_id=None, alert_type=None, is_active=None, ...)
+client.alerts.get_rule(rule_id)
+client.alerts.update_rule(rule_id, **kwargs)
+client.alerts.delete_rule(rule_id)
+client.alerts.evaluate_rule(rule_id, metric_values=None, ...)
+client.alerts.list_instances(rule_id=None, model_id=None, status=None, ...)
+client.alerts.get_instance(alert_id)
+client.alerts.acknowledge(alert_id, user_id, notes=None)
+client.alerts.resolve(alert_id, user_id, resolution_notes=None)
 ```
 
 Every method has an `a`-prefixed async twin — `client.models.aregister()`,
@@ -307,10 +315,24 @@ monitor.detect_drift(...)
 `log_prediction(explain=True)` really does generate an explanation — in versions before
 1.0.0 the flag was accepted and silently dropped.
 
-!!! warning "Alert helpers don't work yet"
-    `monitor.create_alert_rule()` and `monitor.get_active_alerts()` call `/api/v1/alerts`,
-    which is not registered on the backend and returns `404`. Manage alert rules in the
-    dashboard — see [Managing Alerts](/user-guide/#managing-alerts).
+`monitor.create_alert_rule()` and `monitor.get_active_alerts()` call the [Alerts
+API](/sdk/api-reference/#alerts) — see [Managing Alerts](/user-guide/#managing-alerts) for the
+dashboard equivalent.
+
+```python
+monitor.create_alert_rule(
+    metric="accuracy",
+    threshold=0.85,
+    condition="below",
+    severity="high",   # required — there's no default, pass it via kwargs
+)
+
+active = monitor.get_active_alerts()
+```
+
+This is a convenience wrapper over `client.alerts.create()` with a simpler, single-condition
+signature — for multi-condition rules, or full control over notification channels and
+throttling, call `client.alerts.create()` directly instead.
 
 **Local buffering:**
 
@@ -750,44 +772,108 @@ drift_result = client.drift.detect(
 
 ### Explanations API
 
-#### generate_explanation()
+#### generate()
 
-Generate explanation for a prediction.
+Generate a SHAP or LIME explanation for a specific input instance.
 
 ```python
 explanation = client.explanations.generate(
-    prediction_id: str,
-    method: str = "shap",  # "shap" or "lime"
-    config: Dict = None
+    model_id: str,
+    instance: Dict[str, Any],       # the feature values to explain
+    method: str = None,             # "shap" or "lime" — server default if omitted
+    prediction_id: str = None,      # optional association with a logged prediction
+    num_features: int = 10,         # 1-100
+    num_samples: int = 5000,        # 100-50000
+    use_cache: bool = True,         # reuse a cached result for identical (model_id, instance, method)
 ) -> Dict
 ```
+
+Blocks until the explanation is ready. An `a`-prefixed async twin, `agenerate()`, exists like
+every other SDK method.
 
 **Example:**
 
 ```python
 explanation = client.explanations.generate(
-    prediction_id="pred-uuid",
-    method="shap",
-    config={
-        "background_samples": 100,
-        "approximate": False
-    }
+    model_id="model-uuid",
+    instance={
+        "transaction_amount": 250.00,
+        "merchant_category": "electronics",
+        "time_of_day": 14,
+        "customer_age": 34
+    },
+    method="shap"
 )
 
-# Returns:
+# Returns a plain dict matching the ExplanationResponse schema:
 {
-    "explanation_id": "exp-uuid",
+    "id": "exp-uuid",
+    "model_id": "model-uuid",
+    "prediction_id": None,
     "method": "shap",
+    "status": "completed",
     "base_value": 0.20,
-    "prediction": 0.65,
-    "feature_contributions": {
+    "score": 0.65,
+    "feature_weights": {
         "transaction_amount": 0.15,
         "merchant_category": 0.10,
         "time_of_day": -0.05,
         "customer_age": 0.25
-    }
+    },
+    "cached": False,
+    "computation_time_ms": 842.1
 }
 ```
+
+!!! warning "Field names are `feature_weights` and `score`"
+    Not `.feature_contributions` or `.prediction` — and the result is a `dict`, not an object
+    with attributes. `explanation["feature_weights"]`, not
+    `explanation.feature_contributions`.
+
+#### Other explanation methods
+
+Every method below has an `a`-prefixed async twin.
+
+```python
+# Non-blocking: up to 100 instances in one call
+client.explanations.generate_bulk(model_id, instances, method=None, parallel=True)
+# -> {"explanation_ids": [...], "total": N, "message": "..."}
+
+# Non-blocking: a single instance, poll get() until status != "pending"
+client.explanations.generate_async(model_id, instance, method=None, prediction_id=None)
+# -> {"explanation_id": "...", "status": "pending", "message": "..."}
+
+client.explanations.get(explanation_id)
+client.explanations.list_by_model(model_id, method=None, status=None, limit=50, offset=0)
+client.explanations.get_by_prediction(prediction_id)
+client.explanations.get_stats(model_id)
+
+# Per-model explanation defaults (replaces any `explanation_config=` kwarg on models.update —
+# that kwarg doesn't exist)
+client.explanations.set_config(
+    model_id, enabled=True, default_method="shap_kernel", auto_explain=False,
+    cache_enabled=True, cache_ttl_hours=24,
+)
+client.explanations.get_config(model_id)
+client.explanations.delete_config(model_id)
+
+# Compare 2-20 existing explanations
+client.explanations.compare(explanation_ids, comparison_type="feature_importance")
+# comparison_type: "feature_importance" | "instance_similarity" | "method_agreement"
+
+# Visualization data (not a rendered plot — chart-ready data for your own UI)
+client.explanations.visualize(explanation_id, plot_type, max_features=10)
+# plot_type: "waterfall" | "force" | "feature_importance"
+client.explanations.visualize_multi(explanation_ids, plot_type, max_features=20)
+# plot_type: "summary" | "decision" | "dependence", 1-100 ids
+```
+
+!!! note "No global feature-importance endpoint"
+    There's no server-side "global importance across all predictions" call. Aggregate it
+    yourself from `list_by_model()`. There's also no custom-explainer registration mechanism
+    (`BaseExplainer`/`register_explainer`) and no `export_report()` — build a PDF/HTML export
+    through [Audit & Explanation Reports](/user-guide/reports/) instead, which packages
+    explanations alongside everything else in a report.
 
 ---
 
