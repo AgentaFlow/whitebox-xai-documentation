@@ -546,14 +546,14 @@ Your service handles 10,000 predictions per minute. SDK logging is causing 200ms
 ## 📞 Support
 
 ### Certification Questions
-- **Email:** certifications@whiteboxxai.example.com
+- **Email:** support@whiteboxxai.com
 - **Phone:** +1-800-EXPLAIN (M-F, 9 AM - 5 PM EST)
 - **Live Chat:** Available on certification portal
 
 ### Technical Support
 - **Exam Day Issues:** +1-800-EXPLAIN (24/7)
 - **Proctor Support:** Available during exam
-- **Platform Issues:** support@whiteboxxai.example.com
+- **Platform Issues:** support@whiteboxxai.com
 
 ---
 

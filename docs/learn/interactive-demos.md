@@ -708,7 +708,7 @@ Before deploying a new demo:
 ## 📞 Support
 
 For demo questions:
-- **Email:** demos@whiteboxxai.example.com
+- **Email:** support@whiteboxxai.com
 - **Slack:** #demos
 - **On-call:** For production demo issues
 
