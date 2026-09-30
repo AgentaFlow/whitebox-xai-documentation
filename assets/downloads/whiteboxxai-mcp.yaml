@@ -1,0 +1,8 @@
+mcpServers:
+  whiteboxxai:
+    command: "python"
+    args:
+      - "-m"
+      - "whiteboxxai_mcp"
+    env:
+      WHITEBOX_API_KEY: "${WHITEBOX_API_KEY}"
