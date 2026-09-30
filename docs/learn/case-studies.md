@@ -1482,7 +1482,7 @@ def handle_drift_alert(alert):
 ## 📞 Contact
 
 For more information about these case studies or to share your own success story:
-- **Email:** casestudies@whiteboxxai.example.com
+- **Email:** support@whiteboxxai.com
 - **Website:** whiteboxxai.example.com/customers
 - **Slack:** #customer-stories
 

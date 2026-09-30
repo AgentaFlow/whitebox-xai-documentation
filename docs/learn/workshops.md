@@ -600,7 +600,7 @@ Track these metrics to improve workshops:
 ## 📞 Support
 
 For workshop questions:
-- **Email:** workshops@whiteboxxai.example.com
+- **Email:** support@whiteboxxai.com
 - **Slack:** #workshops
 - **Office Hours:** Tuesdays 2-3 PM EST
 

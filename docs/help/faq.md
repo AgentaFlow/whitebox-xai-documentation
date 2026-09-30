@@ -121,7 +121,7 @@ Yes, on Enterprise plans:
 - LDAP/Active Directory
 - Okta, Auth0, Azure AD
 
-Contact sales@whiteboxxai.com to enable.
+Contact support@whiteboxxai.com to enable.
 
 ### How do I generate an API key?
 
@@ -1174,7 +1174,7 @@ Yes, anytime:
 
 ### Is there a discount for annual billing?
 
-Contact **[sales@whiteboxxai.com](mailto:sales@whiteboxxai.com)** to discuss annual billing
+Contact **[support@whiteboxxai.com](mailto:support@whiteboxxai.com)** to discuss annual billing
 or an Enterprise Edition license.
 
 ### What happens if I exceed my plan limits?
