@@ -3,7 +3,7 @@
 ## Overview
 
 Standard operating procedures for the Next.js frontend. Repo-wide rules live in
-[`/AGENTS.md`](../../AGENTS.md); this file is the how-to.
+[`/AGENTS.md`](https://github.com/AgentaFlow/whitebox-xai-azure/blob/main/AGENTS.md); this file is the how-to.
 
 ## Prerequisites
 

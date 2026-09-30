@@ -3,7 +3,7 @@
 ## Overview
 
 Standard operating procedures for the FastAPI backend, Python dependencies, database migrations,
-and virtual environments in WhiteBoxXAI. Repo-wide rules live in [`/AGENTS.md`](../../AGENTS.md);
+and virtual environments in WhiteBoxXAI. Repo-wide rules live in [`/AGENTS.md`](https://github.com/AgentaFlow/whitebox-xai-azure/blob/main/AGENTS.md);
 this file is the how-to.
 
 ## Prerequisites
@@ -100,7 +100,7 @@ alembic upgrade head && alembic downgrade -1 && alembic upgrade head
 
 Use `backend.models.database.UUID(length=36)` for UUID columns, add
 `values_callable=lambda e: [m.value for m in e]` to every `SQLEnum`, and register new models in
-`backend/models/__init__.py` — see the schema section of [`/AGENTS.md`](../../AGENTS.md) for why
+`backend/models/__init__.py` — see the schema section of [`/AGENTS.md`](https://github.com/AgentaFlow/whitebox-xai-azure/blob/main/AGENTS.md) for why
 each of those has already caused a production defect.
 
 ## 5. What CI actually enforces
