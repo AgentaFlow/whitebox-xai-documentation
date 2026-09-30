@@ -24,8 +24,10 @@ Comprehensive documentation for all WhiteBoxXAI features and capabilities.
 
 Need audit evidence or a plain-English explanation of a decision, not the SDK reference?
 Start here instead: **[Audit & Explanation Reports](/user-guide/reports/)** covers report
-categories, the dashboard walkthrough, and why every number in a report traces back to real
+categories, the Enhanced Dashboard walkthrough, and why every number in a report traces back to real
 computed data — not a template.
+
+For compliance automation, check out our new **[Phase 6 Report Engine](/user-guide/report-engine/)**, which enables single-click report generation directly from the Enhanced Dashboard or the Python SDK.
 
 For the explainability computation itself (SHAP, LIME, feature importance) see
 [Explainability Engine](#explainability-engine) below; for fairness audits see
@@ -1372,7 +1374,7 @@ computation.
 ## LLM Monitoring
 
 Token, cost, latency, safety, and RAG-quality tracking for LLM calls — the LLM equivalent of
-prediction logging above. For the dashboard walkthrough (Conversations, Tokens, Costs, Safety,
+prediction logging above. For the Enhanced Dashboard walkthrough (Conversations, Tokens, Costs, Safety,
 RAG Quality tabs), see [Monitoring LLMs](/user-guide/#monitoring-llms) in the User Guide; this
 section is the SDK surface behind it.
 

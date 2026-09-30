@@ -101,6 +101,7 @@ nav:
   - Home: index.md
   - Audit & Explanation Reports:
       - user-guide/reports.md
+      - Phase 6 Report Engine: user-guide/report-engine.md
       - Trust Score: user-guide/trust-score.md
       - AI Risk Register: user-guide/risk-register.md
       - Governance Review Boards: user-guide/governance.md
@@ -117,6 +118,11 @@ nav:
       - Multi-Agent Monitoring: sdk/multi-agent-monitoring.md
       - Multi-Agent Quick Reference: sdk/multi-agent-quick-reference.md
       - API Reference: sdk/api-reference.md
+  - Agent & Developer Resources:
+      - agent-resources/index.md
+      - Agent YAML Definitions: agent-resources/yaml-definitions.md
+      - Skill Libraries: agent-resources/skill-libraries.md
+      - AI Prompts: agent-resources/prompts.md
   - Integrations:
       - Integration Examples: integrations/examples.md
       - MCP Server: integrations/mcp.md
