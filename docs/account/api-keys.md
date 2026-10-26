@@ -86,11 +86,13 @@ client = WhiteBoxXAI(api_key="wbx_live_...")
 Or, preferably, from the environment:
 
 ```bash
-export WHITEBOXXAI_API_KEY="wbx_live_..."
+export WHITEBOX_API_KEY="wbx_live_..."
 ```
 
 ```python
-client = WhiteBoxXAI()  # reads WHITEBOXXAI_API_KEY
+import os
+
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 ```
 
 ## List keys

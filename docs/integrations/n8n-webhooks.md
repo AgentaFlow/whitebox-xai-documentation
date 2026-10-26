@@ -650,5 +650,5 @@ A: Yes, modify the Code node to filter nodes before sending. You can also use `m
 
 For issues or questions:
 - Documentation: https://docs.whiteboxxai.com
-- Community: https://community.whiteboxxai.com
+- Support: [support@whiteboxxai.com](mailto:support@whiteboxxai.com)
 - Email: support@whiteboxxai.com

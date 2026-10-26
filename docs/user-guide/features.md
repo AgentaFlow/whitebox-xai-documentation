@@ -145,7 +145,7 @@ Git-side half of the traceability [GitHub Integration](../integrations/github.md
 
 ```bash
 curl -X POST https://api.whiteboxxai.com/api/v1/models \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Authorization: Bearer $WHITEBOX_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Customer Churn Predictor",

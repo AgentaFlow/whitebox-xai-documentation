@@ -335,7 +335,7 @@ POST /api/v1/governance/review-boards/archive/search
 {
   "query": "fraud detection bias",
   "final_decision": "approved",
-  "date_from": "2024-01-01",
+  "date_from": "2026-01-01",
   "keywords": ["fairness", "bias"],
   "limit": 20
 }

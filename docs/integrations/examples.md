@@ -25,6 +25,7 @@ where a snippet uses `feature_names`, set it to your model's input feature names
 ### Example 1: Basic Prediction Logging
 
 ```python
+import os
 """
 basic_logging.py - Simplest WhiteBoxXAI integration
 """
@@ -32,7 +33,7 @@ from whiteboxxai import WhiteBoxXAI
 import numpy as np
 
 # Initialize client
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Register model
 model_id = client.models.register(
@@ -75,6 +76,7 @@ print("✓ All predictions logged successfully!")
 ### Example 2: Batch Logging
 
 ```python
+import os
 """
 batch_logging.py - Efficient batch prediction logging
 """
@@ -82,7 +84,7 @@ from whiteboxxai import WhiteBoxXAI
 import pandas as pd
 import numpy as np
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 model_id = "your-model-id"
 
 # Simulate batch predictions
@@ -125,6 +127,7 @@ print(f"First prediction ID: {prediction_ids[0]}")
 #### Example 3: Random Forest Classification
 
 ```python
+import os
 """
 sklearn_random_forest.py - Monitor Random Forest classifier
 """
@@ -168,7 +171,7 @@ baseline_metrics = {
 print(f"Baseline Accuracy: {baseline_metrics['accuracy']:.3f}")
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = SklearnMonitor(client, model=model)
 
 # Register model with baseline
@@ -199,6 +202,7 @@ print(f"✓ Logged {len(predictions)} predictions automatically")
 #### Example 4: Logistic Regression with Pipeline
 
 ```python
+import os
 """
 sklearn_pipeline.py - Monitor sklearn pipeline
 """
@@ -226,7 +230,7 @@ print("Training pipeline...")
 pipeline.fit(X_train, y_train)
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = SklearnMonitor(client, model=pipeline)
 
 # Register - monitor automatically handles pipeline
@@ -254,6 +258,7 @@ print(f"✓ Logged {len(predictions)} predictions from pipeline")
 #### Example 5: Neural Network Classification
 
 ```python
+import os
 """
 pytorch_nn.py - Monitor PyTorch neural network
 """
@@ -315,7 +320,7 @@ for epoch in range(10):
 print("✓ Training complete")
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = TorchMonitor(client, model=model, device="cpu")
 
 # Register model
@@ -346,6 +351,7 @@ print(f"✓ Logged {len(predictions)} predictions")
 #### Example 6: CNN Image Classification
 
 ```python
+import os
 """
 pytorch_cnn.py - Monitor CNN for image classification
 """
@@ -387,7 +393,7 @@ model.load_state_dict(torch.load("mnist_cnn.pth", weights_only=True))
 model.eval()
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = TorchMonitor(client, model=model, device="cpu")
 
 # Register
@@ -429,6 +435,7 @@ print("✓ Logged batch predictions")
 ### Example 7: Fraud Detection
 
 ```python
+import os
 """
 fraud_detection.py - Real-world fraud detection monitoring
 """
@@ -440,7 +447,7 @@ import joblib
 model = joblib.load("fraud_model.pkl")
 
 # Initialize monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = ModelMonitor(client)
 
 # Register with detailed metadata
@@ -536,7 +543,7 @@ transaction = {
     "num_recent": 3,
     "avg_amount": 85.50,
     "is_international": 0,
-    "timestamp": "2025-12-05T14:30:00Z",
+    "timestamp": "2026-10-05T14:30:00Z",
     "channel": "online"
 }
 
@@ -548,13 +555,14 @@ print(f"Prediction logged: {result['prediction_id']}")
 ### Example 8: Credit Scoring
 
 ```python
+import os
 """
 credit_scoring.py - Credit approval with fairness monitoring
 """
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
 import pandas as pd
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = ModelMonitor(client)
 
 # Register model with fairness focus
@@ -580,7 +588,7 @@ model_id = monitor.register_model(
     metadata={
         "regulatory_compliance": ["ECOA", "FCRA"],
         "fairness_audited": True,
-        "last_audit_date": "2025-11-15"
+        "last_audit_date": "2026-09-15"
     }
 )
 
@@ -651,6 +659,7 @@ if result['explanation']:
 ### Example 9: Customer Churn Prediction
 
 ```python
+import os
 """
 churn_prediction.py - Customer churn with drift monitoring
 """
@@ -658,7 +667,7 @@ from whiteboxxai import WhiteBoxXAI, ModelMonitor
 import pandas as pd
 import numpy as np
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = ModelMonitor(client)
 
 # Register model
@@ -744,13 +753,14 @@ def predict_churn(customer_data):
 ### Example 10: A/B Testing with Monitoring
 
 ```python
+import os
 """
 ab_testing.py - Monitor A/B test variants
 """
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
 import random
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Register both model variants
 monitor_a = ModelMonitor(client)
@@ -843,13 +853,14 @@ def compare_variants():
 ### Example 11: Multi-Model Ensemble
 
 ```python
+import os
 """
 ensemble_monitoring.py - Monitor ensemble of models
 """
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
 import numpy as np
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Register ensemble components
 monitors = {}
@@ -924,6 +935,7 @@ def ensemble_predict(features):
 ### Example 12: High-Throughput Service
 
 ```python
+import os
 """
 high_throughput.py - Production service with streaming
 """
@@ -1002,7 +1014,7 @@ class ProductionMLService:
 # Usage
 service = ProductionMLService(
     model=trained_model,
-    api_key="your-api-key",
+    api_key=os.environ["WHITEBOX_API_KEY"],
     model_id="your-model-id"
 )
 
@@ -1016,6 +1028,7 @@ for i in range(10000):
 ### Example 13: Microservice with Health Checks
 
 ```python
+import os
 """
 microservice.py - Flask microservice with monitoring
 """
@@ -1029,7 +1042,7 @@ app = Flask(__name__)
 model = joblib.load("model.pkl")
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 monitor = ModelMonitor(client, model_id="your-model-id")
 
 @app.route("/predict", methods=["POST"])
@@ -1106,6 +1119,3 @@ if __name__ == "__main__":
 - **More examples:** [public SDK repository](https://github.com/AgentaFlow/whitebox-python-sdk/tree/main/examples)
 - **Example Code:** `/examples` directory
 
----
-
-*Last Updated: December 5, 2025*
