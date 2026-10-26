@@ -37,7 +37,7 @@ the dashboard walkthrough, follow the links in the first column.
 | Drift | [Assurance → Drift](assurance.md#drift) | `client.drift` | [Drift Detection](#drift-detection) |
 | Explanations (SHAP, LIME, DiCE) | [Assurance → Explainability](assurance.md#explainability) | `client.explanations` | [Explainability Engine](#explainability-engine) |
 | Fairness audits | [Assurance → Fairness](assurance.md#fairness) | `client.fairness` | [Bias Detection](#bias-detection) |
-| LLM, RAG and safety | [Observability → LLM & RAG](observability.md#llm-rag-audit-trails) | `client.llm`, `client.rag`, `client.safety`, `client.llm_xai` | [LLM Monitoring](#llm-monitoring), [LLM monitoring guide](../sdk/llm-monitoring.md) |
+| LLM, RAG and safety | [Observability → LLM & RAG](observability.md#llm--rag-audit-trails) | `client.llm`, `client.rag`, `client.safety`, `client.llm_xai` | [LLM Monitoring](#llm-monitoring), [LLM monitoring guide](../sdk/llm-monitoring.md) |
 | Prompt versions and evaluations | [Evaluations](evaluations.md) | `client.prompts` | [Evaluations & Prompt Versions](evaluations.md) |
 | Multi-agent workflows | [Observability → Agents](observability.md#agents) | `client.agent_workflows` | [Multi-Agent Monitoring](../sdk/multi-agent-monitoring.md) |
 | Alerts | [Needs Attention](needs-attention.md) | `client.alerts`, `client.alert_intelligence`, `client.alert_management` | [Alert System](#alert-system) |
@@ -311,7 +311,7 @@ print(f"Logged: {response['prediction_id']}")
 
 For most integrations, `ModelMonitor` is less code than calling `client.predictions.log()`
 directly — it holds the model ID, and adds optional local buffering and sampling. See [SDK
-Documentation](../sdk/index.md#2-modelmonitor) for the full API.
+Documentation](../sdk/index.md#modelmonitor-and-decorators) for the full API.
 
 ```python
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
@@ -398,7 +398,7 @@ monitored_model = torch_monitor.wrap_model(pytorch_model)
 outputs = monitored_model(inputs)  # Forward pass logs automatically
 ```
 
-See [SDK Documentation](../sdk/index.md#3-framework-integrations) for `register_from_model()` and the
+See [SDK Documentation](../sdk/index.md#framework-integrations) for `register_from_model()` and the
 full framework-integration reference.
 
 ### Sampling
@@ -918,7 +918,7 @@ Understand why your models make specific predictions.
 !!! note "Full method reference lives with the SDK"
     This section is the concepts and use cases. For the complete, verified method list —
     `generate_bulk()`, `compare()`, `visualize()`/`visualize_multi()`, `set_config()`, and
-    every parameter — see [SDK Documentation](../sdk/index.md#explanations-api).
+    every parameter — see [SDK Documentation](../sdk/index.md#explanations).
 
 ### SHAP Explanations
 
@@ -1395,7 +1395,7 @@ computation.
 
 Token, cost, latency, safety, and RAG-quality tracking for LLM calls — the LLM equivalent of
 prediction logging above. For the dashboard walkthrough, see
-[Observability → LLM & RAG](observability.md#llm-rag-audit-trails); this section is the SDK surface
+[Observability → LLM & RAG](observability.md#llm--rag-audit-trails); this section is the SDK surface
 behind it. For every provider you can log from, see [LLM monitoring](../sdk/llm-monitoring.md).
 
 ```python

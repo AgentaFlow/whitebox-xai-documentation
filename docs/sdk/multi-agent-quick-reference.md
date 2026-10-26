@@ -139,7 +139,7 @@ curl -X POST https://api.whiteboxxai.com/api/v1/workflows/multi-agent/{workflow_
     "name": "Researcher",
     "role": "researcher",
     "agent_type": "crewai_agent",
-    "model_name": "gpt-4",
+    "model_name": "gpt-4o",
     "llm_provider": "openai",
     "goal": "Find information",
     "tools": ["search"],
@@ -178,8 +178,8 @@ curl https://api.whiteboxxai.com/api/v1/workflows/multi-agent/{workflow_id}/anal
   "status": "completed",
   "total_tokens": 15420,
   "total_cost": 0.2313,
-  "started_at": "2024-01-27T10:00:00Z",
-  "completed_at": "2024-01-27T10:06:30Z",
+  "started_at": "2026-10-27T10:00:00Z",
+  "completed_at": "2026-10-27T10:06:30Z",
   "duration_ms": 390000
 }
 ```
@@ -413,13 +413,13 @@ for agent in breakdown["agents"]:
 ## Environment Variables
 
 ```bash
-export WhiteBoxXAI_API_KEY="your_api_key"
-export WhiteBoxXAI_API_URL="https://api.whiteboxxai.com"  # Optional
+export WHITEBOX_API_KEY="wbx_live_..."
+export WHITEBOX_BASE_URL="https://api.whiteboxxai.com"  # Optional
 ```
 
 ## Links
 
 - [Full Documentation](multi-agent-monitoring.md)
 - [API Reference](api-reference.md)
-- [Dashboard](https://app.whiteboxxai.com)
+- [Dashboard](https://whiteboxxai.com)
 - [Python SDK on GitHub](https://github.com/AgentaFlow/whitebox-python-sdk)

@@ -124,7 +124,11 @@ When all of your plan's systems are in use, registering a model under a **new** 
 an archived one) is refused with `403 Forbidden`:
 
 ```json
-{"detail": "Your plan includes 1 Governed AI System, and all are in use. Archive one you no longer govern, or contact us to govern more."}
+{
+  "error": "HTTPException",
+  "detail": "Your plan includes 1 Governed AI System, and all are in use. Archive one you no longer govern, or contact us to govern more.",
+  "status_code": 403
+}
 ```
 
 To free a slot, archive a system you no longer govern: open it in the

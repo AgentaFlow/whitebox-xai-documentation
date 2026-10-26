@@ -102,7 +102,7 @@ client.prompts.rollback(template_id, target_version_id=previous_id, reason="tone
 ### Link calls to a version
 
 Pass `prompt_version_id` when you log LLM calls. Every call in the
-[LLM & RAG audit trail](observability.md#llm-rag-audit-trails) is then attributable to the exact
+[LLM & RAG audit trail](observability.md#llm--rag-audit-trails) is then attributable to the exact
 prompt that produced it, and prompt drift reports and incidents can be traced to a version:
 
 ```python

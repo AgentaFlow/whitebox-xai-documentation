@@ -16,7 +16,7 @@ For classic ML systems:
 - **Baseline Performance Metrics**: accuracy, precision, recall, F1 score and AUC-ROC, as
   registered with the model, next to what has been measured since
 
-Performance metrics you report from your own evaluation pipeline (`client.metrics.log`) appear here
+Performance metrics you report from your own evaluation pipeline (`client.metrics.create`) appear here
 too. They don't count as [Governance Events](../get-started/governance-events.md).
 
 ## LLM & RAG audit trails
