@@ -1,3 +1,7 @@
+---
+description: Send n8n workflow executions to WhiteBoxXAI with a webhook node, so AI automation runs are recorded as monitored workflows with node-level detail.
+---
+
 # n8n Webhook Integration Guide
 
 ## Overview
@@ -45,7 +49,6 @@ Response:
 ```json
 {
   "webhook_url": "https://api.whiteboxxai.com/api/v1/webhooks/n8n/execution",
-  "api_key": "wbx_live_...",
   "track_all_nodes": true,
   "min_execution_time_ms": 0
 }
@@ -65,7 +68,7 @@ Add a **Webhook** node to your n8n workflow (at the end to capture completion):
   "authentication": "headerAuth",
   "headerAuth": {
     "name": "Authorization",
-    "value": "Bearer YOUR_WhiteBoxXAI_API_KEY"
+    "value": "Bearer wbx_live_..."
   }
 }
 ```
@@ -457,8 +460,9 @@ Use a dedicated **Code** node to collect all node execution data before sending 
 
 ### 5. Rate Limiting
 
-- WhiteBoxXAI has no rate limits for webhooks
-- However, batch operations where possible
+- Webhook calls share the standard API rate limit (100 requests per 60 seconds by default); see
+  [Rate limits](../sdk/api-reference.md#rate-limits)
+- Send one call per workflow execution rather than one per node
 - Use async webhook mode (`responseMode: "onReceived"`)
 
 ### 6. Metadata
@@ -562,7 +566,6 @@ Get webhook configuration and setup instructions.
 ```json
 {
   "webhook_url": "https://api.whiteboxxai.com/api/v1/webhooks/n8n/execution",
-  "api_key": "wbx_live_...",
   "track_all_nodes": true,
   "min_execution_time_ms": 0
 }
@@ -601,15 +604,14 @@ All webhook requests require:
 - Node input/output data is encrypted at rest
 - API keys never logged or stored in plaintext
 
-### Signature Verification (Coming Soon)
+### Authentication
 
-Future versions will support webhook signature verification:
+Webhook calls are authenticated by the API key in the `Authorization` header, like any other API
+request. An `X-n8n-Signature` header is accepted but not verified, so protect the key: store it in n8n
+credentials, use a dedicated key for n8n, and revoke it if the workflow is shared.
 
-```
-X-n8n-Signature: sha256=...
-```
-
-This will allow verification that webhooks originate from your n8n instance.
+Webhook deliveries from n8n don't count as
+[Governance Events](../get-started/governance-events.md).
 
 ---
 

@@ -224,10 +224,10 @@ If your application uses LangChain, the callback handler logs every LLM call for
 model class you use, and groups each root chain run into shared Governance Events:
 
 ```python
-from whiteboxxai.integrations.langchain import LangChainMonitor
+from whiteboxxai.integrations.langchain import LangChainMonitor, WhiteBoxXAICallbackHandler
 
-monitor = LangChainMonitor(client=client, application_name="support-assistant")
-handler = monitor.create_callback_handler()
+monitor = LangChainMonitor(client, application_name="support-assistant", model_id=app_id)
+handler = WhiteBoxXAICallbackHandler(monitor)
 chain.invoke({"question": question}, config={"callbacks": [handler]})
 ```
 

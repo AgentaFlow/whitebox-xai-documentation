@@ -106,7 +106,7 @@ client = WhiteBoxXAI()
 
 model = client.models.register(
     name="Customer Churn Predictor",
-    model_type="classification",
+    model_type="xgboost",
     version="2.1.0",
     framework="xgboost",
     description="Predicts customer churn risk using behavioral data",
@@ -166,10 +166,10 @@ as part of that model's history:
 # Register a new version under the same name
 client.models.register(
     name="Customer Churn Predictor",
-    model_type="classification",
+    model_type="custom",
     version="2.2.0",
-    features=[...],
-    baseline_metrics={...},
+    features=feature_names,
+    baseline_metrics={"accuracy": 0.91},
 )
 
 # List every version registered under that name, newest first
@@ -399,7 +399,11 @@ monitored_model = torch_monitor.wrap_model(pytorch_model)
 outputs = monitored_model(inputs)  # Forward pass logs automatically
 ```
 
-See [SDK Documentation](../sdk/index.md#framework-integrations) for `register_from_model()` and the
+See [SDK Documentation](../sdk/index.md#framework-integrations) for `register_from_model(model_type="neural_network",
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
+)` and the
 full framework-integration reference.
 
 ### Sampling
@@ -862,10 +866,10 @@ method that hands back a chart object; `feature_drifts` above is the raw statist
 # Register the retrained version under the same name
 client.models.register(
     name="Fraud Detection",
-    model_type="classification",
+    model_type="custom",
     version="2.3.0",
-    features=[...],
-    baseline_metrics={...},  # New baselines
+    features=feature_names,
+    baseline_metrics={"accuracy": 0.91},  # New baselines
     tags=["retrained-drift-response"],
 )
 

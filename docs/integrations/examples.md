@@ -1,6 +1,12 @@
-# WhiteBoxXAI Integration Examples
+---
+description: End-to-end code examples for integrating WhiteBoxXAI into ML applications — scikit-learn, PyTorch and XGBoost monitoring, credit, fraud and churn use cases, A/B tests and ensembles.
+---
 
-Comprehensive examples for integrating WhiteBoxXAI into your ML applications.
+# Integration examples
+
+End-to-end examples for integrating WhiteBoxXAI into ML applications. Each one registers the model
+with the fields the API requires (`name`, `version`, `model_type`, `features`, `baseline_metrics`), so
+where a snippet uses `feature_names`, set it to your model's input feature names.
 
 ---
 
@@ -32,7 +38,9 @@ client = WhiteBoxXAI(api_key="your-api-key")
 model_id = client.models.register(
     name="simple_classifier",
     version="1.0.0",
-    model_type="classification"
+    model_type="custom",
+    features=feature_names,
+    baseline_metrics={},
 )
 
 print(f"Model registered: {model_id}")
@@ -167,11 +175,12 @@ monitor = SklearnMonitor(client, model=model)
 feature_names = [f"feature_{i}" for i in range(X.shape[1])]
 model_id = monitor.register_from_model(
     name="random_forest_classifier",
-    model_type="classification",
+    model_type="random_forest",
     X_train=X_train,
     y_train=y_train,
-    feature_names=feature_names,
-    baseline_metrics=baseline_metrics
+    baseline_metrics=baseline_metrics,
+    version="1.0.0",
+    features=feature_names,
 )
 
 print(f"✓ Model registered: {model_id}")
@@ -223,10 +232,12 @@ monitor = SklearnMonitor(client, model=pipeline)
 # Register - monitor automatically handles pipeline
 model_id = monitor.register_from_model(
     name="logistic_regression_pipeline",
-    model_type="classification",
+    model_type="linear_model",
     X_train=X_train,
     y_train=y_train,
-    feature_names=data.feature_names.tolist()
+    features=data.feature_names.tolist(),
+    version="1.0.0",
+    baseline_metrics={},
 )
 
 print(f"✓ Pipeline registered: {model_id}")
@@ -310,9 +321,12 @@ monitor = TorchMonitor(client, model=model, device="cpu")
 # Register model
 model_id = monitor.register_from_model(
     name="pytorch_classifier",
-    model_type="classification",
+    model_type="neural_network",
     input_shape=(20,),
-    output_classes=2
+    output_classes=2,
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 
 print(f"✓ Model registered: {model_id}")
@@ -379,14 +393,17 @@ monitor = TorchMonitor(client, model=model, device="cpu")
 # Register
 model_id = monitor.register_from_model(
     name="mnist_cnn",
-    model_type="classification",
+    model_type="neural_network",
     input_shape=(1, 28, 28),
     output_classes=10,
     metadata={
         "dataset": "MNIST",
         "architecture": "CNN",
         "layers": 4
-    }
+    },
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 
 print(f"✓ CNN registered: {model_id}")
@@ -430,7 +447,7 @@ monitor = ModelMonitor(client)
 model_id = monitor.register_model(
     name="fraud_detection_v2",
     version="2.1.0",
-    model_type="classification",
+    model_type="xgboost",
     framework="xgboost",
     description="Detects fraudulent credit card transactions",
     features=[
@@ -544,7 +561,7 @@ monitor = ModelMonitor(client)
 model_id = monitor.register_model(
     name="credit_approval_model",
     version="3.0.0",
-    model_type="classification",
+    model_type="custom",
     features=[
         "income",
         "employment_length",
@@ -648,7 +665,7 @@ monitor = ModelMonitor(client)
 model_id = monitor.register_model(
     name="churn_predictor",
     version="1.5.0",
-    model_type="classification",
+    model_type="custom",
     features=[
         "account_age_days",
         "total_purchases",
@@ -658,7 +675,8 @@ model_id = monitor.register_model(
         "satisfaction_score",
         "subscription_tier"
     ],
-    target="will_churn"
+    target="will_churn",
+    baseline_metrics={},
 )
 
 # Enable drift detection
@@ -739,16 +757,20 @@ monitor_a = ModelMonitor(client)
 model_a_id = monitor_a.register_model(
     name="recommendation_model_a",
     version="1.0.0",
-    model_type="classification",
-    tags=["ab-test", "variant-a"]
+    model_type="custom",
+    tags=["ab-test", "variant-a"],
+    features=feature_names,
+    baseline_metrics={},
 )
 
 monitor_b = ModelMonitor(client)
 model_b_id = monitor_b.register_model(
     name="recommendation_model_b",
     version="1.0.0",
-    model_type="classification",
-    tags=["ab-test", "variant-b"]
+    model_type="custom",
+    tags=["ab-test", "variant-b"],
+    features=feature_names,
+    baseline_metrics={},
 )
 
 def predict_with_ab_test(user_features, user_id):
@@ -836,8 +858,10 @@ for model_name in ["random_forest", "xgboost", "neural_net"]:
     model_id = monitor.register_model(
         name=f"{model_name}_component",
         version="1.0.0",
-        model_type="classification",
-        tags=["ensemble", "component"]
+        model_type="custom",
+        tags=["ensemble", "component"],
+        features=feature_names,
+        baseline_metrics={},
     )
     monitors[model_name] = monitor
 
@@ -846,12 +870,14 @@ ensemble_monitor = ModelMonitor(client)
 ensemble_id = ensemble_monitor.register_model(
     name="ensemble_model",
     version="1.0.0",
-    model_type="classification",
+    model_type="custom",
     tags=["ensemble", "production"],
     metadata={
         "components": list(monitors.keys()),
         "aggregation": "weighted_average"
-    }
+    },
+    features=feature_names,
+    baseline_metrics={},
 )
 
 def ensemble_predict(features):

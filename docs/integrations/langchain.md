@@ -1,311 +1,134 @@
-# LangChain - Quick Reference
+---
+description: Monitor LangChain and LangGraph applications with WhiteBoxXAI — a callback handler that logs every LLM call, chain run, tool call and retrieval, and groups each root run into shared Governance Events.
+---
 
-Quick reference for monitoring LangChain applications with WhiteBoxXAI.
+# LangChain
 
-## Installation
+The WhiteBoxXAI callback handler records what a LangChain or LangGraph application does: each LLM
+call (model, prompt, completion, tokens, latency), chain runs, tool calls and errors. It works with any
+LangChain chat model, so OpenAI, Anthropic, Gemini, Mistral, Bedrock, Ollama and the rest are all
+covered.
+
+Each root run's records are sent as one
+[governance run](../get-started/governance-events.md#grouped-runs-one-event-per-100-records), so a run
+with a dozen LLM calls costs one Governance Event, not twelve.
+
+## Install
 
 ```bash
-pip install whitebox-xai-sdk langchain openai
+pip install "whitebox-xai-sdk[langchain]" langchain-openai     # or langchain-anthropic, langchain-google-genai, ...
 ```
 
-## Basic Setup
+## Set up the handler
+
+Register the application as an LLM system once, then create a monitor for it and a callback handler:
 
 ```python
-from langchain.chains import LLMChain
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
+import os
+
 from whiteboxxai import WhiteBoxXAI
-from whiteboxxai.integrations.langchain import LangChainMonitor
+from whiteboxxai.integrations.langchain import LangChainMonitor, WhiteBoxXAICallbackHandler
 
-# Initialize
-client = WhiteBoxXAI(api_key="your-api-key")
-monitor = LangChainMonitor(
-    client=client,
-    application_name="my_app",
-    track_tokens=True,
-    track_cost=True
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
+
+app = client.models.register(
+    name="support-assistant",
+    model_type="llm",
+    framework="langchain",
+    version="1.4.0",
+    features=["question"],
+    baseline_metrics={},
 )
-monitor.register_application(name="My App", version="1.0.0")
+
+monitor = LangChainMonitor(client, application_name="support-assistant", model_id=app["id"])
+handler = WhiteBoxXAICallbackHandler(monitor)
 ```
 
-## Quick Patterns
+!!! warning "Create the handler directly"
+    In SDK 1.3.0, use `WhiteBoxXAICallbackHandler(monitor)` as above. `monitor.create_callback_handler()`
+    and `monitor.register_application()` try to register the application through a method the client
+    doesn't have, and fail.
 
-### Callback Handler (Recommended)
+## Use it
 
-```python
-# Create callback once
-callback = monitor.create_callback_handler()
-
-# Use with any component
-chain.run(input="...", callbacks=[callback])
-agent.run(input="...", callbacks=[callback])
-```
-
-### Wrap Chain
+Pass the handler in the run config. It works with chains, chat models, agents and LangGraph graphs:
 
 ```python
-from whiteboxxai.integrations.langchain import wrap_langchain_chain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 
-wrapped_chain = wrap_langchain_chain(chain, monitor)
-result = wrapped_chain.run(input="...")  # Auto-logged
-```
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You answer customer questions using the policy excerpts provided."),
+    ("human", "{question}"),
+])
+chain = prompt | ChatOpenAI(model="gpt-4o")
 
-### Manual Logging
-
-```python
-monitor.log_chain_execution(
-    chain_name="my_chain",
-    inputs={"question": "What is AI?"},
-    outputs={"answer": "AI is..."},
-    execution_time=1.5
+answer = chain.invoke(
+    {"question": "Can I get a refund after 30 days?"},
+    config={"callbacks": [handler]},
 )
 ```
 
-## Common Use Cases
+Swap `ChatOpenAI` for `ChatAnthropic`, `ChatGoogleGenerativeAI`, `ChatMistralAI`, `ChatBedrock`,
+`ChatOllama` or any other LangChain chat model; logging is the same.
 
-### Simple LLM Chain
+For a LangGraph graph or agent:
 
 ```python
-llm = OpenAI(temperature=0.7)
-prompt = PromptTemplate(
-    input_variables=["question"],
-    template="Answer: {question}"
-)
-chain = LLMChain(llm=llm, prompt=prompt)
-
-callback = monitor.create_callback_handler()
-result = chain.run(question="What is AI?", callbacks=[callback])
+result = graph.invoke({"messages": [("user", question)]}, config={"callbacks": [handler]})
 ```
 
-### Sequential Chain
+For multi-agent systems where you want agents, tasks and agent-to-agent interactions recorded as a
+workflow, see [LangChain Multi-Agent](langchain-multi-agent.md).
+
+## What's recorded
+
+| Event | Recorded as |
+| --- | --- |
+| LLM call | An LLM log: provider, model, prompt, completion, tokens, latency, status |
+| Chain or graph run | A chain execution on the registered application, with inputs, outputs and duration |
+| Tool call | The tool name, input, output and duration |
+| Errors | The failure, on the call or run it belongs to |
+
+LLM calls appear in the [LLM & RAG audit trail](../user-guide/observability.md#llm--rag-audit-trails).
+
+## Log retrievals
+
+If your RAG chain retrieves documents, log the retrieval so retrieval quality is tracked:
 
 ```python
-from langchain.chains import SequentialChain
-
-chain1 = LLMChain(llm=llm, prompt=prompt1, output_key="topic")
-chain2 = LLMChain(llm=llm, prompt=prompt2, output_key="essay")
-
-overall = SequentialChain(
-    chains=[chain1, chain2],
-    input_variables=["subject"],
-    output_variables=["topic", "essay"]
-)
-
-wrapped = wrap_langchain_chain(overall, monitor)
-result = wrapped({"subject": "space"})
-```
-
-### Agent with Tools
-
-```python
-from langchain.agents import initialize_agent, AgentType, Tool
-
-tools = [
-    Tool(name="Search", func=search_func, description="Search tool")
-]
-
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
-)
-
-callback = monitor.create_callback_handler()
-result = agent.run("Find info about AI", callbacks=[callback])
-```
-
-### RAG Pipeline
-
-```python
-from langchain.chains import RetrievalQA
-from langchain.vectorstores import FAISS
-
-qa = RetrievalQA.from_chain_type(
-    llm=llm,
-    retriever=vectorstore.as_retriever()
-)
-
-callback = monitor.create_callback_handler()
-result = qa.run("Question?", callbacks=[callback])
-
-# Log retrieval details
 monitor.log_rag_retrieval(
-    query="Question?",
-    documents=docs,
+    query=question,
+    documents=[{"document_id": d.metadata["id"], "content": d.page_content} for d in docs],
     num_retrieved=len(docs),
-    retrieval_time=0.5
+    relevance_scores=scores,
+    ground_truth_ids=["kb-17"],    # optional: enables precision, recall, MRR and NDCG
+    answer=answer.content,
 )
 ```
 
-### Conversational Agent
+## Add safety scans and prompt versions
 
 ```python
-from langchain.memory import ConversationBufferMemory
-
-memory = ConversationBufferMemory(memory_key="chat_history")
-
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-    memory=memory
-)
-
-callback = monitor.create_callback_handler()
-result1 = agent.run("My name is Alice", callbacks=[callback])
-result2 = agent.run("What's my name?", callbacks=[callback])
+client.safety.analyze(content=answer.content, content_type="completion")
 ```
 
-## Monitoring Methods
-
-| Method | Purpose | Example |
-|--------|---------|---------|
-| `register_application()` | Register app | `monitor.register_application(name="App")` |
-| `create_callback_handler()` | Create callback | `callback = monitor.create_callback_handler()` |
-| `log_chain_execution()` | Log chain run | `monitor.log_chain_execution(...)` |
-| `log_agent_execution()` | Log agent run | `monitor.log_agent_execution(...)` |
-| `log_llm_call()` | Log LLM call | `monitor.log_llm_call(...)` |
-| `log_tool_call()` | Log tool usage | `monitor.log_tool_call(...)` |
-| `log_rag_retrieval()` | Log RAG retrieval | `monitor.log_rag_retrieval(...)` |
-
-## Tracked Metrics
-
-### Automatic (via Callback)
-- Chain execution time
-- Number of LLM calls
-- Number of tool calls
-- Agent steps
-- Token usage (if available)
-- Latency
-
-### Manual
-- Custom chain metrics
-- RAG retrieval quality
-- Tool performance
-- Cost tracking
-- User satisfaction
-
-## Configuration Options
-
-```python
-monitor = LangChainMonitor(
-    client=client,
-    application_name="my_app",     # App identifier
-    track_tokens=True,              # Track token usage
-    track_cost=True                 # Track API costs
-)
-```
-
-## Integration Patterns
-
-### Pattern 1: Global Callback
-```python
-# One callback for entire app
-callback = monitor.create_callback_handler()
-
-# Use everywhere
-chain1.run(..., callbacks=[callback])
-chain2.run(..., callbacks=[callback])
-agent.run(..., callbacks=[callback])
-```
-
-### Pattern 2: Per-Component
-```python
-# Different monitors for components
-qa_monitor = LangChainMonitor(client, application_name="qa")
-agent_monitor = LangChainMonitor(client, application_name="agent")
-
-qa_callback = qa_monitor.create_callback_handler()
-agent_callback = agent_monitor.create_callback_handler()
-
-qa_chain.run(..., callbacks=[qa_callback])
-agent.run(..., callbacks=[agent_callback])
-```
-
-### Pattern 3: Wrapped Chains
-```python
-# Wrap for auto-logging
-wrapped_chain = wrap_langchain_chain(chain, monitor)
-
-# No callbacks needed
-result = wrapped_chain.run(...)
-```
-
-## Supported Components
-
-| Component | Support | Notes |
-|-----------|---------|-------|
-| LLMChain | ✅ | Full support |
-| SequentialChain | ✅ | Full support |
-| SimpleSequentialChain | ✅ | Full support |
-| Agents (all types) | ✅ | Full support |
-| Tools | ✅ | Auto-tracked |
-| Memory | ✅ | Works with callbacks |
-| Retrievers | ✅ | RAG support |
-| Custom Chains | ✅ | Use callbacks |
-
-## Best Practices
-
-1. **Register Once**
-   ```python
-   # ✅ At startup
-   monitor.register_application(name="App")
-   callback = monitor.create_callback_handler()
-   ```
-
-2. **Reuse Callbacks**
-   ```python
-   # ✅ Create once, reuse many times
-   callback = monitor.create_callback_handler()
-   for query in queries:
-       chain.run(input=query, callbacks=[callback])
-   ```
-
-3. **Handle Errors**
-   ```python
-   try:
-       result = chain.run(..., callbacks=[callback])
-   except Exception as e:
-       print(f"Failed: {e}")
-       # Callback still logged partial data
-   ```
-
-4. **Track Costs**
-   ```python
-   # Enable for budget monitoring
-   monitor = LangChainMonitor(
-       client=client,
-       application_name="app",
-       track_cost=True
-   )
-   ```
-
-5. **Use Environment-Specific Apps**
-   ```python
-   # Development
-   dev_monitor = LangChainMonitor(client, application_name="app_dev")
-
-   # Production
-   prod_monitor = LangChainMonitor(client, application_name="app_prod")
-   ```
+Governed prompt versions are managed with `client.prompts`; link the calls they produce by logging
+with `prompt_version_id`. See [Evaluations & Prompt Versions](../user-guide/evaluations.md).
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Import error | `pip install langchain` |
-| Callbacks not working | Use `callbacks=[callback]` (list) |
-| Missing tokens | Check LLM provider config |
-| High overhead | Set `track_tokens=False` |
-| Multiple callbacks | Pass list: `callbacks=[cb1, cb2, wb_callback]` |
+**Nothing appears.** Check the handler is in `config={"callbacks": [...]}` on the `invoke` call (or
+attached to the model), and that `WHITEBOX_API_KEY` is set in the process running the chain.
 
-## Examples
+**`AttributeError: ... has no attribute 'register_model'`.** You called `create_callback_handler()` or
+`register_application()`. Construct `WhiteBoxXAICallbackHandler(monitor)` directly instead.
 
-Full examples in:
-- [`langchain_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/langchain_example.py) in the public SDK repository
+**Costs are blank.** Cost is calculated only for model names WhiteBoxXAI has prices for. See
+[LLM monitoring](../sdk/llm-monitoring.md#what-to-log).
 
-## Resources
+## See also
 
-- LangChain Docs: https://python.langchain.com/
-- WhiteBoxXAI Docs: https://docs.whiteboxxai.com
-- Integration guide: this page and [LangChain Multi-Agent](langchain-multi-agent.md)
+- [LLM monitoring (any provider)](../sdk/llm-monitoring.md)
+- [LangChain Multi-Agent](langchain-multi-agent.md)
+- Example: [`langchain_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/langchain_example.py) in the public SDK repository

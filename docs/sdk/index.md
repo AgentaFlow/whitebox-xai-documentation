@@ -189,7 +189,7 @@ Import from `whiteboxxai.integrations.<module>`:
 | TensorFlow / Keras | `tensorflow` | `KerasMonitor`, `WhiteBoxXAICallback` |
 | Hugging Face Transformers | `transformers` | `TransformersMonitor` |
 | LangChain | `langchain` | `LangChainMonitor`, `WhiteBoxXAICallbackHandler` |
-| LangGraph and LangChain agents | `langchain_agents` | `MultiAgentCallbackHandler`, `LangGraphMultiAgentMonitor`, `monitor_langchain_agent` |
+| LangGraph and LangChain multi-agent systems | none: use `client.agent_workflows` | See [LangChain Multi-Agent](../integrations/langchain-multi-agent.md) |
 | CrewAI | `crewai_monitor` | `CrewAIMonitor`, `monitor_crew` |
 
 ```python
@@ -203,6 +203,13 @@ monitor.register_from_model(
 wrapped = SklearnWrapper(clf, monitor)
 wrapped.predict(X_test)        # logged automatically
 ```
+
+!!! warning "Known issues in SDK 1.3.0"
+    Some integration helpers can't register models or workflows against the current API:
+    `XGBoostMonitor`/`LightGBMMonitor.register_from_model`, `TransformersMonitor.register_from_model`,
+    `KerasMonitor.register_saved_model`, `LangChainMonitor.register_application` and
+    `create_callback_handler`, and the `langchain_agents` helpers. Register with
+    `client.models.register(...)` and pass `model_id=` to the monitor, as each framework guide shows.
 
 Per-framework guides: [TensorFlow](../integrations/tensorflow.md),
 [Hugging Face](../integrations/huggingface.md), [XGBoost & LightGBM](../integrations/boosting.md),
