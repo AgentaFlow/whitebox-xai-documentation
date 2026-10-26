@@ -1,179 +1,209 @@
+---
+description: Fixes for common WhiteBoxXAI problems — SDK install and import errors, 401/403/404/409/422/429 responses, plan limits, predictions or explanations not appearing, MCP server errors, governance votes refused, and two-factor issues.
+---
+
 # Troubleshooting
 
-Common issues you might run into while using WhiteBoxXAI, and how to resolve them. If
-you're still stuck after trying these steps, reach out — see [Getting help](#getting-help).
+Find the error you're seeing, then work through the steps. If you're still stuck, see
+[Getting help](#getting-help).
 
-## SDK issues
+## Reading an error
 
-### "No module named 'whiteboxxai'"
+Every API error uses the same envelope, and the SDK raises a matching exception:
 
-The SDK isn't installed in the environment you're running. Install it:
+```json
+{"error": "HTTPException", "detail": "Model not found", "status_code": 404}
+```
+
+| Status | `error` | SDK exception | Usual cause |
+| --- | --- | --- | --- |
+| `400` | `HTTPException` | `APIError` | The request can't be carried out as sent, for example an invalid YAML policy |
+| `401` | `HTTPException` | `AuthenticationError` | Missing, mistyped, revoked or expired key |
+| `403` | `HTTPException` | `APIError` | Role, plan limit, or an action that needs a person's own session |
+| `404` | `HTTPException` | `APIError` | The id doesn't exist in **your** organization |
+| `409` | `HTTPException` | `APIError` | Duplicate name, or the record changed since you loaded it |
+| `422` | `ValidationError` | `ValidationError` | A field is missing or the wrong type; `detail` names each one |
+| `429` | `QuotaExceeded` or `RateLimitExceeded` | `RateLimitError` | Monthly allowance used up, or too many requests |
+| `5xx` | | `ServerError` | A problem on our side; the SDK retries, then raises |
+
+Every response has an `X-Request-ID` header. Include it when you contact support.
+
+## SDK
+
+### `No module named 'whiteboxxai'`
+
+The SDK isn't installed in the environment running your code:
 
 ```bash
 pip install whitebox-xai-sdk
+python -c "import whiteboxxai, sys; print(whiteboxxai.__version__, sys.executable)"
 ```
 
-Then verify it's available:
+The package is `whitebox-xai-sdk`; the import is `whiteboxxai`.
 
-```python
-import whiteboxxai
-print(whiteboxxai.__version__)
-```
+### `TypeError: ... missing 1 required positional argument: 'api_key'`
 
-If you have multiple Python environments, make sure you're installing into the same one
-that runs your code (check with `import sys; print(sys.executable)`).
-
-### "cannot import name 'WhiteBoxXAI'"
-
-You may have an outdated version. Upgrade to the latest:
-
-```bash
-pip install --upgrade whitebox-xai-sdk
-```
-
-The package was renamed from the earlier `whiteboxai` naming to `whiteboxxai` — make sure
-your imports use `from whiteboxxai import WhiteBoxXAI`.
-
-## Authentication
-
-### "401 Unauthorized: Invalid API key"
-
-- Double-check the key was copied correctly, with no leading/trailing spaces or newlines. Keys
-  start with `wbx_live_`.
-- Confirm you're using an active key: in the dashboard, go to **Profile → API Keys** and check
-  it hasn't been revoked or passed its expiry.
-- If in doubt, generate a new key and update your integration. Remember that a key is shown
-  in full only once, at creation time.
-- **If you're using a login token instead of an API key**, it has expired — JWTs last about 30
-  minutes. Switch to an [API key](../account/api-keys.md), which doesn't expire on a schedule.
+`WhiteBoxXAI()` needs the key passed in. Read it from the environment:
 
 ```python
 import os
-print(os.getenv("WHITEBOXXAI_API_KEY"))  # verify the key your app is actually using
+from whiteboxxai import WhiteBoxXAI
+
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 ```
 
-### "403 Forbidden: Insufficient permissions"
+### `AttributeError` from an integration helper
 
-Your account or API key doesn't have permission for that action:
+In SDK 1.3.0, some helpers that register models or workflows for you call methods the client doesn't
+have. Register with `client.models.register(...)` and pass `model_id=` to the monitor. For LangChain,
+construct `WhiteBoxXAICallbackHandler(monitor)` directly. See the warning in
+[Python SDK → Framework integrations](../sdk/index.md#framework-integrations).
 
-- **API key scopes.** The key may not carry the scope the operation needs. Check its scopes
-  under **Profile → API Keys** and issue a new key if needed.
-- **Your role.** Check it under **Settings → Team**. Issuing and revoking API keys is
-  admin-only.
-- **Demo accounts are read-only** — they can view data but can't create, edit, or delete. See
-  [Plans & Limits](../get-started/plans.md).
+## Authentication
 
-### "404 Not Found" on `/api/v1/reports`
+### `401 Unauthorized`
 
-Report generation lives at `/api/v1/export/*`, not `/api/v1/reports`. See [Exports &
-Reports](../sdk/api-reference.md#exports--reports).
+- Check the key was copied whole, with no spaces or line breaks. Keys start with `wbx_live_`.
+- Check `WHITEBOX_API_KEY` is set in the process that makes the request, not only in your shell.
+- In **Settings → API keys**, check the key hasn't been revoked or passed its expiry. A key also stops
+  working if the administrator who created it is deactivated.
+- Using a signed-in session token rather than a key? It expires after about 30 minutes. Use an
+  [API key](../account/api-keys.md) for anything unattended.
 
-Getting a 404 on an alerts endpoint instead? Check the path — rules live under
-`/api/v1/alerts/rules`, not `/api/v1/alerts` directly. See [Alerts](../sdk/api-reference.md#alerts).
+### `403 Forbidden`
 
-## Predictions aren't appearing
+- **Your role.** Some actions are administrator-only, such as creating API keys, approving evidence,
+  deciding control applicability, or editing boards and scales. Check your role in **Settings → Users
+  & roles**.
+- **Your plan's Governed AI Systems are all in use.** Registering a model under a new name, or
+  restoring an archived one, returns *"Your plan includes 1 Governed AI System, and all are in use."*
+  Archive a system you no longer govern, or register a new **version** of an existing one. See
+  [Governance Events](../get-started/governance-events.md#what-is-one-governed-ai-system).
+- **Model diff on the Free plan.** Model-diff reviews are included on Business Cloud and Enterprise
+  Edition.
+- **Voting or finalizing a review with an API key.** Votes need a person's own session; see
+  [Votes are refused](#votes-are-refused).
+- **Demo accounts are read-only.**
 
-Your SDK calls succeed but you don't see predictions in the dashboard. Work through these
-in order:
+### `404 Not Found`
 
-1. **Check the model ID.** Make sure you're logging to the right model:
+A `404` on an id means the record doesn't exist **in your organization**: records in other
+organizations look exactly like records that don't exist. Check you're using the right id and the right
+API key. Don't retry with other credentials.
+
+## Limits
+
+### `429` with `QuotaExceeded`
+
+Your Free plan has used its 2,500 Governance Events for the month, or a batch is larger than what's
+left (a batch is refused whole). Recording resumes next month; reads, configuration, reports and the
+dashboard keep working. To use events more slowly, sample high-volume models and group run records with
+`governance_run()`. See [Governance Events](../get-started/governance-events.md).
+
+### `429` with `RateLimitExceeded`
+
+Too many requests in the current window (100 per 60 seconds by default). Wait for the number of seconds
+in `Retry-After`. The SDK does this for waits of 60 seconds or less. Use batch endpoints for volume.
+
+## Data doesn't appear
+
+### Predictions aren't showing
+
+1. **Check the model id** you're logging to:
 
     ```python
-    for m in client.models.list():
-        print(m.id, m.name)
+    for m in client.models.list(search="credit"):
+        print(m["id"], m["name"], m["version"])
+    print(client.predictions.get_recent(model_id))
     ```
 
-2. **Check your sampling rate.** If you configured sampling, some predictions are logged
-   intentionally. Set the rate to `1.0` to log every prediction while debugging:
+2. **Check sampling.** With `ModelMonitor(sampling_rate=...)` below 1.0, some predictions are skipped
+   on purpose.
+3. **Flush buffers.** With `buffer_size` set, call `monitor.flush()` or use the monitor as a context
+   manager.
+4. **Check offline mode.** With `enable_offline=True`, records may be queued locally:
+   `client.get_offline_status()`.
+5. **Check for a `429`.** On the Free plan, the monthly allowance may be used up.
 
-    ```python
-    monitor = ModelMonitor(client=client, model_id=model_id, sampling_rate=1.0)
-    ```
+### Registering a model returns `422`
 
-3. **Allow time for async delivery.** If you log asynchronously or with buffering,
-   predictions are sent in the background. Flush the buffer, or give it a moment before
-   refreshing the dashboard.
+The API needs `name`, `version`, `model_type`, `features` and `baseline_metrics`. `model_type` must be
+one of `xgboost`, `random_forest`, `neural_network`, `linear_model`, `llm` or `custom`; task names like
+`classification` aren't accepted. `baseline_metrics={}` is valid when you haven't measured any.
 
-4. **Enable debug logging** to confirm requests are being sent:
+### An explanation is `failed`
 
-    ```python
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    ```
+Explanations run the model itself, so WhiteBoxXAI needs the model file. If the message says no stored
+model artifact is available, the model was registered with metadata only. Register it through
+[GitHub](../integrations/github.md#configuration-file) with `storage_mode: full`.
 
-If you're on the **Free** plan and have hit your monthly API-call limit, new requests are
-paused until your next cycle — see [Plans & Limits](../get-started/plans.md).
+### A drift report or fairness audit says "not enough data"
+
+Results are computed from what was logged. With little history, WhiteBoxXAI says it can't judge yet
+rather than estimating. A fairness audit also needs the true outcomes and group membership you supply.
+
+### A report type says **Needs data**
+
+The card gives the reason, for example no bias audit yet for that system, or no applicability decisions
+for that framework. See [Report types reference](../user-guide/report-engine.md).
+
+### An alert rule never fires
+
+Rules are evaluated when metrics are logged, drift reports are created and bias audits complete. Check
+the rule's `metric_name` matches the name the value arrives under, the rule is active and for the right
+model, and that it isn't throttled. Test it with `client.alerts.evaluate_rule(rule_id, metric_values={...})`.
+See [When rules are evaluated](../user-guide/needs-attention.md#when-rules-are-evaluated).
+
+## Governance
+
+### Votes are refused
+
+- **`403` asking for two-factor authentication.** Turn on two-factor in **Settings → Profile &
+  security**. Every vote and finalization also needs a current authenticator or backup code.
+- **`403` with an API key.** Organization API keys can't vote or finalize. Vote from your own
+  signed-in session.
+- **`409` "This request changed after you opened it."** Reload the request, review the current version,
+  and vote again.
+- **Rejected outright.** You raised the request, and submitters can't vote on their own requests.
+- **`429` "Too many incorrect codes."** Wait, then try again with a fresh code.
+
+## MCP server
+
+### `whiteboxxai-mcp: no credentials configured` (exit code 2)
+
+Set `WHITEBOXXAI_MCP_API_KEY` in the environment your MCP client starts the server with, usually the
+`env` block of its config, not only in your shell. The local server accepts only an API key.
+
+### `401` on the hosted endpoint
+
+Every request to `https://api.whiteboxxai.com/mcp/` needs `Authorization: Bearer <key or token>`. A
+personal sign-in token expires after about 30 minutes; reconnect, or use an API key.
+
+### The client doesn't show the tools
+
+Restart the client after editing its config, and check `whiteboxxai-mcp` is on the `PATH` the client
+uses (or give the full path to the command). See [MCP Server](../integrations/mcp.md).
 
 ## Two-factor authentication
 
 ### My 6-digit code isn't accepted
 
-- **Time drift is the most common cause.** Authenticator codes depend on your device clock.
-  Enable automatic date/time on your phone, or turn on "time correction" in your
-  authenticator app's settings.
-- **Codes expire every 30 seconds and can only be used once.** Wait for a fresh code and
-  enter the one currently shown.
+- Device clock drift is the most common cause. Turn on automatic date and time on your phone.
+- Codes change every 30 seconds and work once. Wait for a fresh one.
 
 ### I've lost my authenticator app
 
-Use one of your saved **backup codes** at the 2FA prompt. Each backup code works once. After
-logging in, go to **Profile → Security** to set up a new authenticator and regenerate backup
-codes. Full details: [Two-Factor Authentication](../account/two-factor-authentication.md).
+Sign in with one of your saved **backup codes**; each works once. Then set up a new authenticator and
+regenerate backup codes in **Settings → Profile & security**. See
+[Two-Factor Authentication](../account/two-factor-authentication.md).
 
-### I've lost my app *and* my backup codes
+### I've lost my app and my backup codes
 
-Contact **[support@whiteboxxai.com](mailto:support@whiteboxxai.com)**. Account recovery
-requires identity verification and can take 24–48 hours.
-
-## Understanding API errors
-
-When an API request fails, the response body includes an error `code` and `message`. The
-HTTP status tells you the category:
-
-| Status | Meaning | What to check |
-| --- | --- | --- |
-| 400 | Bad Request | Invalid input or malformed request body |
-| 401 | Unauthorized | Missing or invalid API key |
-| 403 | Forbidden | Insufficient permissions, or a read-only (demo) account |
-| 404 | Not Found | The resource ID doesn't exist |
-| 409 | Conflict | The resource already exists |
-| 422 | Validation Error | A field doesn't match the expected format |
-| 429 | Too Many Requests | Rate limit or monthly quota exceeded |
-| 500 | Server Error | A problem on our side — retry, then contact support |
-
-A 422 response tells you exactly which field is wrong:
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input",
-    "details": { "field": "model_type", "error": "Must be one of: classification, regression" }
-  }
-}
-```
-
-### Rate limits and quotas (429)
-
-A `429` means you've sent too many requests too quickly, or reached your plan's monthly
-allowance. To avoid it:
-
-- **Batch** your prediction logging instead of one call per prediction.
-- **Sample** high-volume models rather than logging every prediction.
-- Retry with a short backoff after a brief pause.
-
-See [Plans & Limits](../get-started/plans.md) for the allowance on each plan.
+Email **[support@whiteboxxai.com](mailto:support@whiteboxxai.com)**. Account recovery requires identity
+verification.
 
 ## Getting help
 
-Before reaching out, it helps to gather:
-
-- The exact error message and the API `code` (if any)
-- Steps to reproduce the issue
-- Your SDK version (`whiteboxxai.__version__`)
-
-Then contact us:
-
-- **Documentation:** [docs.whiteboxxai.com](https://docs.whiteboxxai.com)
-- **Community forum:** [community.whiteboxxai.com](https://community.whiteboxxai.com)
-- **Email support:** [support@whiteboxxai.com](mailto:support@whiteboxxai.com)
+Gather the error message, the `X-Request-ID`, what you did, and your SDK version
+(`pip show whitebox-xai-sdk`), then use **Support** in the dashboard sidebar or email
+**[support@whiteboxxai.com](mailto:support@whiteboxxai.com)**. See [Getting support](support.md).

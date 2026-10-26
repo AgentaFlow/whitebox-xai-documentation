@@ -1,3 +1,7 @@
+---
+description: Quick reference for WhiteBoxXAI multi-agent workflow monitoring — SDK methods, REST endpoints, request and response shapes, enums and common patterns.
+---
+
 # Multi-Agent Workflow Monitoring - Quick Reference
 
 Fast reference for monitoring multi-agent AI workflows with WhiteBoxXAI.

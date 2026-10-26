@@ -404,10 +404,10 @@ All SDK exceptions inherit from `whiteboxxai.exceptions.WhiteBoxXAIError`:
 | Exception | When |
 | --- | --- |
 | `AuthenticationError` | `401`: missing, wrong, revoked or expired key |
-| `NotFoundError` | `404`: the id doesn't exist in your organization |
 | `ValidationError` | `422`: the request didn't match the API's schema; `.fields` has details |
 | `RateLimitError` | `429`: the rate limit or, on the Free plan, the monthly Governance Events allowance; `.retry_after` is set when the server sent `Retry-After` |
-| `APIError`, `ServerError`, `APIConnectionError` | Other HTTP errors, `5xx` responses, and network failures. `.status_code` and `.request_id` help support trace a request. |
+| `APIError` | Any other `4xx`, including `403` and `404` (the id doesn't exist in your organization). Check `.status_code`; `.request_id` helps support trace a request. |
+| `ServerError`, `APIConnectionError` | `5xx` responses and network failures |
 | `ConfigurationError`, `IntegrationError` | Client misconfiguration, or a framework integration problem |
 
 The client retries connection errors, `5xx` responses and `429`s up to `max_retries` times with
@@ -415,14 +415,17 @@ exponential back-off, honouring `Retry-After` when it's 60 seconds or less. A lo
 straight away as `RateLimitError`, so your code decides whether to wait.
 
 ```python
-from whiteboxxai.exceptions import NotFoundError, RateLimitError
+from whiteboxxai.exceptions import APIError, RateLimitError
 
 try:
     client.predictions.log(model_id=model_id, input_data=x, output_data=y)
 except RateLimitError as err:
     print("Throttled or over quota:", err, "retry after", err.retry_after)
-except NotFoundError:
-    print("That model isn't in this organization")
+except APIError as err:
+    if err.status_code == 404:
+        print("That model isn't in this organization")
+    else:
+        raise
 ```
 
 A `403` when registering a model means your plan's Governed AI Systems are all in use. See

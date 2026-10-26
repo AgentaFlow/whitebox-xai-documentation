@@ -1,3 +1,7 @@
+---
+description: Set up two-factor authentication (TOTP) for WhiteBoxXAI, use and regenerate backup codes, recover access, and understand why governance votes need an authenticator code while API keys don't.
+---
+
 # Two-Factor Authentication (2FA)
 
 Two-factor authentication adds a second layer of security to your WhiteBoxXAI account. In
@@ -13,7 +17,7 @@ apps like Google Authenticator, Authy, Microsoft Authenticator, and 1Password.
 
 ## Enable 2FA
 
-1. Log in and go to **Profile → Security**.
+1. Log in and go to **Settings → Profile & security**.
 2. Click **Enable Two-Factor Authentication**.
 3. **Scan the QR code** with your authenticator app. (Prefer not to scan? Enter the setup
    key shown beneath the code manually.)
@@ -39,14 +43,14 @@ you can log in with a backup code:
 1. Enter your email and password.
 2. On the 2FA prompt, choose **Use a backup code**.
 3. Enter one of your saved backup codes.
-4. Once logged in, go to **Profile → Security** and set up your authenticator again.
+4. Once logged in, go to **Settings → Profile & security** and set up your authenticator again.
 
-You can regenerate a fresh set of backup codes at any time from **Profile → Security**;
+You can regenerate a fresh set of backup codes at any time from **Settings → Profile & security**;
 generating new codes invalidates the old set.
 
 ## Disable 2FA
 
-Go to **Profile → Security → Disable Two-Factor Authentication** and confirm with your
+Go to **Settings → Profile & security → Disable two-factor authentication** and confirm with your
 password. We only recommend this if you're switching to a new device — re-enable 2FA as
 soon as you can.
 
@@ -59,13 +63,17 @@ without any changes.
 The flip side is that an API key is a standalone credential — 2FA won't protect it. Keep keys
 secret, and revoke any key you suspect has been exposed; revocation is immediate.
 
-!!! note "One exception: MCP service accounts"
-    The [MCP server's](../integrations/mcp.md) email/password authentication mode can't
-    complete a headless 2FA challenge, so an account used that way must have 2FA disabled.
-    Use API-key authentication instead and keep 2FA on.
+The [MCP server](../integrations/mcp.md) authenticates with an API key, so it works with 2FA on.
 
 ## Lost access to your account?
 
 If you've lost both your authenticator app and your backup codes, contact
 **[support@whiteboxxai.com](mailto:support@whiteboxxai.com)**. Account recovery requires
 identity verification and may take 24–48 hours, so keep your backup codes safe.
+
+## Governance votes need a code
+
+Voting on, or finalizing, a governance review request requires two-factor authentication to be on and
+a current authenticator code (or a backup code) for each vote. This is separate from sign-in: it proves
+that the vote was cast by you, at that moment. API keys can't vote. See
+[Reviews & Decisions](../user-guide/governance.md#vote-with-an-authenticator-code).

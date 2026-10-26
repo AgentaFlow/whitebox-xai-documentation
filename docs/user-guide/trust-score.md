@@ -1,3 +1,7 @@
+---
+description: How the WhiteBoxXAI Trust Score is computed — fairness, drift and explainability components, weights, renormalization when data is missing, history, and where it appears.
+---
+
 # Trust Score
 
 The Trust Score is a single 0–100 index per model, combining three signals WhiteBoxXAI

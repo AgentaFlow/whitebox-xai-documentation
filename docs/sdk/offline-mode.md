@@ -1,3 +1,7 @@
+---
+description: Use WhiteBoxXAI SDK offline mode to queue model registrations, baselines and predictions on disk when the API can't be reached, and sync them later.
+---
+
 # Offline Mode Guide
 
 ## Overview

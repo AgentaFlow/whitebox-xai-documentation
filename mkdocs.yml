@@ -123,50 +123,66 @@ extra:
 
 nav:
   - Home: index.md
-  - Audit & Explanation Reports:
-      - user-guide/reports.md
-      - Phase 6 Report Engine: user-guide/report-engine.md
-      - Trust Score: user-guide/trust-score.md
-      - AI Risk Register: user-guide/risk-register.md
-      - Governance Review Boards: user-guide/governance.md
-      - AI Regulations: account/ai-regulations.md
   - Get Started:
       - Getting Started: get-started/getting-started.md
       - Plans & Limits: get-started/plans.md
-  - User Guide:
+      - Governance Events: get-started/governance-events.md
+      - What's New: help/whats-new.md
+  - Enhanced Dashboard:
       - user-guide/index.md
-      - Features: user-guide/features.md
+      - Overview: user-guide/overview.md
+      - Needs Attention: user-guide/needs-attention.md
+      - Model Register: user-guide/model-register.md
+      - Assurance: user-guide/assurance.md
+      - Observability: user-guide/observability.md
+      - Evaluations & Prompt Versions: user-guide/evaluations.md
+      - Settings: user-guide/settings.md
+      - Feature Reference: user-guide/features.md
+  - Compliance & Reports:
+      - Compliance Frameworks: account/ai-regulations.md
+      - Compliance & Evidence: user-guide/compliance-evidence.md
+      - Reports: user-guide/reports.md
+      - Report Types Reference: user-guide/report-engine.md
+      - Reviews & Decisions: user-guide/governance.md
+      - AI Risk Register: user-guide/risk-register.md
+      - Trust Score: user-guide/trust-score.md
   - SDK & API:
-      - sdk/index.md
-      - Offline Mode: sdk/offline-mode.md
+      - Python SDK: sdk/index.md
+      - LLM Monitoring: sdk/llm-monitoring.md
       - Multi-Agent Monitoring: sdk/multi-agent-monitoring.md
       - Multi-Agent Quick Reference: sdk/multi-agent-quick-reference.md
-      - API Reference: sdk/api-reference.md
-  - Agent & Developer Resources:
+      - Offline Mode: sdk/offline-mode.md
+      - REST API Reference: sdk/api-reference.md
+  - MCP & AI Agents:
       - agent-resources/index.md
-      - Agent YAML Definitions: agent-resources/yaml-definitions.md
-      - Skill Libraries: agent-resources/skill-libraries.md
+      - MCP Server: integrations/mcp.md
+      - Agent Skills: agent-resources/skill-libraries.md
       - AI Prompts: agent-resources/prompts.md
+      - Agent Config Definitions: agent-resources/yaml-definitions.md
   - Integrations:
       - Integration Examples: integrations/examples.md
-      - MCP Server: integrations/mcp.md
+      - CrewAI: integrations/crewai.md
+      - LangChain: integrations/langchain.md
+      - LangChain Multi-Agent: integrations/langchain-multi-agent.md
+      - TensorFlow & Keras: integrations/tensorflow.md
+      - Hugging Face: integrations/huggingface.md
+      - XGBoost & LightGBM: integrations/boosting.md
       - GitHub: integrations/github.md
       - GitHub Quick Reference: integrations/github-quick-reference.md
       - GitHub Diff Reviews: integrations/github-diff.md
-      - LangChain: integrations/langchain.md
-      - LangChain Multi-Agent: integrations/langchain-multi-agent.md
-      - TensorFlow: integrations/tensorflow.md
-      - Hugging Face: integrations/huggingface.md
-      - Boosting (XGBoost & LightGBM): integrations/boosting.md
+      - Git Context Tracking (SDK): integrations/cli-git-tracking.md
+      - Policy-as-Code & GitOps: integrations/policy-as-code.md
       - n8n Webhooks: integrations/n8n-webhooks.md
-      - CLI Git Tracking: integrations/cli-git-tracking.md
-  - Account & Compliance:
+  - Tutorials:
+      - learn/index.md
+      - Explore with Sample Data: learn/interactive-demos.md
+      - From Model to Evidence Pack: learn/workshops.md
+      - Govern an LLM Application: learn/tutorial-llm-app.md
+      - Connect an AI Assistant over MCP: learn/tutorial-agent-mcp.md
+  - Account & Security:
       - API Keys: account/api-keys.md
       - Two-Factor Authentication: account/two-factor-authentication.md
-  - Learn:
-      - learn/index.md
-      - Hands-On Workshops: learn/workshops.md
-      - Interactive Demos: learn/interactive-demos.md
   - Help:
       - FAQ: help/faq.md
       - Troubleshooting: help/troubleshooting.md
+      - Getting Support: help/support.md
