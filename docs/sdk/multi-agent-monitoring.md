@@ -329,27 +329,23 @@ child_exec_id = monitor.create_agent_execution(
 #### Custom Task Tracking
 
 ```python
-from whiteboxxai.schemas.agent_workflow import TaskCreate
-
-task_id = monitor.create_task(
-    workflow_id=workflow_id,
-    task_data=TaskCreate(
-        task_name="Verify Facts",
-        description="Cross-reference all claims",
-        task_type="review",
-        expected_output="Verified fact list",
-        agent_id=reviewer_agent_id,
-        priority=1,
-        input_data={"claims": [...] },
-        context={"sources": [...] }
-    )
+task = client.agent_workflows.create_task(
+    workflow_id,
+    task_name="Verify Facts",
+    description="Cross-reference all claims",
+    task_type="review",
+    expected_output="Verified fact list",
+    agent_id=reviewer_agent_id,
+    priority=1,
+    input_data={"claims": claims},
+    context={"sources": sources},
 )
 
 # Update task status
-monitor.update_task_status(
-    task_id=task_id,
+client.agent_workflows.update_task_status(
+    task["id"],
     status="completed",
-    output_data={"verified_count": 12, "issues": 2}
+    output_data={"verified_count": 12, "issues": 2},
 )
 ```
 

@@ -1391,7 +1391,7 @@ client.alerts.create(
     conditions=[
         {"metric_name": "fairness_score", "operator": "lt", "threshold": 0.8, "window_minutes": 10080}
     ],
-    notification_channels=[{"type": "email", "target": "compliance@company.com"}],
+    notification_channels=[{"type": "email", "target": "compliance@example.com"}],
 )
 ```
 

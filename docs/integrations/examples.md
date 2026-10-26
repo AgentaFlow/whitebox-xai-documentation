@@ -477,7 +477,7 @@ model_id = monitor.register_model(
     metadata={
         "business_impact": "high",
         "sla_latency_ms": 100,
-        "owner": "fraud-team@company.com",
+        "owner": "fraud-team@example.com",
         "model_path": "s3://models/fraud-v2.1.0.pkl"
     }
 )
@@ -823,25 +823,13 @@ def compare_variants():
     """
     Compare A/B test performance.
     """
-    metrics_a = client.metrics.get(
-        model_id=model_a_id,
-        metric_names=["accuracy", "precision"],
-        date_range="last_7_days"
-    )
+    # Summaries of the metrics each variant reported over the last 7 days
+    # (log them with client.metrics.create as your evaluation pipeline computes them)
+    summary_a = client.metrics.summary(model_id=model_a_id, days=7)
+    summary_b = client.metrics.summary(model_id=model_b_id, days=7)
 
-    metrics_b = client.metrics.get(
-        model_id=model_b_id,
-        metric_names=["accuracy", "precision"],
-        date_range="last_7_days"
-    )
-
-    print("Variant A:")
-    print(f"  Accuracy: {metrics_a['accuracy']:.3f}")
-    print(f"  Precision: {metrics_a['precision']:.3f}")
-
-    print("Variant B:")
-    print(f"  Accuracy: {metrics_b['accuracy']:.3f}")
-    print(f"  Precision: {metrics_b['precision']:.3f}")
+    print("Variant A:", summary_a)
+    print("Variant B:", summary_b)
 
     # Determine winner
     if metrics_b['accuracy'] > metrics_a['accuracy'] * 1.02:  # 2% lift
