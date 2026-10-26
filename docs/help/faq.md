@@ -111,7 +111,7 @@ Free 14-day trial, no credit card required.
 - ✅ Secures access to production models and data
 - ✅ Recommended for all admin accounts
 
-See [Two-Factor Authentication](/account/two-factor-authentication/) for the complete setup guide.
+See [Two-Factor Authentication](../account/two-factor-authentication.md) for the complete setup guide.
 
 ### Can I use SSO (Single Sign-On)?
 
@@ -134,7 +134,7 @@ Contact support@whiteboxxai.com to enable.
 
 Keys look like `wbx_live_...`. Creation and revocation are admin-only, since a key is an
 organization-wide credential. Revoking a key takes effect immediately. Full reference:
-[API Keys](/account/api-keys/).
+[API Keys](../account/api-keys.md).
 
 **Security tips:**
 - Use separate keys for dev/staging/prod, and one per consumer
@@ -241,7 +241,7 @@ client.models.register(
 )
 ```
 
-See the [Getting Started guide](/get-started/getting-started/#registering-your-first-model) for details.
+See the [Getting Started guide](../get-started/getting-started.md#registering-your-first-model) for details.
 
 ### What information do I need to register a model?
 
@@ -337,7 +337,7 @@ curl -X POST https://api.whiteboxxai.com/api/v1/predictions/log \
   }'
 ```
 
-See the [Getting Started guide](/get-started/getting-started/#logging-predictions) for examples.
+See the [Getting Started guide](../get-started/getting-started.md#logging-predictions) for examples.
 
 ### Do I need to log every prediction?
 
@@ -350,7 +350,6 @@ Configure sampling rate when registering model or in model settings.
 
 **Storage:**
 - Encrypted at rest (AES-256)
-- Stored in secure PostgreSQL database
 - Backed up daily
 
 **Retention:**
@@ -1079,7 +1078,7 @@ Yes, **Maintenance Mode:**
 
 The full guide — report categories, output formats, the dashboard and API walkthroughs,
 scheduling, delivery, retention, and branding — now lives at
-[Audit & Explanation Reports](/user-guide/reports/). A couple of quick answers that come up
+[Audit & Explanation Reports](../user-guide/reports.md). A couple of quick answers that come up
 often:
 
 ### How do I generate a report?
@@ -1087,13 +1086,13 @@ often:
 Go to **Governance & Evidence → Evidence & Reports → Generate Report**, pick a template,
 the models and date range, and a format. From the API it's
 `POST /api/v1/export/exports` — see [Exports &
-Reports](/sdk/api-reference/#exports--reports). Note the path is `/export/*`, not
+Reports](../sdk/api-reference.md#exports--reports). Note the path is `/export/*`, not
 `/reports`.
 
 ### Can I schedule reports?
 
 Yes — generate a report once, click **Schedule**, and set a frequency, recipients, and
-format. See [Scheduled reports](/user-guide/reports/#scheduled-reports) for the full
+format. See [Scheduled reports](../user-guide/reports.md#scheduled-reports) for the full
 walkthrough and the API equivalent.
 
 ---
@@ -1128,7 +1127,7 @@ walkthrough and the API equivalent.
 - SSO, RBAC, audit trails
 - Professional installation, support, and training
 
-Full detail: [Plans & Limits](/get-started/plans/). Current pricing:
+Full detail: [Plans & Limits](../get-started/plans.md). Current pricing:
 [whiteboxxai.com/pricing](https://whiteboxxai.com/pricing).
 
 ### How is billing calculated?
@@ -1189,7 +1188,7 @@ blocked. The overage is reported as metered usage and appears on your next invoi
 **Enterprise Edition** isn't metered.
 
 Check your current usage and remaining allowance in your account settings at any time. See
-[Plans & Limits](/get-started/plans/#understanding-api-usage) for ways to reduce your call
+[Plans & Limits](../get-started/plans.md#understanding-api-usage) for ways to reduce your call
 volume — sampling, batching, and offline buffering all help.
 
 ---
@@ -1214,13 +1213,13 @@ volume — sampling, batching, and offline buffering all help.
 
 **MCP server:**
 - Use WhiteBoxXAI as a tool from Claude Desktop, Claude Code, LangChain agents, or any
-  MCP-compatible client — see [MCP Server](/integrations/mcp/)
+  MCP-compatible client — see [MCP Server](../integrations/mcp.md)
 
 **GraphQL (Beta):**
 - Flexible queries
 - Efficient data fetching
 
-**Full docs:** [API Reference](/sdk/api-reference/)
+**Full docs:** [API Reference](../sdk/api-reference.md)
 
 ### What SDK languages are supported?
 
@@ -1318,12 +1317,12 @@ Yes! Configure in **Settings** → **Webhooks**
 
 WhiteBoxXAI's product scope is deliberately five frameworks: **ISO/IEC 42001, GDPR, CCPA, the
 EU AI Act, and the NIST AI Risk Management Framework.** See [AI
-Regulations](/account/ai-regulations/) for how each maps to platform features, and [Audit &
-Explanation Reports](/user-guide/reports/) for the **Compliance** report category that
+Regulations](../account/ai-regulations.md) for how each maps to platform features, and [Audit &
+Explanation Reports](../user-guide/reports.md) for the **Compliance** report category that
 generates evidence against them.
 
 HIPAA isn't in that list — see the scope note at the top of [AI
-Regulations](/account/ai-regulations/) for why frameworks outside these five (HIPAA, the
+Regulations](../account/ai-regulations.md) for why frameworks outside these five (HIPAA, the
 Colorado AI Act, and others) appear on that page as background context, not as something
 WhiteBoxXAI targets or certifies against.
 
@@ -1499,7 +1498,7 @@ date
 **Documentation:**
 - Search docs: https://docs.whiteboxxai.com
 - FAQ: This document
-- API Reference: [API Reference](/sdk/api-reference/)
+- API Reference: [API Reference](../sdk/api-reference.md)
 
 **Community:**
 - Forum: https://community.whiteboxxai.com

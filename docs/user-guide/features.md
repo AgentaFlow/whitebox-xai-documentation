@@ -23,11 +23,11 @@ Comprehensive documentation for all WhiteBoxXAI features and capabilities.
 ## Audit & Explanation Reports
 
 Need audit evidence or a plain-English explanation of a decision, not the SDK reference?
-Start here instead: **[Audit & Explanation Reports](/user-guide/reports/)** covers report
+Start here instead: **[Audit & Explanation Reports](reports.md)** covers report
 categories, the Enhanced Dashboard walkthrough, and why every number in a report traces back to real
 computed data — not a template.
 
-For compliance automation, check out our new **[Phase 6 Report Engine](/user-guide/report-engine/)**, which enables single-click report generation directly from the Enhanced Dashboard or the Python SDK.
+For compliance automation, check out our new **[Phase 6 Report Engine](report-engine.md)**, which enables single-click report generation directly from the Enhanced Dashboard or the Python SDK.
 
 For the explainability computation itself (SHAP, LIME, feature importance) see
 [Explainability Engine](#explainability-engine) below; for fairness audits see
@@ -120,7 +120,7 @@ print(f"Model registered with ID: {model['id']}")
 
 There's also `auto_detect_git=True`, which reads the current commit, branch, and working-tree
 state from the repository you're registering from and attaches them automatically — the
-Git-side half of the traceability [GitHub Integration](/integrations/github/) provides. Add
+Git-side half of the traceability [GitHub Integration](../integrations/github.md) provides. Add
 `require_clean_git=True` to refuse registration with uncommitted changes.
 
 #### Via REST API
@@ -291,7 +291,7 @@ print(f"Logged: {response['prediction_id']}")
 
 For most integrations, `ModelMonitor` is less code than calling `client.predictions.log()`
 directly — it holds the model ID, and adds optional local buffering and sampling. See [SDK
-Documentation](/sdk/#2-modelmonitor) for the full API.
+Documentation](../sdk/index.md#2-modelmonitor) for the full API.
 
 ```python
 from whiteboxxai import WhiteBoxXAI, ModelMonitor
@@ -378,7 +378,7 @@ monitored_model = torch_monitor.wrap_model(pytorch_model)
 outputs = monitored_model(inputs)  # Forward pass logs automatically
 ```
 
-See [SDK Documentation](/sdk/#3-framework-integrations) for `register_from_model()` and the
+See [SDK Documentation](../sdk/index.md#3-framework-integrations) for `register_from_model()` and the
 full framework-integration reference.
 
 ### Sampling
@@ -879,7 +879,7 @@ client.models.update_baseline(
 Understand why your models make specific predictions.
 
 !!! tip "Looking for an explainability report, not the raw computation?"
-    See [Audit & Explanation Reports](/user-guide/reports/) for how these explanations get
+    See [Audit & Explanation Reports](reports.md) for how these explanations get
     packaged into something you can hand to a stakeholder or auditor.
 
 ### Overview
@@ -898,7 +898,7 @@ Understand why your models make specific predictions.
 !!! note "Full method reference lives with the SDK"
     This section is the concepts and use cases. For the complete, verified method list —
     `generate_bulk()`, `compare()`, `visualize()`/`visualize_multi()`, `set_config()`, and
-    every parameter — see [SDK Documentation](/sdk/#explanations-api).
+    every parameter — see [SDK Documentation](../sdk/index.md#explanations-api).
 
 ### SHAP Explanations
 
@@ -1027,7 +1027,7 @@ for exp in recent:
 ```
 
 **2. Contestation** — a customer disputes a denial; generate the explanation behind that
-specific prediction and hand it to them (or route it into a [report](/user-guide/reports/) for
+specific prediction and hand it to them (or route it into a [report](reports.md) for
 a formatted document):
 
 ```python
@@ -1090,7 +1090,7 @@ pattern, for one instance at a time.
 Audit models for fairness across demographic groups.
 
 !!! tip "Need a bias audit report you can hand to an auditor?"
-    See [Audit & Explanation Reports](/user-guide/reports/) — the fairness results below
+    See [Audit & Explanation Reports](reports.md) — the fairness results below
     feed directly into the **Bias audit** report category.
 
 ### Overview
@@ -1365,7 +1365,7 @@ client.alerts.create(
 There's no built-in scheduler for re-running an audit itself on a cadence — `audit()` needs
 ground truth and group data you supply, so "run this weekly" means your own scheduled job
 calling it, not a platform-side schedule. [Governance Review Boards' automated periodic
-reviews](/user-guide/governance/#automated-periodic-reviews) are the closest built-in
+reviews](governance.md#automated-periodic-reviews) are the closest built-in
 equivalent if what you actually want is a recurring human review rather than a recurring
 computation.
 
@@ -1375,7 +1375,7 @@ computation.
 
 Token, cost, latency, safety, and RAG-quality tracking for LLM calls — the LLM equivalent of
 prediction logging above. For the Enhanced Dashboard walkthrough (Conversations, Tokens, Costs, Safety,
-RAG Quality tabs), see [Monitoring LLMs](/user-guide/#monitoring-llms) in the User Guide; this
+RAG Quality tabs), see [Monitoring LLMs](index.md#monitoring-llms) in the User Guide; this
 section is the SDK surface behind it.
 
 ```python
@@ -1412,27 +1412,27 @@ client.rag.stats(model_id="model-uuid")
 
 `client.llm`, `client.safety`, and `client.rag` are each their own resource with a larger
 method surface than shown here (batch logging, threshold-based alerting, trend queries) — see
-the [MCP Server tool reference](/integrations/mcp/#llm-monitoring) for the equivalent tool
+the [MCP Server tool reference](../integrations/mcp.md#llm-monitoring) for the equivalent tool
 list, which mirrors the SDK method-for-method.
 
 ## Alert System
 
-Covered in full in the User Guide's [Managing Alerts](/user-guide/#managing-alerts) and the
-[Alerts API reference](/sdk/api-reference/#alerts) — this page's [Alerts on
+Covered in full in the User Guide's [Managing Alerts](index.md#managing-alerts) and the
+[Alerts API reference](../sdk/api-reference.md#alerts) — this page's [Alerts on
 Metrics](#alerts-on-metrics) and [Continuous Fairness
 Monitoring](#continuous-fairness-monitoring) sections above show it applied to specific
 features.
 
 ## Reporting
 
-Covered in full in [Audit & Explanation Reports](/user-guide/reports/) — report categories,
+Covered in full in [Audit & Explanation Reports](reports.md) — report categories,
 generating one from the dashboard or the API, scheduling, external sharing, and branding.
 
 ## Compliance
 
-Covered in full in [AI Regulations](/account/ai-regulations/) (the regulatory landscape) and
-[Governance Review Boards](/user-guide/governance/) (approval workflows and the decision
-archive). The **Compliance** [report category](/user-guide/reports/#report-categories) is
+Covered in full in [AI Regulations](../account/ai-regulations.md) (the regulatory landscape) and
+[Governance Review Boards](governance.md) (approval workflows and the decision
+archive). The **Compliance** [report category](reports.md#report-categories) is
 where regulatory evidence gets packaged for an auditor.
 
 ---

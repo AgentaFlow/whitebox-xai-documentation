@@ -13,14 +13,14 @@ certification.
     See how teams use WhiteBoxXAI to monitor models, catch drift, and pass audits — with
     the patterns and outcomes behind each story.
 
--   :material-hammer-wrench: **[Hands-On Workshops](/learn/workshops/)**
+-   :material-hammer-wrench: **[Hands-On Workshops](workshops.md)**
 
     ---
 
     Step-by-step exercises that walk you through monitoring, explainability, drift
     detection, and bias auditing on real scenarios.
 
--   :material-play-circle: **[Interactive Demos](/learn/interactive-demos/)**
+-   :material-play-circle: **[Interactive Demos](interactive-demos.md)**
 
     ---
 
@@ -38,5 +38,5 @@ certification.
 
 ## New to WhiteBoxXAI?
 
-If you're just getting started, begin with the [Getting Started guide](/get-started/getting-started/)
-and the [User Guide](/user-guide/), then come back here to go deeper.
+If you're just getting started, begin with the [Getting Started guide](../get-started/getting-started.md)
+and the [User Guide](../user-guide/index.md), then come back here to go deeper.

@@ -15,9 +15,9 @@ without building a slide deck at midnight. It's also the observability and monit
 platform your engineering team uses to produce that evidence in the first place.
 </p>
 
-[Generate an Audit Report](/user-guide/reports/){ .md-button .md-button--primary }
-[Get started](/get-started/getting-started/){ .md-button }
-[Install the SDK](/sdk/){ .md-button }
+[Generate an Audit Report](user-guide/reports.md){ .md-button .md-button--primary }
+[Get started](get-started/getting-started.md){ .md-button }
+[Install the SDK](sdk/index.md){ .md-button }
 
 </div>
 
@@ -27,40 +27,40 @@ platform your engineering team uses to produce that evidence in the first place.
 
 <div class="grid cards" markdown>
 
--   :material-file-certificate: **[Audit & Explanation Reports](/user-guide/reports/)**
+-   :material-file-certificate: **[Audit & Explanation Reports](user-guide/reports.md)**
 
     ---
 
     Generate bias-audit, compliance, and explainability reports from the dashboard — no code
     required — with every number traceable back to real computed data.
 
--   :material-rocket-launch: **[Getting Started](/get-started/getting-started/)**
+-   :material-rocket-launch: **[Getting Started](get-started/getting-started.md)**
 
     ---
 
     Create your account, install the SDK, register your first model, and see monitoring in
     action — end to end.
 
--   :material-book-open-page-variant: **[User Guide](/user-guide/)**
+-   :material-book-open-page-variant: **[User Guide](user-guide/index.md)**
 
     ---
 
     A tour of the platform: dashboards, explanations, drift detection, bias auditing, LLM
     monitoring, alerts, and reports.
 
--   :material-language-python: **[Python SDK](/sdk/)**
+-   :material-language-python: **[Python SDK](sdk/index.md)**
 
     ---
 
     Instrument your models in a few lines. Decorators, async logging, offline buffering, and
     multi-agent monitoring included.
 
--   :material-puzzle: **[Integrations](/integrations/examples/)**
+-   :material-puzzle: **[Integrations](integrations/examples.md)**
 
     ---
 
     Native support for scikit-learn, PyTorch, TensorFlow, Hugging Face, LangChain, XGBoost,
-    LightGBM, GitHub, n8n — and an [MCP server](/integrations/mcp/) for any AI client.
+    LightGBM, GitHub, n8n — and an [MCP server](integrations/mcp.md) for any AI client.
 
 </div>
 
@@ -79,28 +79,28 @@ platform your engineering team uses to produce that evidence in the first place.
 
     ---
 
-    Run bias and fairness audits and produce the [evidence](/user-guide/reports/) your
+    Run bias and fairness audits and produce the [evidence](user-guide/reports.md) your
     stakeholders and regulators expect — not a summary of one.
 
 -   :material-gavel: **Govern with confidence**
 
     ---
 
-    Multi-party [governance review boards](/user-guide/governance/), automated periodic
+    Multi-party [governance review boards](user-guide/governance.md), automated periodic
     reviews, and an immutable decision archive — aligned with ISO 42001 and the EU AI Act.
 
 -   :material-shield-alert: **Track AI risk**
 
     ---
 
-    A structured [AI Risk Register](/user-guide/risk-register/) with owners, likelihood ×
+    A structured [AI Risk Register](user-guide/risk-register.md) with owners, likelihood ×
     impact scoring, and a full audit trail — the artifact ISO 42001 and the EU AI Act ask for.
 
 -   :material-speedometer: **Report one number**
 
     ---
 
-    A [Trust Score](/user-guide/trust-score/) per model, combining fairness, drift, and
+    A [Trust Score](user-guide/trust-score.md) per model, combining fairness, drift, and
     explainability into a single 0–100 index your board can actually read.
 
 -   :material-chart-line: **Monitor in real time**
@@ -124,11 +124,11 @@ from whiteboxxai import WhiteBoxXAI
 client = WhiteBoxXAI(api_key="your-api-key")
 ```
 
-Then follow the [Getting Started guide](/get-started/getting-started/) to register a model
+Then follow the [Getting Started guide](get-started/getting-started.md) to register a model
 and log your first predictions.
 
 ## Need help?
 
-- Browse the [FAQ](/help/faq/) and [Troubleshooting guide](/help/troubleshooting/)
-- Explore hands-on [workshops, demos, and case studies](/learn/)
+- Browse the [FAQ](help/faq.md) and [Troubleshooting guide](help/troubleshooting.md)
+- Explore hands-on [workshops, demos, and case studies](learn/index.md)
 - Email us at [support@whiteboxxai.com](mailto:support@whiteboxxai.com)

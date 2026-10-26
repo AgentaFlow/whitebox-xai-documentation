@@ -170,7 +170,7 @@ To obtain a key:
 4. Copy it immediately — it's shown only once — and store it in your secrets manager
 
 Key creation is admin-only, since a key is an organization-wide credential. Full reference:
-[API Keys](/account/api-keys/).
+[API Keys](../account/api-keys.md).
 
 **Note:** API keys authenticate on their own. Enabling 2FA on your account protects
 interactive logins and does not affect existing SDK integrations.
@@ -235,7 +235,7 @@ Every method has an `a`-prefixed async twin — `client.models.aregister()`,
 `client.predictions.alog()`, `client.drift.aget_reports()`, and so on.
 
 !!! note "There is no `client.metrics`"
-    Metrics are read through the [REST API](/sdk/api-reference/#metrics) directly. The SDK
+    Metrics are read through the [REST API](api-reference.md#metrics) directly. The SDK
     client exposes `models`, `predictions`, `explanations`, `drift`, `fairness`, and `alerts`.
 
 ### 2. ModelMonitor
@@ -316,7 +316,7 @@ monitor.detect_drift(...)
 1.0.0 the flag was accepted and silently dropped.
 
 `monitor.create_alert_rule()` and `monitor.get_active_alerts()` call the [Alerts
-API](/sdk/api-reference/#alerts) — see [Managing Alerts](/user-guide/#managing-alerts) for the
+API](api-reference.md#alerts) — see [Managing Alerts](../user-guide/index.md#managing-alerts) for the
 dashboard equivalent.
 
 ```python
@@ -711,7 +711,7 @@ prediction_ids = client.predictions.log_batch(
 ### Metrics API
 
 There is no `client.metrics` resource. Read metrics through the REST API — see
-[Metrics](/sdk/api-reference/#metrics) in the API reference — or use the monitoring dashboards.
+[Metrics](api-reference.md#metrics) in the API reference — or use the monitoring dashboards.
 
 For drift and fairness history, which is what most metric queries are actually after, the SDK
 does have first-class support:
@@ -872,7 +872,7 @@ client.explanations.visualize_multi(explanation_ids, plot_type, max_features=20)
     There's no server-side "global importance across all predictions" call. Aggregate it
     yourself from `list_by_model()`. There's also no custom-explainer registration mechanism
     (`BaseExplainer`/`register_explainer`) and no `export_report()` — build a PDF/HTML export
-    through [Audit & Explanation Reports](/user-guide/reports/) instead, which packages
+    through [Audit & Explanation Reports](../user-guide/reports.md) instead, which packages
     explanations alongside everything else in a report.
 
 ---
@@ -1153,7 +1153,7 @@ def log_with_retry(input_data, output_data, max_retries=3):
 !!! tip "Or just let offline mode handle it"
     Connection failures on `predictions.log()`, `predictions.log_batch()`,
     `models.register()`, and `models.update_baseline()` are exactly what [offline
-    mode](/sdk/offline-mode/) is for — enable it and the operation is queued and retried for you,
+    mode](offline-mode.md) is for — enable it and the operation is queued and retried for you,
     no retry loop required.
 
 ### Graceful Degradation

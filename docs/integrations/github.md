@@ -511,8 +511,8 @@ POST /api/v1/github/repositories/{repository_id}/webhook
 **Problem**: OAuth callback fails
 
 **Solution**:
-- Check `OAUTH_REDIRECT_URI` is configured correctly in backend settings
-- Ensure GitHub OAuth app redirect URI matches configuration
+- Disconnect and reconnect GitHub from **Settings → Integrations**
+- If you use a GitHub organization with third-party app restrictions, ask an org owner to approve the WhiteBoxXAI app
 - Clear browser cache and try again
 
 ---

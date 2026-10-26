@@ -385,8 +385,7 @@ monitor.log_predictions(
 ## Examples
 
 Full examples in:
-- `sdk/examples/boosting_example.py`
-- `sdk/guides/BOOSTING_INTEGRATION.md`
+- [`boosting_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/boosting_example.py) in the public SDK repository
 
 ## Resources
 

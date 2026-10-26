@@ -577,7 +577,7 @@ manager.queue
 
 ## Examples
 
-See `sdk/examples/offline_mode_example.py` for complete examples:
+See [`offline_mode_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/offline_mode_example.py) in the public SDK repository for complete examples:
 
 1. Basic offline mode with auto-sync
 2. Manual sync control

@@ -9,7 +9,7 @@ predictions, run drift detection, run bias/fairness audits, generate SHAP/LIME a
 explanations, query the AI Risk Register and governance RACI grid, monitor LLM/RAG calls and
 content safety, manage alert rules, and trace multi-agent workflows — without writing
 integration code. It's the recommended path for non-Python clients and for agents that need to
-reach WhiteBoxXAI as a tool. If you're writing Python, use the [SDK](/sdk/) directly
+reach WhiteBoxXAI as a tool. If you're writing Python, use the [SDK](../sdk/index.md) directly
 instead.
 
 Every tool calls the real WhiteBoxXAI API through the SDK — with one documented exception, see
@@ -19,7 +19,7 @@ Every tool calls the real WhiteBoxXAI API through the SDK — with one documente
 
 - A WhiteBoxXAI account.
 - Python 3.11+ (for the pip install) or Docker.
-- An [API key](/account/api-keys/) — see [Authentication](#authentication).
+- An [API key](../account/api-keys.md) — see [Authentication](#authentication).
 
 ## Install
 
@@ -58,7 +58,7 @@ Connection settings:
 
 Use an API key for anything long-running. It has a much smaller blast radius than a
 password: a leaked key is revoked with a single call, while a leaked password means a full
-credential rotation. See [API Keys](/account/api-keys/) for how to issue one.
+credential rotation. See [API Keys](../account/api-keys.md) for how to issue one.
 
 ## Connect from a client
 
@@ -127,7 +127,7 @@ HTTP mode's authentication model is different from stdio's, because one process 
 every organization instead of one fixed credential per process:
 
 - Every request must carry its own `Authorization: Bearer <token>` header — a JWT from
-  `POST /api/v1/auth/login`, or an [API key](/account/api-keys/). There's no shared or
+  `POST /api/v1/auth/login`, or an [API key](../account/api-keys.md). There's no shared or
   default credential, and no fallback to the `WHITEBOXXAI_MCP_*` environment variables stdio
   mode uses. A request without a valid header is rejected before an MCP session is even
   created.
@@ -193,7 +193,7 @@ return mocked or placeholder data.
 !!! tip "Drift and fairness tools have side effects"
     `whitebox_drift_create_report` and `whitebox_fairness_audit` persist records — and a
     `high` or `critical` result will auto-draft an entry in your [AI Risk
-    Register](/user-guide/risk-register/). That's usually what you want, but it's worth
+    Register](../user-guide/risk-register.md). That's usually what you want, but it's worth
     knowing before you let an agent call them in a loop.
 
 ### AI Risk Register
@@ -220,8 +220,7 @@ workflows.
 
 ### Explanations
 
-The async two-tool pattern — start the job, then poll — proxying the real Celery-backed
-SHAP/LIME pipeline.
+The async two-tool pattern: start the job, then poll for the result of the SHAP/LIME computation.
 
 | Tool | Description |
 | --- | --- |
@@ -229,8 +228,8 @@ SHAP/LIME pipeline.
 | `whitebox_explanations_get` | Get an explanation by ID — status, and once complete, `feature_weights`, `base_value`, and `score`. Poll after `generate_async` until status is no longer `pending`. |
 
 The synchronous `/generate` endpoint and the bulk/compare/visualize/config-CRUD explanation
-endpoints aren't wrapped as tools yet — use the [SDK](/sdk/) or [REST
-API](/sdk/api-reference/#explainability-xai) for those.
+endpoints aren't wrapped as tools yet — use the [SDK](../sdk/index.md) or [REST
+API](../sdk/api-reference.md#explainability-xai) for those.
 
 ### LLM Explainability
 
@@ -384,7 +383,7 @@ fatigue detection, and comments.
 ### Multi-Agent Workflows
 
 CrewAI/LangChain/n8n workflow, agent, execution, interaction, and task tracking — see [Multi-Agent
-Workflow Monitoring](/sdk/multi-agent-monitoring/).
+Workflow Monitoring](../sdk/multi-agent-monitoring.md).
 
 | Tool | Description |
 | --- | --- |
@@ -427,8 +426,8 @@ Workflow Monitoring](/sdk/multi-agent-monitoring/).
 ## Current limitations
 
 - **Tool coverage.** The synchronous explanations endpoint and the bulk/compare/visualize/
-  config-CRUD explanation endpoints aren't wrapped as tools yet — use the [SDK](/sdk/) or
-  [REST API](/sdk/api-reference/#explainability-xai) for those. Within Alert Intelligence,
+  config-CRUD explanation endpoints aren't wrapped as tools yet — use the [SDK](../sdk/index.md) or
+  [REST API](../sdk/api-reference.md#explainability-xai) for those. Within Alert Intelligence,
   four forecasting tools return placeholder data rather than a real prediction — see the note
   under [that section](#alert-intelligence).
 - **Authentication.** In stdio mode, the email/password mode doesn't work with 2FA-enabled
@@ -471,6 +470,6 @@ Keys** and issue a new one if needed.
 
 ## Related
 
-- [API Keys](/account/api-keys/) — issuing and revoking the credential this server uses.
-- [Python SDK](/sdk/) — the direct path for Python callers.
-- [REST API Reference](/sdk/api-reference/) — the endpoints behind every tool above.
+- [API Keys](../account/api-keys.md) — issuing and revoking the credential this server uses.
+- [Python SDK](../sdk/index.md) — the direct path for Python callers.
+- [REST API Reference](../sdk/api-reference.md) — the endpoints behind every tool above.

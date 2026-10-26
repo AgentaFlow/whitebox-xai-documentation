@@ -7,7 +7,7 @@ goes to production — and to keep an auditable record of every decision.
 
 You can manage everything from the **Governance & Evidence** area of the dashboard, or
 automate it through the REST API. API examples below use the base URL
-`https://api.whiteboxxai.com` and require an [API key](/account/api-keys/)
+`https://api.whiteboxxai.com` and require an [API key](../account/api-keys.md)
 (`Authorization: Bearer YOUR_API_KEY`).
 
 ## Core concepts
@@ -91,9 +91,9 @@ means the rules hold even for a caller that bypasses the application entirely.
 
 ### Separation of duties
 
-**A request's submitter cannot vote on their own request.** This is enforced by a database
-trigger on the decisions table as well as in the service layer, so it can't be circumvented
-by calling the API directly rather than using the dashboard. A member can also only cast one
+**A request's submitter cannot vote on their own request.** This is enforced by the platform on
+every write path, so it can't be circumvented by calling the API directly rather than using
+the dashboard. A member can also only cast one
 vote per request.
 
 This is the property that makes a review board *governance* rather than an approval button —
@@ -103,20 +103,20 @@ than asserted.
 ### Vote changes are recorded, never overwritten
 
 A member may change their vote while a request is still open. When they do, the previous vote
-is preserved in an append-only history table rather than being replaced. Nothing about a
+is preserved in an append-only vote history rather than being replaced. Nothing about a
 vote's history is silently lost.
 
 Once a request is finalized, votes are closed.
 
 ### The decision archive is immutable
 
-Finalized decisions cannot be edited or deleted — `UPDATE` and `DELETE` are blocked at the
-database level for both the archive and the vote history.
+Finalized decisions cannot be edited or deleted — edits and deletions are refused for both
+the archive and the vote history, including through the API.
 
 If a decision was recorded in error, you don't mutate history. You record a **correction**: a
 new archive entry that supersedes the original, carrying a reference to it (`supersedes_id`)
 and a `correction_reason`. Both entries remain, and the chain between them is explicit — which
-is exactly what an auditor or an acquirer's due-diligence review wants to see.
+is exactly what an auditor wants to see.
 
 ### AI-generated content is labeled
 
@@ -194,9 +194,9 @@ POST /api/v1/governance/review-boards/requests/{request_id}/finalize
 
 !!! note "A denied review becomes a tracked risk"
     Denying a request, or sending it back with **request changes**, automatically drafts an
-    entry in your [AI Risk Register](/user-guide/risk-register/) so the concern is owned and tracked
+    entry in your [AI Risk Register](risk-register.md) so the concern is owned and tracked
     rather than left in a vote record. See [Automatic risk
-    drafting](/user-guide/risk-register/#automatic-risk-drafting).
+    drafting](risk-register.md#automatic-risk-drafting).
 
 ## RACI assignment
 
@@ -214,7 +214,7 @@ POST /api/v1/governance/review-boards/requests/{request_id}/raci
 GET|PATCH|DELETE /api/v1/governance/review-boards/requests/{request_id}/raci/{assignment_id}
 ```
 
-The [`whitebox_governance_raci_grid`](/integrations/mcp/#governance-raci) MCP tool exposes the
+The [`whitebox_governance_raci_grid`](../integrations/mcp.md#governance) MCP tool exposes the
 same grid read-only for agent clients.
 
 ## AI-assisted governance
@@ -298,7 +298,7 @@ original and any corrections that supersede it.
 - Separation of duties, vote history, and archive immutability are enforced at the database
   layer, not only in application code.
 - API keys are stored hashed and are never returned in API responses after creation. See
-  [API Keys](/account/api-keys/).
+  [API Keys](../account/api-keys.md).
 
 ## Troubleshooting
 

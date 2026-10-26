@@ -1,8 +1,9 @@
+# WhiteBoxXAI MCP server - local (stdio) client definition.
+# Install first: pip install whiteboxxai-mcp   (Python 3.11+)
+# Docs: https://docs.whiteboxxai.com/integrations/mcp/
 mcpServers:
   whiteboxxai:
-    command: "python"
-    args:
-      - "-m"
-      - "whiteboxxai_mcp"
+    command: whiteboxxai-mcp
     env:
-      WHITEBOX_API_KEY: "${WHITEBOX_API_KEY}"
+      WHITEBOXXAI_MCP_API_BASE_URL: https://api.whiteboxxai.com
+      WHITEBOXXAI_MCP_API_KEY: ${WHITEBOXXAI_MCP_API_KEY}

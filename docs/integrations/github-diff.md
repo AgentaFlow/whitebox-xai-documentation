@@ -357,9 +357,8 @@ fi
 
 ## Additional Resources
 
-- **Full API Documentation**: `/docs/api/github-diff-api.md`
-- **GitHub Configuration Guide**: `/docs/integrations/github-configuration.md`
-- **Architecture Documentation**: `/docs/architecture/ARCHITECTURE.md`
+- **GitHub integration guide**: [GitHub](github.md)
+- **REST API**: [API Reference](../sdk/api-reference.md)
 
 ---
 

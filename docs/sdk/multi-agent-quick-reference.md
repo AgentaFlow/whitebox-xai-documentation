@@ -352,88 +352,6 @@ bottlenecks = monitor.get_bottlenecks()
 timeline = monitor.get_timeline()
 ```
 
-## Database Schema
-
-### agent_workflows
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Organization FK |
-| `user_id` | UUID | User FK |
-| `name` | String | Workflow name |
-| `framework` | Enum | Framework type |
-| `status` | Enum | Workflow status |
-| `inputs` | JSONB | Input data |
-| `outputs` | JSONB | Output data |
-| `total_tokens` | Integer | Total tokens |
-| `total_cost` | Float | Total cost USD |
-| `trace_id` | String(32) | OpenTelemetry trace ID |
-| `metadata` | JSONB | Custom metadata |
-| `tags` | Array | Tags |
-
-### workflow_agents
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `name` | String | Agent name |
-| `role` | String | Agent role |
-| `agent_type` | String | Type |
-| `model_name` | String | LLM model |
-| `llm_provider` | String | LLM provider |
-| `goal` | Text | Agent goal |
-| `tools` | Array | Tools |
-| `total_executions` | Integer | Execution count |
-| `total_tokens` | Integer | Tokens used |
-| `total_cost` | Float | Cost USD |
-
-### agent_executions
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `agent_id` | UUID | Agent FK |
-| `parent_execution_id` | UUID | Parent FK (nullable) |
-| `execution_order` | Integer | Sequential order |
-| `status` | Enum | Status |
-| `inputs` | JSONB | Inputs |
-| `outputs` | JSONB | Outputs |
-| `tokens_used` | Integer | Tokens |
-| `cost` | Float | Cost USD |
-| `span_id` | String(16) | OTEL span ID |
-
-### agent_interactions
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `interaction_type` | Enum | Type |
-| `from_agent_id` | UUID | Source agent |
-| `to_agent_id` | UUID | Target agent |
-| `message` | Text | Message |
-| `metadata` | JSONB | Custom data |
-| `timestamp` | Timestamp | Time |
-
-### agent_tasks
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `task_name` | String | Task name |
-| `task_type` | Enum | Type |
-| `status` | Enum | Status |
-| `agent_id` | UUID | Assigned agent FK |
-| `parent_task_id` | UUID | Parent task FK |
-| `input_data` | JSONB | Inputs |
-| `output_data` | JSONB | Outputs |
-| `priority` | Integer | Priority |
-| `duration_ms` | Integer | Duration |
-
 ## Common Patterns
 
 ### Simple Sequential Workflow
@@ -501,7 +419,7 @@ export WhiteBoxXAI_API_URL="https://api.whiteboxxai.com"  # Optional
 
 ## Links
 
-- [Full Documentation](/sdk/multi-agent-monitoring/)
-- [API Reference](/sdk/api-reference/)
+- [Full Documentation](multi-agent-monitoring.md)
+- [API Reference](api-reference.md)
 - [Dashboard](https://app.whiteboxxai.com)
 - [Python SDK on GitHub](https://github.com/AgentaFlow/whitebox-python-sdk)

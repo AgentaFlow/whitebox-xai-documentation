@@ -302,11 +302,10 @@ result = wrapped_chain.run(...)
 ## Examples
 
 Full examples in:
-- `sdk/examples/langchain_example.py`
-- `sdk/guides/LANGCHAIN_INTEGRATION.md`
+- [`langchain_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/langchain_example.py) in the public SDK repository
 
 ## Resources
 
 - LangChain Docs: https://python.langchain.com/
 - WhiteBoxXAI Docs: https://docs.whiteboxxai.com
-- Integration Guide: `sdk/guides/LANGCHAIN_INTEGRATION.md`
+- Integration guide: this page and [LangChain Multi-Agent](langchain-multi-agent.md)

@@ -71,7 +71,7 @@ GET    /api-keys            # List keys (metadata only, never key material)
 DELETE /api-keys/{key_id}   # Revoke a key -> 204, effective immediately
 ```
 
-See [API Keys](/account/api-keys/) for the full reference.
+See [API Keys](../account/api-keys.md) for the full reference.
 
 ### Login
 ```http
@@ -845,7 +845,7 @@ Content-Type: application/json
 ## Trust Score
 
 A 0–100 index per model over fairness, drift, and explainability signals. See [Trust
-Score](/user-guide/trust-score/) for the methodology.
+Score](../user-guide/trust-score.md) for the methodology.
 
 ### Get a Model's Trust Score
 ```http
@@ -921,7 +921,7 @@ file.
 ## Risk Register
 
 Structured AI risk inventory with owners, scoring, workflow, and audit trail. See [AI Risk
-Register](/user-guide/risk-register/).
+Register](../user-guide/risk-register.md).
 
 ### Create a Risk Entry
 ```http
@@ -1022,7 +1022,7 @@ Also accepts `likelihood_scale` and `impact_scale`. `GET` includes `is_default`.
 
 Multi-party approval workflows with an immutable decision archive. The full endpoint list and
 the governance guarantees are documented in [Governance Review
-Boards](/user-guide/governance/).
+Boards](../user-guide/governance.md).
 
 ```http
 POST   /governance/review-boards
@@ -1070,7 +1070,7 @@ Authorization: Bearer {token}
 The SDK exposes this as `client.alerts.create()` / `list()` / `get_rule()` / `update_rule()` /
 `delete_rule()` / `evaluate_rule()` / `list_instances()` / `get_instance()` / `acknowledge()` /
 `resolve()`, and the simpler `ModelMonitor.create_alert_rule()` / `get_active_alerts()` — see
-[SDK Documentation](/sdk/#2-modelmonitor) for the full signatures. All of it is also available
+[SDK Documentation](index.md#2-modelmonitor) for the full signatures. All of it is also available
 from the dashboard under **Observability → Alerts**.
 
 Drift and bias thresholds are *separately* configurable through the API — see [Drift
@@ -1084,7 +1084,7 @@ whether an alert rule is also configured for it.
 
 Report generation lives under `/export/*`. There is no `/reports` endpoint — it returns `404`.
 
-See [Audit & Explanation Reports](/user-guide/reports/) for the dashboard walkthrough, report
+See [Audit & Explanation Reports](../user-guide/reports.md) for the dashboard walkthrough, report
 categories, and what a report contains — this section is the endpoint reference.
 
 **Formats:** `pdf`, `csv`, `excel`, `json`, `html`, `markdown`.
@@ -1394,7 +1394,7 @@ client.predictions.log(
 )
 ```
 
-See [SDK Documentation](/sdk/) for details.
+See [SDK Documentation](index.md) for details.
 
 ---
 

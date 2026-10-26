@@ -1,4 +1,4 @@
-site_name: WhiteBox XAI Documentation
+site_name: WhiteBoxXAI Documentation
 site_url: https://docs.whiteboxxai.com
 site_description: >-
   User documentation for WhiteBoxXAI — the AI observability, explainability, and
@@ -51,6 +51,7 @@ theme:
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
+    - content.action.edit
 
 extra_css:
   - stylesheets/extra.css
@@ -87,6 +88,29 @@ markdown_extensions:
 
 plugins:
   - search
+  # Published URLs are linked from the WhiteBoxXAI app and must keep working. When a page is
+  # removed or replaced, add its old path here instead of letting it 404.
+  - redirects:
+      redirect_maps:
+        mcp.md: integrations/mcp.md
+        assets/downloads/python_environment.md: agent-resources/skill-libraries.md
+        assets/downloads/node_environment.md: agent-resources/skill-libraries.md
+        assets/downloads/docker_compose.md: agent-resources/skill-libraries.md
+        learn/case-studies.md: learn/index.md
+        learn/certification.md: learn/index.md
+
+# Make `mkdocs build --strict` fail on broken internal links and anchors, including
+# absolute (/path/) links, which MkDocs otherwise only reports at info level.
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    absolute_links: relative_to_docs
+    anchors: warn
+    unrecognized_links: warn
 
 extra:
   social:
@@ -141,10 +165,8 @@ nav:
       - Two-Factor Authentication: account/two-factor-authentication.md
   - Learn:
       - learn/index.md
-      - Case Studies: learn/case-studies.md
       - Hands-On Workshops: learn/workshops.md
       - Interactive Demos: learn/interactive-demos.md
-      - Certification Program: learn/certification.md
   - Help:
       - FAQ: help/faq.md
       - Troubleshooting: help/troubleshooting.md

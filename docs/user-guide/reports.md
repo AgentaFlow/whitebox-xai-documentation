@@ -27,7 +27,7 @@ template filled in with placeholder text:
   underlying data for a model, it says so — it doesn't fabricate a number to fill the page.
 
 If you're validating this for the first time, see the [Explainability
-Engine](/user-guide/features/#explainability-engine) and [Bias Detection](/user-guide/features/#bias-detection)
+Engine](features.md#explainability-engine) and [Bias Detection](features.md#bias-detection)
 sections of the Features guide for exactly how SHAP, LIME, and fairness metrics are
 computed.
 
@@ -41,8 +41,8 @@ computed.
 | **Explainability** | SHAP and LIME explanation summaries and feature importance |
 | **Compliance** | Regulatory status, audit trail, model documentation |
 | **LLM monitoring** | Usage, cost, safety, and quality metrics |
-| **Risk register** | [AI Risk Register](/user-guide/risk-register/) entries with owners, scores, and status |
-| **Trust score** | [Trust Score](/user-guide/trust-score/) values and component breakdowns |
+| **Risk register** | [AI Risk Register](risk-register.md) entries with owners, scores, and status |
+| **Trust score** | [Trust Score](trust-score.md) values and component breakdowns |
 | **Custom** | A template you define yourself |
 
 **Output formats:** `pdf`, `csv`, `excel`, `json`, `html`, and `markdown`. PDF for sharing
@@ -115,7 +115,7 @@ and audit packages, CSV or Excel for further analysis, JSON for feeding another 
     Use `POST /api/v1/export/exports/bulk` to queue several exports at once — useful when
     you're assembling a full evidence package across every model in scope for an audit.
 
-    See the [API Reference](/sdk/api-reference/#exports--reports) for the full endpoint
+    See the [API Reference](../sdk/api-reference.md#exports--reports) for the full endpoint
     surface, including templates, configurations, and delivery integrations.
 
 ### Evidence Pack: one call, everything in scope
@@ -229,13 +229,13 @@ Only a completed export can be shared. A few things worth knowing about the secu
 
 Reports pull directly from the features that produce the underlying evidence:
 
-- [Trust Score](/user-guide/trust-score/) — a single 0–100 index over fairness, drift, and
+- [Trust Score](trust-score.md) — a single 0–100 index over fairness, drift, and
   explainability that a board can read without translation.
-- [AI Risk Register](/user-guide/risk-register/) — the structured risk inventory ISO 42001
+- [AI Risk Register](risk-register.md) — the structured risk inventory ISO 42001
   and the EU AI Act ask for, with owners and a full audit trail.
-- [Governance Review Boards](/user-guide/governance/) — multi-party approval workflows and
+- [Governance Review Boards](governance.md) — multi-party approval workflows and
   an immutable decision archive.
-- [AI Regulations](/account/ai-regulations/) — the regulatory landscape a compliance report
+- [AI Regulations](../account/ai-regulations.md) — the regulatory landscape a compliance report
   is measured against.
 
 ## Retention and storage
@@ -260,5 +260,5 @@ automatically.
 **What if a section has no data for a model?** It's marked as such rather than filled with
 a placeholder — an empty section is more defensible under audit than a fabricated one.
 
-Still have questions? See the full [FAQ](/help/faq/#reports) or
-[Troubleshooting guide](/help/troubleshooting/).
+Still have questions? See the full [FAQ](../help/faq.md#reports) or
+[Troubleshooting guide](../help/troubleshooting.md).

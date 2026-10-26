@@ -1075,9 +1075,9 @@ if __name__ == "__main__":
 
 ## Additional Resources
 
-- **SDK Documentation:** `/docs/SDK_DOCUMENTATION.md`
-- **API Reference:** `/docs/API_REFERENCE.md`
-- **Best Practices:** `/docs/BEST_PRACTICES.md`
+- **SDK guide:** [Python SDK](../sdk/index.md)
+- **API reference:** [REST API](../sdk/api-reference.md)
+- **More examples:** [public SDK repository](https://github.com/AgentaFlow/whitebox-python-sdk/tree/main/examples)
 - **Example Code:** `/examples` directory
 
 ---

@@ -277,7 +277,6 @@ except Exception as e:
 
 ## Additional Resources
 
-- Full guide: `sdk/guides/HUGGINGFACE_INTEGRATION.md`
-- Examples: `sdk/examples/transformers_example.py`
+- Example: [`transformers_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/transformers_example.py) in the public SDK repository
 - API docs: https://docs.whiteboxxai.com
 - Transformers docs: https://huggingface.co/docs/transformers

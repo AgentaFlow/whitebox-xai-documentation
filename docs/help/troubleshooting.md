@@ -45,7 +45,7 @@ your imports use `from whiteboxxai import WhiteBoxXAI`.
 - If in doubt, generate a new key and update your integration. Remember that a key is shown
   in full only once, at creation time.
 - **If you're using a login token instead of an API key**, it has expired — JWTs last about 30
-  minutes. Switch to an [API key](/account/api-keys/), which doesn't expire on a schedule.
+  minutes. Switch to an [API key](../account/api-keys.md), which doesn't expire on a schedule.
 
 ```python
 import os
@@ -61,15 +61,15 @@ Your account or API key doesn't have permission for that action:
 - **Your role.** Check it under **Settings → Team**. Issuing and revoking API keys is
   admin-only.
 - **Demo accounts are read-only** — they can view data but can't create, edit, or delete. See
-  [Plans & Limits](/get-started/plans/).
+  [Plans & Limits](../get-started/plans.md).
 
 ### "404 Not Found" on `/api/v1/reports`
 
 Report generation lives at `/api/v1/export/*`, not `/api/v1/reports`. See [Exports &
-Reports](/sdk/api-reference/#exports--reports).
+Reports](../sdk/api-reference.md#exports--reports).
 
 Getting a 404 on an alerts endpoint instead? Check the path — rules live under
-`/api/v1/alerts/rules`, not `/api/v1/alerts` directly. See [Alerts](/sdk/api-reference/#alerts).
+`/api/v1/alerts/rules`, not `/api/v1/alerts` directly. See [Alerts](../sdk/api-reference.md#alerts).
 
 ## Predictions aren't appearing
 
@@ -102,7 +102,7 @@ in order:
     ```
 
 If you're on the **Free** plan and have hit your monthly API-call limit, new requests are
-paused until your next cycle — see [Plans & Limits](/get-started/plans/).
+paused until your next cycle — see [Plans & Limits](../get-started/plans.md).
 
 ## Two-factor authentication
 
@@ -118,7 +118,7 @@ paused until your next cycle — see [Plans & Limits](/get-started/plans/).
 
 Use one of your saved **backup codes** at the 2FA prompt. Each backup code works once. After
 logging in, go to **Profile → Security** to set up a new authenticator and regenerate backup
-codes. Full details: [Two-Factor Authentication](/account/two-factor-authentication/).
+codes. Full details: [Two-Factor Authentication](../account/two-factor-authentication.md).
 
 ### I've lost my app *and* my backup codes
 
@@ -162,7 +162,7 @@ allowance. To avoid it:
 - **Sample** high-volume models rather than logging every prediction.
 - Retry with a short backoff after a brief pause.
 
-See [Plans & Limits](/get-started/plans/) for the allowance on each plan.
+See [Plans & Limits](../get-started/plans.md) for the allowance on each plan.
 
 ## Getting help
 
