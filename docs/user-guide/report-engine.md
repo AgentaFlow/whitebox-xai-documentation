@@ -1,53 +1,79 @@
-# Phase 6 Report Engine
+---
+description: Reference for every WhiteBoxXAI report type — id, scope, the data each one needs before it can be generated, formats, and the SDK and REST calls to list, preview and generate them.
+---
 
-The Phase 6 Report Engine is the cornerstone of WhiteBoxXAI's governance and auditing capabilities, delivering automated, compliance-ready reports for AI Risk Officers and Auditors.
+# Report types reference
 
-## Overview
+This page lists every report type the [Report Studio](reports.md) can generate, with the id to use
+from code and the data each one needs. For how to customize, brand, sign off, share and schedule
+reports, see [Reports](reports.md).
 
-Designed explicitly for the enterprise AI Risk Officer, the Phase 6 Report Engine prioritizes **auditability and transparency**. It produces defensible evidence across five major compliance frameworks: ISO/IEC 42001, GDPR, CCPA, the EU AI Act, and NIST AI RMF.
+All report types generate as **PDF**, **Word (DOCX)** or **HTML**.
 
-### Key Principles
-- **No Fabricated Metrics**: If a specific metric or explanation cannot be computed honestly, the engine explicitly states so or omits it. We never guess.
-- **Plain-Language Verdicts**: Every raw ML output is accompanied by a plain-language summary.
-- **Strict Tenant Isolation**: All reports are generated with rigid cross-tenant data separation.
+## Report types
 
-## Supported Report Types
+| Id | Name | Scope | Needs before it can be generated |
+| --- | --- | --- | --- |
+| `quarterly_board_pack` | Quarterly Board Pack | Organization | At least one active model |
+| `iso42001_statement_of_applicability` | ISO/IEC 42001 Statement of Applicability | Framework: ISO/IEC 42001 | ISO/IEC 42001 applicability decisions |
+| `eu_ai_act_annex_iv_technical_documentation` | EU AI Act Annex IV Technical Documentation | One AI system | An EU AI Act risk classification of **high** for that system |
+| `eu_ai_act_conformity_checklist` | EU AI Act Conformity Checklist | Framework: EU AI Act | EU AI Act applicability decisions |
+| `gdpr_dpia_automated_decision_record` | GDPR Art. 35 DPIA / Art. 22 Automated-Decision Record | Framework: GDPR | Article 30 processing records or automated-decision requests |
+| `ccpa_admt_risk_assessment` | CCPA ADMT Risk Assessment | Framework: CCPA | Applicability decisions for the CCPA ADMT controls |
+| `nist_ai_rmf_profile` | NIST AI RMF Profile | Framework: NIST AI RMF | NIST AI RMF applicability decisions |
+| `model_card` | Model Card | One AI system | An authored model card for that system |
+| `fairness_audit` | Fairness Audit | One AI system | At least one bias audit for that system |
+| `drift_report` | Drift Report | One AI system | At least one drift report for that system |
+| `evidence_pack` | Evidence Pack | Organization | At least one active model |
+| `auditor_traceability_matrix` | Auditor Traceability Matrix | Organization | Control applicability decisions for at least one framework |
 
-You can generate 9 distinct report types to satisfy various internal governance and external regulatory requirements:
+Applicability decisions are made under **Compliance & Evidence → Controls** (see
+[Compliance & Evidence](compliance-evidence.md#controls)). When a report type's needs aren't met, it
+reports **Needs data** with the specific reason. It never produces a partial document filled with
+placeholders.
 
-1. **Model Card** (`model_card`): High-level overview of model purpose, intended use, and performance metrics.
-2. **Fairness Audit** (`fairness_audit`): Detailed demographic parity and equal opportunity metrics across protected classes.
-3. **Drift & Stability** (`drift_stability`): Concept drift and data drift statistics over time.
-4. **Data Protection** (`data_protection`): Evidence of PII masking and data minimization.
-5. **Security Posture** (`security_posture`): Penetration testing and adversarial robustness summaries.
-6. **Compliance Evidence** (`compliance_evidence`): Cross-referenced evidence mapping directly to ISO 42001 and NIST RMF controls.
-7. **Executive Dashboard** (`executive_dashboard`): A roll-up summary of organizational AI risk.
-8. **Brand Profile** (`brand_profile`): External-facing transparency report.
-9. **Signoff History** (`signoff_history`): Chain of custody for model approvals.
+## Generate from code
 
-## How to Generate a Report
+=== "Python SDK"
 
-Reports can be generated directly through the **Enhanced Dashboard** or programmatically via the **WhiteBoxXAI Python SDK**.
+    ```python
+    types = client.reports.list()
+    for t in types:
+        print(t["id"], t["name"])
 
-### Via the Dashboard
-1. Navigate to **Audit & Explanation Reports**.
-2. Select **Generate New Report**.
-3. Choose the desired report type from the dropdown.
-4. Select the target model (or leave blank for org-wide reports).
-5. Click **Download** (PDF, HTML, or DOCX formats available).
+    html = client.reports.preview(report_type_id="drift_report", model_id=model_id)
+    export = client.reports.generate(report_type_id="drift_report", model_id=model_id, format="pdf")
+    ```
 
-### Via the Python SDK
-```python
-from whiteboxxai.client import WhiteBoxXAI
+=== "REST"
 
-client = WhiteBoxXAI()
+    ```bash
+    # List report types, with availability for your organization
+    curl https://api.whiteboxxai.com/api/v1/report-types \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
 
-# Generate a PDF Fairness Audit for a specific model
-response = client.reports.generate(
-    report_type_id="fairness_audit",
-    model_id="mod_123456",
-    format="pdf"
-)
+    # Preview as HTML
+    curl -X POST "https://api.whiteboxxai.com/api/v1/report-types/drift_report/preview?model_id=<model-id>"       -H "Authorization: Bearer $WHITEBOX_API_KEY"
 
-print(f"Report generated! Download URL: {response['url']}")
-```
+    # Generate; the response is an export record with an id
+    curl -X POST "https://api.whiteboxxai.com/api/v1/report-types/drift_report/generate?format=pdf&model_id=<model-id>"       -H "Authorization: Bearer $WHITEBOX_API_KEY"
+    ```
+
+    `format` (`pdf`, `docx` or `html`), `model_id`, `brand_profile_id` and `template_id` are query
+    parameters. To override a template's writing style for one run, send the settings as the JSON
+    body.
+
+The generated report is an **export**: download it from
+`GET /api/v1/export/exports/{export_id}/download`, and share or sign it off as described in
+[Reports](reports.md#from-code).
+
+Pass `model_id` only for report types scoped to one AI system. Organization- and framework-scoped
+types ignore it.
+
+## Generate from an AI assistant
+
+An AI assistant generates reports through the Python SDK, using the calls above. The
+[MCP server](../integrations/mcp.md) doesn't have report-generation tools; over MCP, an assistant can
+create and read **drift reports** and read the evidence a report draws on. Have the assistant take
+report type ids from `client.reports.list()` rather than guessing, and give you the download link and
+generation date. The [compliance-evidence skill](../agent-resources/skill-libraries.md) covers this.

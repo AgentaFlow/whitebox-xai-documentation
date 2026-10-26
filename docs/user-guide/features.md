@@ -1,12 +1,16 @@
-# WhiteBoxXAI Features
+---
+description: Technical reference for WhiteBoxXAI features — model registry, prediction logging, metrics, drift detection methods, SHAP/LIME/DiCE explainability, fairness metrics, LLM monitoring — with the SDK calls behind each and links to the dashboard pages.
+---
 
-Comprehensive documentation for all WhiteBoxXAI features and capabilities.
+# Feature reference
+
+How each WhiteBoxXAI capability works, and the SDK calls behind it.
 
 ---
 
 ## Table of Contents
 
-1. [Audit & Explanation Reports](#audit--explanation-reports)
+1. [Where each feature lives](#where-each-feature-lives)
 2. [Model Registry](#model-registry)
 3. [Prediction Logging](#prediction-logging)
 4. [Metrics Dashboard](#metrics-dashboard)
@@ -20,18 +24,31 @@ Comprehensive documentation for all WhiteBoxXAI features and capabilities.
 
 ---
 
-## Audit & Explanation Reports
+## Where each feature lives
 
-Need audit evidence or a plain-English explanation of a decision, not the SDK reference?
-Start here instead: **[Audit & Explanation Reports](reports.md)** covers report
-categories, the Enhanced Dashboard walkthrough, and why every number in a report traces back to real
-computed data — not a template.
+This page is the technical reference: how each capability works and the SDK calls behind it. For
+the dashboard walkthrough, follow the links in the first column.
 
-For compliance automation, check out our new **[Phase 6 Report Engine](report-engine.md)**, which enables single-click report generation directly from the Enhanced Dashboard or the Python SDK.
+| Capability | Dashboard | SDK resource | Technical detail |
+| --- | --- | --- | --- |
+| AI system inventory and versions | [Model Register](model-register.md) | `client.models` | [Model Registry](#model-registry) |
+| Prediction logging | Model Register dossier | `client.predictions` | [Prediction Logging](#prediction-logging) |
+| Performance metrics | [Observability → Performance](observability.md#performance) | `client.metrics` | [Metrics Dashboard](#metrics-dashboard) |
+| Drift | [Assurance → Drift](assurance.md#drift) | `client.drift` | [Drift Detection](#drift-detection) |
+| Explanations (SHAP, LIME, DiCE) | [Assurance → Explainability](assurance.md#explainability) | `client.explanations` | [Explainability Engine](#explainability-engine) |
+| Fairness audits | [Assurance → Fairness](assurance.md#fairness) | `client.fairness` | [Bias Detection](#bias-detection) |
+| LLM, RAG and safety | [Observability → LLM & RAG](observability.md#llm-rag-audit-trails) | `client.llm`, `client.rag`, `client.safety`, `client.llm_xai` | [LLM Monitoring](#llm-monitoring), [LLM monitoring guide](../sdk/llm-monitoring.md) |
+| Prompt versions and evaluations | [Evaluations](evaluations.md) | `client.prompts` | [Evaluations & Prompt Versions](evaluations.md) |
+| Multi-agent workflows | [Observability → Agents](observability.md#agents) | `client.agent_workflows` | [Multi-Agent Monitoring](../sdk/multi-agent-monitoring.md) |
+| Alerts | [Needs Attention](needs-attention.md) | `client.alerts`, `client.alert_intelligence`, `client.alert_management` | [Alert System](#alert-system) |
+| Frameworks, controls, evidence | [Compliance & Evidence](compliance-evidence.md) | `client.compliance` | [Compliance frameworks](../account/ai-regulations.md) |
+| Reports | [Reports](reports.md) | `client.reports` | [Report types reference](report-engine.md) |
+| Risk register | [Risk Register](risk-register.md) | `client.risk_register` | [AI Risk Register](risk-register.md) |
+| Review boards and votes | [Reviews & Decisions](governance.md) | `client.governance` | [Reviews & Decisions](governance.md) |
+| Trust score | Overview, Model Register | REST | [Trust Score](trust-score.md) |
 
-For the explainability computation itself (SHAP, LIME, feature importance) see
-[Explainability Engine](#explainability-engine) below; for fairness audits see
-[Bias Detection](#bias-detection).
+For how SHAP, LIME and fairness metrics are computed, see [Explainability Engine](#explainability-engine)
+and [Bias Detection](#bias-detection) below.
 
 ---
 
@@ -57,27 +74,28 @@ The Model Registry is your central hub for managing all ML models.
 
 #### Via Web UI
 
-1. Navigate to **Models** page
-2. Click **Register Model** button
-3. Fill in model details:
+1. Go to **Model Register** and click **Register a system**.
+2. Fill in the form:
 
-**Required Fields:**
-- **Name** - Descriptive model name
-- **Version** - Semantic version (e.g., "1.0.0")
-- **Type** - Classification, Regression, Clustering, LLM
+    **Basic Information**
 
-**Recommended Fields:**
-- **Description** - Model purpose and use case
-- **Framework** - ML library used (scikit-learn, PyTorch, etc.)
-- **Features** - Input feature names
-- **Target** - Output variable name
-- **Baseline Metrics** - Performance on test set
+    - **Model Name** (required): a descriptive name, such as "Credit Risk Predictor"
+    - **Version**: for example `1.0.0`
+    - **Description**: what the model does and its intended use
+    - **Model Type** (required): Binary Classification, Multi-class Classification, Regression,
+      Time Series, Clustering or Other. Recorded as a tag.
+    - **Architecture** (required): XGBoost, Random Forest, Neural Network, Linear Model, LLM or
+      Custom
+    - **Framework** (required): Scikit-learn, PyTorch, TensorFlow, XGBoost, LightGBM, Keras or Other
+    - **Tags**: for example `production`, `finance`
 
-**Optional Fields:**
-- **Tags** - Labels for organization (e.g., "production", "finance")
-- **Training Data** - Size, date, source
-- **Model File** - Link to model artifact
-- **Documentation** - Link to detailed docs
+    **Model Metadata**
+
+    - **Target Variable** and **Feature List** (comma-separated)
+    - **Baseline Metrics**: accuracy, precision, recall, F1 score and AUC-ROC from your own test
+      evaluation. Leave blank any you didn't measure.
+
+3. Click **Register Model**.
 
 #### Via SDK
 
@@ -163,8 +181,10 @@ for v in versions:
 latest = client.models.get_latest(model_name="Customer Churn Predictor")
 ```
 
-There's no built-in model-to-model comparison endpoint — pull each version's metrics and
-compare them yourself, or view them side by side on the **Models** page in the dashboard.
+Compare two registered versions with `client.models.compare_versions(version1_id, version2_id)`
+and `client.models.version_changelog(version1_id, version2_id)`, or open **Lineage & versions** in
+the system's dossier in the [Model Register](model-register.md). When versions were registered with
+Git context, the comparison includes the code changes; see [GitHub Diff Reviews](../integrations/github-diff.md).
 
 ### Model Metadata
 
@@ -682,11 +702,11 @@ SDK yet, so this is `curl` rather than Python:
 ```bash
 # Create a default config for a model
 curl -X POST https://api.whiteboxxai.com/api/v1/drift-config/{model_id}/default \
-  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+  -H "Authorization: Bearer $WHITEBOX_API_KEY"
 
 # Or the fastest path: apply a sensitivity preset directly
 curl -X POST https://api.whiteboxxai.com/api/v1/drift-config/{model_id}/sensitivity/medium \
-  -H "Authorization: Bearer $WHITEBOXXAI_API_KEY"
+  -H "Authorization: Bearer $WHITEBOX_API_KEY"
 ```
 
 Three presets ship — `low`, `medium` (recommended default), `high` — each setting the KS,
@@ -777,7 +797,7 @@ Fraud-rate predictions increased from 5% to 15% of traffic.
 ```
 Drift Detection Report
 Model: Fraud Detection v2
-Date: 2025-12-05
+Date: 2026-10-05
 
 Overall Drift Score: 0.18 (Medium)
 
@@ -828,7 +848,7 @@ trend = client.drift.get_trend(model_id="model-uuid", days=30)
 result = client.drift.detect(model_id="model-uuid", window_size=1000)
 ```
 
-Compare distributions visually on the model's **Drift** tab in the dashboard — there's no SDK
+Compare distributions visually on **Assurance → Drift → Feature Analysis** in the dashboard — there's no SDK
 method that hands back a chart object; `feature_drifts` above is the raw statistics behind it.
 
 **3. Action:**
@@ -1246,7 +1266,7 @@ per attribute.
 ```
 Fairness Audit Report
 Model: Loan Approval Model v2.1
-Date: 2025-12-05 14:30 UTC
+Date: 2026-10-05 14:30 UTC
 Protected Attribute: Gender
 Reference Group: Male
 Comparison Group: Female
@@ -1374,9 +1394,9 @@ computation.
 ## LLM Monitoring
 
 Token, cost, latency, safety, and RAG-quality tracking for LLM calls — the LLM equivalent of
-prediction logging above. For the Enhanced Dashboard walkthrough (Conversations, Tokens, Costs, Safety,
-RAG Quality tabs), see [Monitoring LLMs](index.md#monitoring-llms) in the User Guide; this
-section is the SDK surface behind it.
+prediction logging above. For the dashboard walkthrough, see
+[Observability → LLM & RAG](observability.md#llm-rag-audit-trails); this section is the SDK surface
+behind it. For every provider you can log from, see [LLM monitoring](../sdk/llm-monitoring.md).
 
 ```python
 client.llm.log_call(
@@ -1407,7 +1427,7 @@ client.rag.log_retrieval(
     retrieval_method="vector",
     model_id="model-uuid",
 )
-client.rag.stats(model_id="model-uuid")
+client.rag.get_stats(model_id="model-uuid")
 ```
 
 `client.llm`, `client.safety`, and `client.rag` are each their own resource with a larger
@@ -1417,24 +1437,22 @@ list, which mirrors the SDK method-for-method.
 
 ## Alert System
 
-Covered in full in the User Guide's [Managing Alerts](index.md#managing-alerts) and the
-[Alerts API reference](../sdk/api-reference.md#alerts) — this page's [Alerts on
-Metrics](#alerts-on-metrics) and [Continuous Fairness
+Covered in [Needs Attention](needs-attention.md) and the
+[Alerts API reference](../sdk/api-reference.md#alerts). Alert rules are stored and can be tested
+with `client.alerts.evaluate_rule`, but aren't yet evaluated automatically against incoming data.
+This page's [Alerts on Metrics](#alerts-on-metrics) and [Continuous Fairness
 Monitoring](#continuous-fairness-monitoring) sections above show it applied to specific
 features.
 
 ## Reporting
 
-Covered in full in [Audit & Explanation Reports](reports.md) — report categories,
-generating one from the dashboard or the API, scheduling, external sharing, and branding.
+Covered in full in [Reports](reports.md): 12 report types, templates, branding, sign-off,
+auditor share links and schedules. Ids and data requirements are in the
+[Report types reference](report-engine.md).
 
 ## Compliance
 
-Covered in full in [AI Regulations](../account/ai-regulations.md) (the regulatory landscape) and
-[Governance Review Boards](governance.md) (approval workflows and the decision
-archive). The **Compliance** [report category](reports.md#report-categories) is
-where regulatory evidence gets packaged for an auditor.
+Covered in [Compliance frameworks](../account/ai-regulations.md) (what WhiteBoxXAI records for each
+of the five frameworks), [Compliance & Evidence](compliance-evidence.md) (controls, evidence and the
+audit trail) and [Reviews & Decisions](governance.md) (approval workflows and the decision archive).
 
----
-
-*Last Updated: August 27, 2026*

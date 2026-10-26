@@ -1,14 +1,29 @@
-# Governance Review Boards
+---
+description: WhiteBoxXAI Reviews & Decisions — governance review boards, review requests, votes signed with an authenticator code, separation of duties, the immutable decision archive, RACI assignments and scheduled reviews.
+---
+
+# Reviews & Decisions
 
 Governance Review Boards bring executive oversight to your AI models through multi-party
 approval workflows, AI-assisted review templates, a searchable decision archive, and
 automated periodic reviews. Use them to make sure the right people sign off before a model
 goes to production — and to keep an auditable record of every decision.
 
-You can manage everything from the **Governance & Evidence** area of the dashboard, or
-automate it through the REST API. API examples below use the base URL
-`https://api.whiteboxxai.com` and require an [API key](../account/api-keys.md)
-(`Authorization: Bearer YOUR_API_KEY`).
+In the [Enhanced Dashboard](index.md) this is **Reviews & Decisions** (`g` then `v`), with five tabs:
+
+| Tab | Shows |
+| --- | --- |
+| **My reviews** | Requests waiting for *your* decision |
+| **Requests** | Every request, filterable by status (Draft, Submitted, Under review, Approved, Denied, Withdrawn, Archived) and type |
+| **Boards** | Your review boards, with their **Members**, **Rules**, **Activity** and **Schedules** |
+| **Decisions** | The searchable decision archive, with **Export CSV** (up to 10,000 rows) |
+| **RACI** | Who's Responsible, Accountable, Consulted and Informed, per board |
+
+You can also automate most of it through the REST API. API examples below use the base URL
+`https://api.whiteboxxai.com` and an [API key](../account/api-keys.md)
+(`Authorization: Bearer $WHITEBOX_API_KEY`). **Voting and finalizing are the exception:** they need
+a person's own signed-in session and an authenticator code. See
+[Vote with an authenticator code](#vote-with-an-authenticator-code).
 
 ## Core concepts
 
@@ -43,11 +58,11 @@ full-text searchable for later audits.
 
 ## Create a board
 
-In the dashboard, go to **Governance → Review Boards → New Board**, or use the API:
+In the dashboard, an administrator goes to **Reviews & Decisions → Boards → New board**, or uses the API:
 
 ```bash
 curl -X POST https://api.whiteboxxai.com/api/v1/governance/review-boards \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Authorization: Bearer $WHITEBOX_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "AI Ethics Committee",
@@ -156,15 +171,43 @@ POST /api/v1/governance/review-boards/requests/{request_id}/submit
 POST /api/v1/governance/review-boards/requests/{request_id}/withdraw
 ```
 
-Members cast votes:
+Members cast votes from the request's slide-over in **Reviews & Decisions**: **Approve**, **Deny**,
+**Abstain** or **Request changes**, with a **Justification** and optional **Conditions**. The panel
+shows the approval weight so far (**Approval weight: X of Y needed**) and whether quorum is met.
+
+### Vote with an authenticator code
+
+A vote is a sign-off that ends up in an immutable archive, so it has to be provably *yours* and made
+against evidence you actually saw:
+
+- **Two-factor authentication must be on.** Without it, the vote is refused with *"Voting and
+  sign-off need two-factor authentication. Turn it on in Settings > Security, then try again."*
+- **Each vote and each finalization needs a current authenticator code** (or one of your backup
+  codes), entered in the **Authenticator code** field. Repeated wrong codes lock voting for a while
+  and are recorded in the audit trail.
+- **It must be your own session.** Organization API keys can't vote or finalize, so neither can an
+  automated pipeline or an AI agent acting with a key.
+- **The evidence must not have changed.** Every request has an evidence snapshot hash. A vote
+  carries the hash of the version you reviewed, and if the request changed after you opened it, the
+  vote is refused: *"This request changed after you opened it. Reload it and review the current
+  version before voting."*
+
+Over the API, from a person's own session:
 
 ```bash
 POST /api/v1/governance/review-boards/requests/{request_id}/decisions
 {
-  "decision_type": "approve",
-  "rationale": "Model meets all compliance requirements."
+  "decision": "approve",
+  "justification": "Model meets all compliance requirements.",
+  "conditions": "Re-run the fairness audit after the next retrain.",
+  "evidence_snapshot_hash": "<from the request detail you reviewed>",
+  "totp_code": "123456"
 }
 ```
+
+AI assistants can prepare and summarise a request's dossier for you through the
+[MCP server](../integrations/mcp.md#governance-voting), and in hosts that support interactive cards
+can show you voting buttons, but the vote is still yours, made with your session and your code.
 
 A vote from the request's own submitter is rejected — see [Separation of
 duties](#separation-of-duties).
@@ -183,13 +226,15 @@ GET /api/v1/governance/review-boards/my-reviews
 GET /api/v1/governance/review-boards/{board_id}/dashboard
 ```
 
-In the dashboard, these are **My Requests** and the board's own overview page.
+In the dashboard, these are the **My reviews** tab and the board's slide-over on the **Boards** tab.
 
-A request can be finalized once both **quorum** and the **approval threshold** are met.
-Finalizing creates an archive entry with an AI-generated executive summary:
+A request can be finalized once both **quorum** and the **approval threshold** are met, by an
+administrator or the board's chair. Finalizing is the formal sign-off, so it needs an authenticator
+code too. It creates an archive entry with an AI-generated executive summary:
 
 ```bash
 POST /api/v1/governance/review-boards/requests/{request_id}/finalize
+{ "totp_code": "123456" }
 ```
 
 !!! note "A denied review becomes a tracked risk"
@@ -198,15 +243,41 @@ POST /api/v1/governance/review-boards/requests/{request_id}/finalize
     rather than left in a vote record. See [Automatic risk
     drafting](risk-register.md#automatic-risk-drafting).
 
+## Requests in the dashboard
+
+**Requests → Raise a review request** opens the request form. **Generate AI Template** drafts the
+description from the request type and system, and AI-drafted text stays marked *"AI-generated
+content — pending human sign-off"* until a person edits it. Choose **Save as draft** or **Save and
+submit**.
+
+A request's slide-over has everything a reviewer needs in one place:
+
+- **Submit to the board**, **Withdraw** and **Finalize the decision**
+- **Votes**, with approval weight and quorum (see [voting](#vote-with-an-authenticator-code))
+- **Discussion**: comments typed as Discussion, Question, Concern, Suggestion, Approval note or
+  Denial reason, with replies
+- **Attachments**: PDF, PNG, JPG, CSV, Markdown or text files, such as an architecture diagram or a
+  test report. The requester, board members and administrators can attach files until a decision
+  is made.
+- **RACI** assignments
+- **AI Governance Suggestions** and **AI Best Practices** for the request type
+
+### Boards
+
+On the **Boards** tab, administrators create boards (**New board**), add members with a role,
+voting power, department and expertise, and edit the rules: quorum, approval weight, the escalation
+board and how often reviews recur. Boards can be deactivated and reactivated. Everyone can see a
+board's **Members**, **Rules**, **Activity** and **Schedules**.
+
 ## RACI assignment
 
 Beyond a vote, a review request can carry a RACI assignment — who's Responsible, Accountable,
 Consulted, and Informed — the structure ISO/IEC 42001 Clause 5.3 and Annex A.3 expect for AI
 governance roles and responsibilities.
 
-In the dashboard, this is the **RACI** page under Governance: review requests as cards, each
-showing its assigned roles, with an **Assign role** dialog (role, member, optional notes).
-Filter by board.
+In the dashboard, this is the **RACI** tab of Reviews & Decisions: a per-board matrix of requests
+against members, with R, A, C and I assignments drawn from the board's real membership. Assign roles
+from a request's slide-over.
 
 ```bash
 GET  /api/v1/governance/review-boards/raci-grid       # the full grid, optionally filtered to one board
@@ -256,7 +327,8 @@ POST /api/v1/governance/review-boards/schedules
 ## Search the decision archive
 
 Every finalized decision is stored and full-text searchable, with faceted filters and CSV
-export for audits. In the dashboard this is **Decisions Archive**.
+export for audits. In the dashboard this is the **Decisions** tab: search (use quotes for a phrase
+and `-word` to exclude), filter by outcome, type, board and date, and **Export CSV**.
 
 ```bash
 POST /api/v1/governance/review-boards/archive/search
@@ -295,8 +367,9 @@ original and any corrections that supersede it.
 
 - All governance data is scoped to your organization — there is no cross-organization
   access.
-- Separation of duties, vote history, and archive immutability are enforced at the database
-  layer, not only in application code.
+- Separation of duties, vote history, and archive immutability are enforced on every write path,
+  including direct API calls, not only in the dashboard.
+- Votes and finalization need the voter's own session and a current authenticator code.
 - API keys are stored hashed and are never returned in API responses after creation. See
   [API Keys](../account/api-keys.md).
 
@@ -309,7 +382,13 @@ in settings.
 members (not observers), that `voting_power` is set, and that `quorum_required` isn't
 higher than your member count.
 
-**A vote is rejected outright** — the voter is the request's own submitter. [Separation of
+**A vote is refused with 403 asking for two-factor authentication**: turn on two-factor in
+**Settings → Profile & security**. Organization API keys can't vote at all.
+
+**A vote is refused with 409**: the request changed after you opened it. Reload, review the current
+version, and vote again.
+
+**A vote is rejected outright**: the voter is the request's own submitter. [Separation of
 duties](#separation-of-duties) blocks self-voting, so the request needs a different voter,
 or a different submitter.
 
