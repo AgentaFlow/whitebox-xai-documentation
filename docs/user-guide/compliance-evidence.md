@@ -42,8 +42,22 @@ Adopting a framework and setting its audit date are part of the
 | **CCPA** | Consumer requests |
 | **NIST AI RMF** | Categories by core function (**GOVERN**, **MAP**, **MEASURE**, **MANAGE**) with open risks per function, open gaps and assessments recorded |
 
-ISO/IEC 42001 policies and AI objectives are created through the API. Approving a pending policy
-is recorded in the audit trail with the approver's name.
+#### ISO/IEC 42001 policies and objectives
+
+The ISO/IEC 42001 panel has registers for **AIMS Policies & Guidelines** (Clause 5) and **AI
+Objectives** (Clause 6.2):
+
+1. **Record AIMS Policy**: give the policy a title (for example *Organizational AI Acceptable Use
+   Policy*), a **Version** and its **Content**: the policy statements, scope and operational
+   requirements. A new policy is **Pending Approval**.
+2. **Approve**: an administrator approves a pending policy, and it shows as **Approved**. The
+   approval is recorded in the audit trail with the approver's name.
+3. **Add AI Objective**: an **Objective Title** (for example *Maintain demographic disparity under
+   5%*), a **Description & Criteria** with measurable targets, verification cadence and responsible
+   roles, and a **Target Date**.
+
+Approved policies and recorded objectives are evidence for the ISO/IEC 42001 leadership and planning
+clauses.
 
 ## Controls
 

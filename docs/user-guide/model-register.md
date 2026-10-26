@@ -39,6 +39,7 @@ Filters are kept in the page address, so you can share a filtered view by sharin
 - **Saved views**: save the current filters and columns ([how](index.md#saved-views))
 - **Columns**: choose which columns to show, or **Reset to default**
 - **Export CSV**: exports *every* row that matches your filters, not just the visible page
+- **Compare systems**, or select rows and **Compare N selected**: compare systems side by side
 
 ## The dossier
 
@@ -71,6 +72,11 @@ A model card marked **Stale — needs refresh** says why under **Why this model 
 stale**: a newer source commit was registered, or a newer fairness audit or drift report was
 recorded, after the card was last updated.
 
+**Refresh Model Card** updates the card from what WhiteBoxXAI already holds: the model's current
+version and baseline metrics, its latest drift report, and its latest bias audit results. If the
+system has no card yet, it creates one. Nothing is re-typed by hand, and the card's freshness updates
+once the refresh completes. From the API: `POST /api/v1/compliance/model-cards/refresh/{model_id}`.
+
 ### Findings, coverage and history
 
 - **Open findings** for the system
@@ -99,7 +105,8 @@ context. Model-diff architecture reviews are included on Business Cloud and Ente
 client.models.list(search="credit", limit=50)
 client.models.get(model_id)
 client.models.get_versions("credit_scoring")
-client.models.compare_versions(model_id_a, model_id_b)
+client.models.list_git_versions(model_id)                 # Git-backed versions
+client.models.compare_versions(version1_id, version2_id)  # ids from list_git_versions
 client.models.archive(model_id)
 client.models.restore(model_id)
 ```

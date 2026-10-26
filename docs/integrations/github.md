@@ -1,3 +1,7 @@
+---
+description: Connect GitHub to WhiteBoxXAI with OAuth or a personal access token, track repositories, auto-register model versions from commits, trace predictions to code, and add branch protection, check runs and PR comments.
+---
+
 # GitHub Integration Guide
 
 ## Overview
@@ -284,7 +288,7 @@ Content-Type: application/json
   "model_name": "fraud-detection-v3",
   "validation_passed": true,
   "validation_details": { "accuracy": 0.94 },
-  "dashboard_url": "https://app.whiteboxxai.com/dashboard/models/..."
+  "dashboard_url": "https://whiteboxxai.com/dashboard/register?d=..."
 }
 ```
 
@@ -319,11 +323,15 @@ Content-Type: application/json
 
 ### Authentication
 
-All API requests require a JWT token in the `Authorization` header:
+All API requests take an [API key](../account/api-keys.md) (or a signed-in session token) in the
+`Authorization` header:
 
 ```bash
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer $WHITEBOX_API_KEY
 ```
+
+Model-diff reviews are included on Business Cloud and Enterprise Edition. See
+[GitHub Diff Reviews](github-diff.md).
 
 ### Endpoints
 
@@ -589,19 +597,11 @@ You can revoke WhiteBoxXAI's access anytime:
 For additional help:
 - **Documentation**: [docs.whiteboxxai.com](https://docs.whiteboxxai.com)
 - **Email**: support@whiteboxxai.com
-- **GitHub Issues**: [github.com/whiteboxxai/issues](https://github.com/whiteboxxai/issues)
+- **In the dashboard**: **Support** in the sidebar footer
 
 ---
 
-## Changelog
+## What's new
 
-### Version 1.1 (August 2026)
-- CI/PR automation: branch protection, GitHub check runs, and PR comments for model validation
-  and comparison results
-
-### Version 1.0 (January 2026)
-- Initial GitHub integration release
-- OAuth and PAT authentication
-- Webhook support for push, release, and tag events
-- Auto-registration with `.whiteboxxai.yml` configuration
-- Model version tracking and traceability
+See [What's new](../help/whats-new.md) for recent changes, including model-diff reviews from the model
+dossier.

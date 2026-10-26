@@ -20,6 +20,15 @@ organization, the page you were on, your screen size, and whether you use the En
 layout. You can view exactly what will be
 attached before you send it. **Submit Request** returns a ticket reference; quote it in any follow-up.
 
+## Ask a browser AI assistant
+
+Browser sidecar assistants, such as **Copilot in Microsoft Edge** or **Gemini in Chrome**, can read,
+summarise and answer questions about the live documentation at
+[docs.whiteboxxai.com](https://docs.whiteboxxai.com) while you work. Open the assistant beside a docs
+page and ask, for example, *"How do I share a report with an external auditor?"* They read the
+current pages; they aren't specially trained on WhiteBoxXAI, so check their answers against the page
+they cite. For AI coding agents, see [Agent & Developer Resources](../agent-resources/index.md).
+
 ## By email
 
 Email **[support@whiteboxxai.com](mailto:support@whiteboxxai.com)**. Include:

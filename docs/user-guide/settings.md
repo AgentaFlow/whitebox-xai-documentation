@@ -34,8 +34,12 @@ Preferences sync to your account, so they follow you across browsers.
 
 ### Notifications
 
-Personal notification preferences, such as quiet hours and digests, aren't available yet. Where
-alerts and notifications are delivered is set for the whole organization under **Integrations**.
+- **Delivery Channels**: the organization's configured channels (Slack, email, webhook, SMS,
+  PagerDuty) and whether each is enabled. Administrators add and test channels under
+  **Integrations**.
+- **Alert Rules**: a summary of how alert rules work, with **View and configure Alert Rules**, which
+  opens [Needs Attention → Alert Rules](needs-attention.md#alert-rules).
+- **Defensible Audit Trail & Governance Notices**: how notification activity is recorded.
 
 ## Organisation
 
@@ -100,8 +104,19 @@ For administrators: an at-a-glance view of your organization's access hygiene.
 - **Access review**: accounts that look stale, the **Last formal review** date, and when the next
   review is due
 
-Access reviews are recorded through the API; the pane shows their status. A completed access review
-can be filed as evidence through **Collect system evidence** in
+#### Run an access review
+
+Periodic user access reviews, which auditors routinely ask to see, are run from this pane:
+
+1. **Start Access Review** (or **Continue In-Progress Review**). The review takes a snapshot of
+   active user accounts, with each person's role and whether two-factor authentication is enabled.
+2. For each account, choose **Keep** or **Revoke**. Revoking requires a note explaining why.
+3. Add **Review Notes / Ledger Summary**, for example *"Quarterly access review completed by Security
+   Officer"*.
+4. **Complete Access Review**. Each decision is recorded as an attestation (retained or revoked), with
+   who reviewed it and when.
+
+A completed access review is filed as evidence through **Collect system evidence** in
 [Compliance & Evidence](compliance-evidence.md#collect-system-evidence).
 
 ### Sample data & tour

@@ -9,10 +9,12 @@ to show it didn't. **Observability → Evaluations** gives you the evidence: gol
 expected behaviour, scored runs against a specific prompt version, and a regression check between
 two runs. Prompts are versioned and governed like models.
 
-!!! note "WhiteBoxXAI does not call your model"
+!!! note "Deterministic scoring, no LLM-as-a-judge"
     Evaluations score outputs your model *already produced*, stored with each dataset row or
-    reported by your own test pipeline. WhiteBoxXAI never sends prompts to your model or to any LLM
-    provider on your behalf, and it doesn't use another model to judge results.
+    reported by your own test pipeline. Every score comes from a deterministic, repeatable check
+    (exact match, required phrases or rule-based rubric checks) that an auditor can re-run and get
+    the same answer. WhiteBoxXAI never sends prompts to your model or to any third-party LLM on your
+    behalf, and never asks another model to judge or grade results.
 
 The tab has three parts: **Runs**, **Golden datasets** and **Prompts**.
 

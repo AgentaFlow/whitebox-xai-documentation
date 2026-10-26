@@ -181,10 +181,11 @@ for v in versions:
 latest = client.models.get_latest(model_name="Customer Churn Predictor")
 ```
 
-Compare two registered versions with `client.models.compare_versions(version1_id, version2_id)`
-and `client.models.version_changelog(version1_id, version2_id)`, or open **Lineage & versions** in
-the system's dossier in the [Model Register](model-register.md). When versions were registered with
-Git context, the comparison includes the code changes; see [GitHub Diff Reviews](../integrations/github-diff.md).
+To compare the model files behind two versions (layers, parameters, hyperparameters, shapes), use
+model-diff reviews on Git-backed versions: `client.models.list_git_versions(model_id)`, then
+`client.models.compare_versions(version1_id, version2_id)`, or open **Lineage & versions** in the
+system's dossier in the [Model Register](model-register.md). See
+[GitHub Diff Reviews](../integrations/github-diff.md).
 
 ### Model Metadata
 
@@ -1438,8 +1439,9 @@ list, which mirrors the SDK method-for-method.
 ## Alert System
 
 Covered in [Needs Attention](needs-attention.md) and the
-[Alerts API reference](../sdk/api-reference.md#alerts). Alert rules are stored and can be tested
-with `client.alerts.evaluate_rule`, but aren't yet evaluated automatically against incoming data.
+[Alerts API reference](../sdk/api-reference.md#alerts). Active rules are evaluated automatically when
+metrics are logged, drift reports are created and bias audits complete; see
+[When rules are evaluated](needs-attention.md#when-rules-are-evaluated).
 This page's [Alerts on Metrics](#alerts-on-metrics) and [Continuous Fairness
 Monitoring](#continuous-fairness-monitoring) sections above show it applied to specific
 features.

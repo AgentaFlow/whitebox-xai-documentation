@@ -46,16 +46,21 @@ WhiteBoxXAI processes these GitHub events:
 ## CLI Git Tracking
 
 ```python
+import os
+
 from whiteboxxai import WhiteBoxXAI
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Automatic Git detection (requires GitPython)
-client.register_model(
+client.models.register(
     name="fraud-detector",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
-    auto_detect_git=True  # Captures commit hash, branch, repo URL
+    version="1.0.0",
+    features=["amount", "merchant_category", "hour"],
+    baseline_metrics={},
+    auto_detect_git=True,  # captures commit hash, branch and repository URL
 )
 ```
 

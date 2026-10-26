@@ -47,7 +47,8 @@ controls (A.2 to A.10), using the standard's own reference numbering.
 - applicability decisions and justifications for every control, which become the **Statement of
   Applicability**
 - evidence per control, with administrator approval
-- **AIMS policies and guidelines** with an approval step, and **AI objectives**
+- **AIMS policies and guidelines** (Clause 5) with an approval step, and measurable **AI objectives**
+  (Clause 6.2), both recorded from the dashboard
 - assessments you record, and a readiness view by clause with open gaps
 - a downloadable certification package (JSON) for your certification body
 

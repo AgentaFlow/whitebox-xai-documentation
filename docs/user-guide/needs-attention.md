@@ -46,13 +46,24 @@ Alert rules describe the conditions you want to be warned about: a metric, an op
 **Type**, **Severity**, **Status**, **Conditions**, **Times Triggered** and **Created** date.
 **Create Alert Rule** opens the rule form.
 
-!!! warning "Alert rules are not evaluated automatically yet"
-    Alert rules are stored and can be tested against metric values you supply, using
-    `client.alerts.evaluate_rule(rule_id, metric_values={...})` or the
-    `whitebox_alerts_evaluate_rule` MCP tool. WhiteBoxXAI does not yet evaluate rules
-    automatically against incoming data, so a rule on its own won't raise alerts. Until it does,
-    track drift through [drift reports](assurance.md#drift) and the queue's other sources, and keep
-    your own thresholds under review.
+### When rules are evaluated
+
+Active rules for a model are evaluated automatically whenever new evidence arrives for it:
+
+| Event | Values a rule can match |
+| --- | --- |
+| Performance metrics are logged (`client.metrics.create` / `create_batch`) | Each metric by its name, for example `accuracy` |
+| A drift report is created | `drift_score`, `drifted_features_count`, and the report's numeric metrics as `drift_<name>` |
+| A bias audit completes | `overall_fairness_score`, `bias_detected` (1 or 0), `disparate_impact_ratio`, `demographic_parity_diff` |
+
+A rule whose conditions are met opens an alert, unless the rule is within its throttle
+window. New alerts appear in this queue and under **All Alerts**, are counted on the rule's **Times
+Triggered**, and are available through the API and MCP server. Escalation policies route alerts to
+your [notification channels](settings.md#notifications).
+
+A rule's `metric_name` must match the name the value arrives under. Test a rule before relying on it
+with `client.alerts.evaluate_rule(rule_id, metric_values={...})` or the
+`whitebox_alerts_evaluate_rule` MCP tool, which checks it without opening an alert.
 
 Choose thresholds yourself. WhiteBoxXAI doesn't present a default threshold as a regulatory
 requirement.

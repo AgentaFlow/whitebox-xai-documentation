@@ -582,6 +582,14 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 | `GET` | `/api/v1/governance/transparency/models/{model_id}/explanation-coverage` | Get Explanation Coverage |
 | `POST` | `/api/v1/governance/transparency/reports/stakeholder` | Generate Stakeholder Report |
 
+### Policy-as-Code
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/policy` | Get Policy |
+| `POST` | `/api/v1/policy/evaluate/{model_id}` | Evaluate Model Policy |
+| `POST` | `/api/v1/policy/sync` | Sync Policy |
+
 ### Compliance: frameworks, controls and evidence
 
 | Method | Path | Summary |
@@ -664,6 +672,7 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 | `DELETE` | `/api/v1/compliance/milestones/{milestone_id}` | Delete Milestone |
 | `GET` | `/api/v1/compliance/model-cards` | List Model Cards |
 | `POST` | `/api/v1/compliance/model-cards` | Create Model Card |
+| `POST` | `/api/v1/compliance/model-cards/refresh/{model_id}` | Refresh Model Card |
 | `GET` | `/api/v1/compliance/model-cards/{card_id}` | Get Model Card |
 | `PUT` | `/api/v1/compliance/model-cards/{card_id}` | Update Model Card |
 | `DELETE` | `/api/v1/compliance/model-cards/{card_id}` | Delete Model Card |
@@ -898,4 +907,5 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 - [Python SDK](index.md)
 - [API Keys](../account/api-keys.md)
 - [Governance Events](../get-started/governance-events.md)
+- [Policy-as-Code & GitOps](../integrations/policy-as-code.md)
 - [MCP Server](../integrations/mcp.md)

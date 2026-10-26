@@ -550,8 +550,6 @@ each tool's input schema in your client for optional ones.
 - **Not every administrative endpoint is a tool.** Escalation-policy management and bulk alert
   actions are left out on purpose. If a tool doesn't exist, the assistant should say so rather than
   simulate it.
-- **Alert rules aren't evaluated automatically yet.** `whitebox_alerts_evaluate_rule` tests a rule
-  against values you supply; see [Needs Attention](../user-guide/needs-attention.md#alert-rules).
 - **Workflow analytics can be slow.** `whitebox_agent_workflows_cost_breakdown`, `_bottlenecks` and
   `_timeline` can take up to about 30 seconds.
 - **Hosted sessions with a personal sign-in token expire** after about 30 minutes; reconnect with a
