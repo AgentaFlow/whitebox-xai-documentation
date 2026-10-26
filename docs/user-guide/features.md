@@ -919,6 +919,14 @@ Understand why your models make specific predictions.
 **Supported Methods:**
 - SHAP (SHapley Additive exPlanations)
 - LIME (Local Interpretable Model-agnostic Explanations)
+- DiCE counterfactuals (what would have to change for a different outcome)
+
+!!! note "Explanations run your model"
+    SHAP, LIME and DiCE explanations are computed by running the model itself, so WhiteBoxXAI needs
+    the model file. Register the model through [GitHub](../integrations/github.md#configuration-file)
+    with `storage_mode: full`; scikit-learn-style pickle and joblib files are supported. For a model
+    registered with metadata only, the explanation is recorded as **failed**, with a message saying no
+    stored model artifact is available. Drift, fairness audits and reports don't need the model file.
 
 !!! note "Full method reference lives with the SDK"
     This section is the concepts and use cases. For the complete, verified method list —

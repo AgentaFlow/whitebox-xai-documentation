@@ -1,3 +1,7 @@
+---
+description: Quick reference for the WhiteBoxXAI GitHub integration — connecting, tracking repositories, the .whiteboxxai.yml file, SDK Git tracking and the main endpoints.
+---
+
 # GitHub Integration Quick Reference
 
 ## Connection Setup
@@ -21,20 +25,15 @@ Dashboard → Settings → GitHub Integration → Connect with PAT
 Create `.whiteboxxai.yml` in repository root:
 
 ```yaml
-version: "1.0"
-
-github:
-  auto_register: true
-  track_branches: [main, production]
-  track_tags: true
-  track_releases: true
-
-models:
-  - path: "models/**/*.pkl"
-    framework: "sklearn"
-    model_type: "classification"
-    auto_baseline: true
+enabled: true
+model_patterns: ["models/**/*.pkl"]
+storage_mode: metadata        # or "full" to store model files (needed for explanations)
+model_type: random_forest     # xgboost, random_forest, neural_network, linear_model, llm, custom
+framework: sklearn
+features: [income, utilisation, tenure_months]
 ```
+
+See [GitHub → Configuration File](github.md#configuration-file) for every key.
 
 ## Webhook Events
 

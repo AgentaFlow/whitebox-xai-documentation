@@ -266,6 +266,13 @@ explanation = client.explanations.generate(
 )
 ```
 
+!!! note "Explanations run your model"
+    SHAP, LIME and DiCE explanations are computed by running the model itself, so WhiteBoxXAI needs
+    the model file. Register the model through [GitHub](../integrations/github.md#configuration-file)
+    with `storage_mode: full`; scikit-learn-style pickle and joblib files are supported. For a model
+    registered with metadata only, the explanation is recorded as **failed**, with a message saying no
+    stored model artifact is available. Drift, fairness audits and reports don't need the model file.
+
 The result is a dict with feature weights and a base value. For counterfactuals, use
 `method="dice"` with `total_cfs` (default 3), `desired_class` (default `"opposite"`) and
 `features_to_vary` (default `"all"`, or a list of feature names).

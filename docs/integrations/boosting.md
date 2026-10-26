@@ -76,7 +76,9 @@ monitor = XGBoostMonitor(client, model_name="fraud_detection", model_id=register
 ```
 
 Feature importance describes the model as a whole. For why a single prediction came out the way it
-did, request an explanation: SHAP's tree method is exact and fast for boosted trees.
+did, request an explanation: SHAP's tree method is exact and fast for boosted trees. Explanations
+run the model, so it must be stored with WhiteBoxXAI through
+[GitHub registration](github.md#configuration-file) with `storage_mode: full`.
 
 ```python
 client.explanations.generate(registered["id"], instance=X_live.iloc[0].to_dict(), method="shap")

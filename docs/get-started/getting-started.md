@@ -202,6 +202,11 @@ explanation = client.explanations.generate(
 )
 ```
 
+Explanations run the model itself, so they need the model file stored with WhiteBoxXAI: register
+the model through [GitHub](../integrations/github.md#configuration-file) with `storage_mode: full`.
+With metadata-only registration, as in step 4, drift and fairness work but explanation requests
+are recorded as failed.
+
 Or use **Assurance** in the dashboard, which shows each result with a plain-language verdict and
 a **How was this computed?** note. With little or no data, WhiteBoxXAI says the result can't be
 computed yet rather than showing a number. Drift needs a meaningful window of predictions to

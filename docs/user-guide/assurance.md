@@ -18,6 +18,13 @@ Use **Choose a system** (or **All systems**) at the top. The tabs are **Explaina
 
 ## Explainability
 
+!!! note "Explanations run your model"
+    SHAP, LIME and DiCE explanations are computed by running the model itself, so WhiteBoxXAI needs
+    the model file. Register the model through [GitHub](../integrations/github.md#configuration-file)
+    with `storage_mode: full`; scikit-learn-style pickle and joblib files are supported. For a model
+    registered with metadata only, the explanation is recorded as **failed**, with a message saying no
+    stored model artifact is available. Drift, fairness audits and reports don't need the model file.
+
 ### Request an explanation
 
 1. Choose a system, then a logged prediction to explain.
