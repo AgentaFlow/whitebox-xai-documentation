@@ -1,4 +1,12 @@
-# TensorFlow/Keras Integration - Quick Reference
+---
+description: Monitor TensorFlow and Keras models with WhiteBoxXAI — register the model, log training with a Keras callback, log predictions, and set a baseline.
+---
+
+# TensorFlow & Keras
+
+Examples use `feature_names` for your model's input feature names. Every registration sends a valid
+`model_type` (`neural_network` for Keras models), a `version`, `features` and `baseline_metrics`,
+which the API requires.
 
 ## Installation
 
@@ -9,23 +17,28 @@ pip install whitebox-xai-sdk[tensorflow]
 ## Basic Setup
 
 ```python
+import os
 from tensorflow import keras
 from whiteboxxai import WhiteBoxXAI
 from whiteboxxai.integrations.tensorflow import KerasMonitor, WhiteBoxXAICallback
 
 # Initialize client
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Create monitor
 monitor = KerasMonitor(
     client=client,
     model=your_model,
     model_name="my_keras_model",
-    model_type="classification"  # or "regression"
+    model_type="neural_network",
 )
 
 # Register model
-model_id = monitor.register_from_model(version="1.0.0")
+model_id = monitor.register_from_model(
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},      # add metrics you measured on your test set
+)
 ```
 
 ## Training with Monitoring
@@ -97,22 +110,10 @@ monitor.log_checkpoint(
 )
 ```
 
-## SavedModel Support
-
-```python
-# Save model
-model.save('saved_models/my_model')
-
-# Register SavedModel
-monitor.register_saved_model(
-    model_path='saved_models/my_model',
-    metadata={'version': '1.0', 'format': 'SavedModel'}
-)
-```
-
 ## Complete Example
 
 ```python
+import os
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
@@ -141,9 +142,13 @@ model = keras.Sequential([
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Setup monitoring
-client = WhiteBoxXAI(api_key='your-api-key')
-monitor = KerasMonitor(client, model=model, model_name="demo_model")
-monitor.register_from_model(model_type="classification")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
+monitor = KerasMonitor(client, model=model, model_name="demo_model", model_type="neural_network")
+monitor.register_from_model(
+    version="1.0.0",
+    features=[f"x{i}" for i in range(20)],
+    baseline_metrics={},
+)
 monitor.set_baseline(X_train, y_train)
 
 # Train with monitoring
@@ -167,7 +172,7 @@ model = keras.Sequential([
 ])
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
-monitor = KerasMonitor(client, model=model, model_type="classification")
+monitor = KerasMonitor(client, model=model, model_type="neural_network")
 ```
 
 ### Regression Model
@@ -178,7 +183,7 @@ model = keras.Sequential([
 ])
 model.compile(optimizer='adam', loss='mse')
 
-monitor = KerasMonitor(client, model=model, model_type="regression")
+monitor = KerasMonitor(client, model=model, model_type="neural_network")
 ```
 
 ### CNN for Images
@@ -190,7 +195,7 @@ model = keras.Sequential([
     keras.layers.Dense(10, activation='softmax')
 ])
 
-monitor = KerasMonitor(client, model=model, model_type="classification")
+monitor = KerasMonitor(client, model=model, model_type="neural_network")
 ```
 
 ### LSTM for Time Series
@@ -201,7 +206,7 @@ model = keras.Sequential([
     keras.layers.Dense(1)
 ])
 
-monitor = KerasMonitor(client, model=model, model_type="regression")
+monitor = KerasMonitor(client, model=model, model_type="neural_network")
 ```
 
 ## Advanced Features
@@ -212,7 +217,7 @@ strategy = tf.distribute.MirroredStrategy()
 
 with strategy.scope():
     model = create_model()
-    monitor = KerasMonitor(client, model=model)
+    monitor = KerasMonitor(client, model=model, model_type="neural_network")
 
 model.fit(..., callbacks=[WhiteBoxXAICallback(monitor)])
 ```
@@ -224,7 +229,7 @@ class MetricsCallback(keras.callbacks.Callback):
         self.monitor = monitor
 
     def on_epoch_end(self, epoch, logs=None):
-        lr = float(keras.backend.get_value(self.model.optimizer.lr))
+        lr = float(keras.ops.convert_to_numpy(self.model.optimizer.learning_rate))
         self.monitor.log_epoch(epoch=epoch, learning_rate=lr, **logs)
 ```
 
@@ -234,20 +239,20 @@ from tensorflow.keras import mixed_precision
 
 mixed_precision.set_global_policy('mixed_float16')
 model = create_model()
-monitor = KerasMonitor(client, model=model)
+monitor = KerasMonitor(client, model=model, model_type="neural_network")
 ```
 
 ## Troubleshooting
 
 ### Issue: TensorFlow not found
 ```bash
-pip install tensorflow>=2.10.0
+pip install "whitebox-xai-sdk[tensorflow]"
 ```
 
 ### Issue: Model not registered automatically
 ```python
 # Explicitly register before predictions
-monitor.register_from_model()
+monitor.register_from_model(version="1.0.0", features=feature_names, baseline_metrics={})
 predictions = monitor.predict(X_test)
 ```
 
@@ -278,6 +283,6 @@ mixed_precision.set_global_policy('mixed_float16')
 
 ## Resources
 
-- [WhiteBoxXAI SDK Documentation](/sdk/)
-- [API Reference](/sdk/api-reference/)
+- [WhiteBoxXAI SDK Documentation](../sdk/index.md)
+- [API Reference](../sdk/api-reference.md)
 - [TensorFlow Documentation](https://www.tensorflow.org/api_docs)

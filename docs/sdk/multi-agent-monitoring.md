@@ -1,3 +1,7 @@
+---
+description: Monitor multi-agent AI workflows (CrewAI, LangChain/LangGraph, AutoGen, n8n or custom) with WhiteBoxXAI — agents, tasks, executions, interactions, cost breakdown, bottlenecks and timelines, via the SDK or REST API.
+---
+
 # Multi-Agent Workflow Monitoring
 
 Comprehensive guide to monitoring multi-agent AI workflows with WhiteBoxXAI.
@@ -13,6 +17,12 @@ WhiteBoxXAI provides built-in observability for multi-agent AI systems including
 - **Custom** - Custom multi-agent architectures
 
 Track agent executions, interactions, task completions, costs, and performance bottlenecks across your entire workflow.
+
+!!! note "One workflow, one Governance Event"
+    Creating a workflow counts as one [Governance Event](../get-started/governance-events.md#agent-workflows-one-event-per-workflow).
+    Registering its agents, recording tasks, executions and interactions, and completing it are free,
+    however many steps the workflow has. Runs appear under **Observability → Agents** in the
+    [dashboard](../user-guide/observability.md#agents).
 
 ## Table of Contents
 
@@ -46,7 +56,7 @@ researcher = Agent(
     goal="Find accurate information on AI safety",
     backstory="Expert researcher with 10 years experience",
     tools=[search_tool, scrape_tool],
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 writer = Agent(
@@ -54,7 +64,7 @@ writer = Agent(
     goal="Write engaging technical content",
     backstory="Professional tech writer",
     tools=[writing_tool],
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 # Create tasks
@@ -129,7 +139,7 @@ An **agent** is an AI entity with a specific role, capabilities, and model.
 - `name` (string): Agent name
 - `role` (string): Agent role (researcher, writer, analyst, etc.)
 - `agent_type` (string): Framework-specific type
-- `model_name` (string): LLM model (gpt-4, claude-3, etc.)
+- `model_name` (string): LLM model name (for example gpt-4o or claude-sonnet-4-6)
 - `llm_provider` (string): Provider (openai, anthropic, etc.)
 - `llm_config` (JSON): Model configuration
 - `system_prompt` (text): Agent system prompt
@@ -319,27 +329,23 @@ child_exec_id = monitor.create_agent_execution(
 #### Custom Task Tracking
 
 ```python
-from whiteboxxai.schemas.agent_workflow import TaskCreate
-
-task_id = monitor.create_task(
-    workflow_id=workflow_id,
-    task_data=TaskCreate(
-        task_name="Verify Facts",
-        description="Cross-reference all claims",
-        task_type="review",
-        expected_output="Verified fact list",
-        agent_id=reviewer_agent_id,
-        priority=1,
-        input_data={"claims": [...] },
-        context={"sources": [...] }
-    )
+task = client.agent_workflows.create_task(
+    workflow_id,
+    task_name="Verify Facts",
+    description="Cross-reference all claims",
+    task_type="review",
+    expected_output="Verified fact list",
+    agent_id=reviewer_agent_id,
+    priority=1,
+    input_data={"claims": claims},
+    context={"sources": sources},
 )
 
 # Update task status
-monitor.update_task_status(
-    task_id=task_id,
+client.agent_workflows.update_task_status(
+    task["id"],
     status="completed",
-    output_data={"verified_count": 12, "issues": 2}
+    output_data={"verified_count": 12, "issues": 2},
 )
 ```
 
@@ -390,7 +396,7 @@ POST /api/v1/workflows/multi-agent/start
   "name": "Research & Writing Workflow",
   "framework": "crewai",
   "status": "pending",
-  "created_at": "2024-01-27T10:00:00Z"
+  "created_at": "2026-10-27T10:00:00Z"
 }
 ```
 
@@ -439,7 +445,7 @@ POST /api/v1/workflows/multi-agent/{workflow_id}/agents
   "name": "Research Analyst",
   "role": "researcher",
   "agent_type": "crewai_agent",
-  "model_name": "gpt-4",
+  "model_name": "gpt-4o",
   "llm_provider": "openai",
   "goal": "Find accurate information",
   "backstory": "Expert researcher",
@@ -468,7 +474,7 @@ GET /api/v1/workflows/multi-agent?status=completed&framework=crewai&skip=0&limit
       "status": "completed",
       "total_tokens": 15420,
       "total_cost": 0.2313,
-      "created_at": "2024-01-27T10:00:00Z"
+      "created_at": "2026-10-27T10:00:00Z"
     }
   ],
   "total": 1,
@@ -563,12 +569,12 @@ GET /api/v1/workflows/multi-agent/{workflow_id}/timeline
   "events": [
     {
       "event_type": "workflow_start",
-      "timestamp": "2024-01-27T10:00:00Z",
+      "timestamp": "2026-10-27T10:00:00Z",
       "description": "Workflow started"
     },
     {
       "event_type": "agent_execution",
-      "timestamp": "2024-01-27T10:00:05Z",
+      "timestamp": "2026-10-27T10:00:05Z",
       "agent_id": "...",
       "agent_name": "Research Analyst",
       "description": "Agent execution started"
@@ -658,13 +664,13 @@ for event in timeline["events"]:
 
 **Output:**
 ```
-[2024-01-27T10:00:00Z] workflow_start: Workflow started
-[2024-01-27T10:00:05Z] agent_execution: Research Analyst execution started
-[2024-01-27T10:03:26Z] task_complete: Research AI Safety completed
-[2024-01-27T10:03:30Z] interaction: Research Analyst delegated to Content Writer
-[2024-01-27T10:03:35Z] agent_execution: Content Writer execution started
-[2024-01-27T10:06:25Z] task_complete: Write article completed
-[2024-01-27T10:06:30Z] workflow_complete: Workflow completed
+[2026-10-27T10:00:00Z] workflow_start: Workflow started
+[2026-10-27T10:00:05Z] agent_execution: Research Analyst execution started
+[2026-10-27T10:03:26Z] task_complete: Research AI Safety completed
+[2026-10-27T10:03:30Z] interaction: Research Analyst delegated to Content Writer
+[2026-10-27T10:03:35Z] agent_execution: Content Writer execution started
+[2026-10-27T10:06:25Z] task_complete: Write article completed
+[2026-10-27T10:06:30Z] workflow_complete: Workflow completed
 ```
 
 ---
@@ -797,20 +803,20 @@ researcher = Agent(
     role="Research Analyst",
     goal="Find comprehensive information",
     tools=[search_tool, scrape_tool],
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 fact_checker = Agent(
     role="Fact Checker",
     goal="Verify accuracy of information",
     tools=[fact_check_tool],
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 summarizer = Agent(
     role="Summarizer",
     goal="Create concise summaries",
-    llm=ChatOpenAI(model="gpt-3.5-turbo")
+    llm=ChatOpenAI(model="gpt-4o-mini")
 )
 
 # Create tasks
@@ -840,7 +846,7 @@ crew = Crew(
 workflow_id = monitor.start_monitoring(
     crew=crew,
     workflow_name="AI Safety Research Pipeline",
-    metadata={"project": "regulatory_compliance", "deadline": "2024-02-01"}
+    metadata={"project": "regulatory_compliance", "deadline": "2026-12-01"}
 )
 
 try:
@@ -876,14 +882,14 @@ writer = Agent(
     role="Content Writer",
     goal="Write engaging articles",
     allow_delegation=True,  # Can request feedback
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 editor = Agent(
     role="Editor",
     goal="Improve content quality",
     backstory="Experienced editor with high standards",
-    llm=ChatOpenAI(model="gpt-4")
+    llm=ChatOpenAI(model="gpt-4o")
 )
 
 # Tasks with iterative feedback
@@ -955,13 +961,13 @@ monitor = CrewAIMonitor(api_key="your_api_key")
 # Mix of expensive and cheap agents
 expensive_agent = Agent(
     role="Expert Analyst",
-    llm=ChatOpenAI(model="gpt-4"),  # $0.03/1k tokens
+    llm=ChatOpenAI(model="gpt-4o"),
     goal="Deep analysis"
 )
 
 cheap_agent = Agent(
     role="Formatter",
-    llm=ChatOpenAI(model="gpt-3.5-turbo"),  # $0.001/1k tokens
+    llm=ChatOpenAI(model="gpt-4o-mini"),
     goal="Format output"
 )
 
@@ -1023,7 +1029,7 @@ agent_id = monitor._register_agent(custom_agent)
 from whiteboxxai.integrations import WhiteBoxXAICallbackHandler
 
 llm = ChatOpenAI(
-    model="gpt-4",
+    model="gpt-4o",
     callbacks=[WhiteBoxXAICallbackHandler()]  # Auto-tracks tokens/cost
 )
 ```
@@ -1047,16 +1053,16 @@ analytics = monitor.get_analytics()
 
 ## Next Steps
 
-- [LangChain Multi-Agent Monitoring](/integrations/langchain-multi-agent/)
-- [n8n Webhook Integration](/integrations/n8n-webhooks/)
-- [Multi-Agent Quick Reference](/sdk/multi-agent-quick-reference/)
-- [API Reference](/sdk/api-reference/)
+- [LangChain Multi-Agent Monitoring](../integrations/langchain-multi-agent.md)
+- [n8n Webhook Integration](../integrations/n8n-webhooks.md)
+- [Multi-Agent Quick Reference](multi-agent-quick-reference.md)
+- [API Reference](api-reference.md)
 
 ---
 
 ## Support
 
 - Documentation: https://docs.whiteboxxai.com
-- API Reference: https://api.whiteboxxai.com/docs
-- GitHub Issues: https://github.com/whiteboxxai/whiteboxxai/issues
+- [API Reference](api-reference.md)
+- SDK issues: https://github.com/AgentaFlow/whitebox-python-sdk/issues
 - Email: support@whiteboxxai.com

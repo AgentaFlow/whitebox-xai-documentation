@@ -1,3 +1,7 @@
+---
+description: Quick reference for WhiteBoxXAI multi-agent workflow monitoring — SDK methods, REST endpoints, request and response shapes, enums and common patterns.
+---
+
 # Multi-Agent Workflow Monitoring - Quick Reference
 
 Fast reference for monitoring multi-agent AI workflows with WhiteBoxXAI.
@@ -139,7 +143,7 @@ curl -X POST https://api.whiteboxxai.com/api/v1/workflows/multi-agent/{workflow_
     "name": "Researcher",
     "role": "researcher",
     "agent_type": "crewai_agent",
-    "model_name": "gpt-4",
+    "model_name": "gpt-4o",
     "llm_provider": "openai",
     "goal": "Find information",
     "tools": ["search"],
@@ -178,8 +182,8 @@ curl https://api.whiteboxxai.com/api/v1/workflows/multi-agent/{workflow_id}/anal
   "status": "completed",
   "total_tokens": 15420,
   "total_cost": 0.2313,
-  "started_at": "2024-01-27T10:00:00Z",
-  "completed_at": "2024-01-27T10:06:30Z",
+  "started_at": "2026-10-27T10:00:00Z",
+  "completed_at": "2026-10-27T10:06:30Z",
   "duration_ms": 390000
 }
 ```
@@ -352,88 +356,6 @@ bottlenecks = monitor.get_bottlenecks()
 timeline = monitor.get_timeline()
 ```
 
-## Database Schema
-
-### agent_workflows
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Organization FK |
-| `user_id` | UUID | User FK |
-| `name` | String | Workflow name |
-| `framework` | Enum | Framework type |
-| `status` | Enum | Workflow status |
-| `inputs` | JSONB | Input data |
-| `outputs` | JSONB | Output data |
-| `total_tokens` | Integer | Total tokens |
-| `total_cost` | Float | Total cost USD |
-| `trace_id` | String(32) | OpenTelemetry trace ID |
-| `metadata` | JSONB | Custom metadata |
-| `tags` | Array | Tags |
-
-### workflow_agents
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `name` | String | Agent name |
-| `role` | String | Agent role |
-| `agent_type` | String | Type |
-| `model_name` | String | LLM model |
-| `llm_provider` | String | LLM provider |
-| `goal` | Text | Agent goal |
-| `tools` | Array | Tools |
-| `total_executions` | Integer | Execution count |
-| `total_tokens` | Integer | Tokens used |
-| `total_cost` | Float | Cost USD |
-
-### agent_executions
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `agent_id` | UUID | Agent FK |
-| `parent_execution_id` | UUID | Parent FK (nullable) |
-| `execution_order` | Integer | Sequential order |
-| `status` | Enum | Status |
-| `inputs` | JSONB | Inputs |
-| `outputs` | JSONB | Outputs |
-| `tokens_used` | Integer | Tokens |
-| `cost` | Float | Cost USD |
-| `span_id` | String(16) | OTEL span ID |
-
-### agent_interactions
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `interaction_type` | Enum | Type |
-| `from_agent_id` | UUID | Source agent |
-| `to_agent_id` | UUID | Target agent |
-| `message` | Text | Message |
-| `metadata` | JSONB | Custom data |
-| `timestamp` | Timestamp | Time |
-
-### agent_tasks
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `workflow_id` | UUID | Workflow FK |
-| `task_name` | String | Task name |
-| `task_type` | Enum | Type |
-| `status` | Enum | Status |
-| `agent_id` | UUID | Assigned agent FK |
-| `parent_task_id` | UUID | Parent task FK |
-| `input_data` | JSONB | Inputs |
-| `output_data` | JSONB | Outputs |
-| `priority` | Integer | Priority |
-| `duration_ms` | Integer | Duration |
-
 ## Common Patterns
 
 ### Simple Sequential Workflow
@@ -495,13 +417,13 @@ for agent in breakdown["agents"]:
 ## Environment Variables
 
 ```bash
-export WhiteBoxXAI_API_KEY="your_api_key"
-export WhiteBoxXAI_API_URL="https://api.whiteboxxai.com"  # Optional
+export WHITEBOX_API_KEY="wbx_live_..."
+export WHITEBOX_BASE_URL="https://api.whiteboxxai.com"  # Optional
 ```
 
 ## Links
 
-- [Full Documentation](/sdk/multi-agent-monitoring/)
-- [API Reference](/sdk/api-reference/)
-- [Dashboard](https://app.whiteboxxai.com)
+- [Full Documentation](multi-agent-monitoring.md)
+- [API Reference](api-reference.md)
+- [Dashboard](https://whiteboxxai.com)
 - [Python SDK on GitHub](https://github.com/AgentaFlow/whitebox-python-sdk)

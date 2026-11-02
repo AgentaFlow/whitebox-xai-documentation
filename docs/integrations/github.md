@@ -1,3 +1,7 @@
+---
+description: Connect GitHub to WhiteBoxXAI with OAuth or a personal access token, track repositories, auto-register model versions from commits, trace predictions to code, and add branch protection, check runs and PR comments.
+---
+
 # GitHub Integration Guide
 
 ## Overview
@@ -119,28 +123,8 @@ When you track a repository, you can configure:
 | **Auto-Register** | Automatically register detected models | `false` |
 | **Model Path Patterns** | Glob patterns for model files | `**/*.pkl`, `**/*.h5`, `**/*.pt`, `**/*.onnx`, `**/*.safetensors` |
 
-### Example Configuration
-
-```yaml
-# .whiteboxxai.yml
-version: "1.0"
-
-github:
-  auto_register: true
-  track_branches: [main, production]
-  track_tags: true
-  track_releases: true
-
-models:
-  - path: "models/production/*.pkl"
-    framework: "sklearn"
-    model_type: "classification"
-    auto_baseline: true
-
-  - path: "models/deep_learning/*.h5"
-    framework: "tensorflow"
-    model_type: "neural_network"
-```
+These are settings on the tracked repository. What counts as a model file, and how it's registered,
+is set in the repository's `.whiteboxxai.yml`; see [Configuration File](#configuration-file).
 
 ---
 
@@ -190,54 +174,49 @@ When GitHub sends a webhook:
 
 ## Configuration File
 
-The `.whiteboxxai.yml` file in your repository root defines how models are tracked:
-
-### Full Schema
-
-```yaml
-version: "1.0"  # Required: Config schema version
-
-github:
-  auto_register: true  # Auto-register detected models
-  track_branches: [main, staging, production]  # Branches to monitor
-  track_tags: true  # Monitor tag creation
-  track_releases: true  # Monitor release publication
-
-models:
-  - path: "models/**/*.pkl"  # Glob pattern
-    framework: "sklearn"  # sklearn, pytorch, tensorflow, huggingface
-    model_type: "classification"  # classification, regression, etc.
-    features: ["age", "income", "credit_score"]  # Optional
-    target_variable: "loan_approved"  # Optional
-    auto_baseline: true  # Upload baseline data automatically
-    baseline_data_path: "data/baseline.csv"  # Path to baseline data
-    tags: ["production", "v2"]  # Model tags
-
-  - path: "ml/deep_learning/*.h5"
-    framework: "tensorflow"
-    model_type: "neural_network"
-    auto_baseline: false
-
-monitoring:
-  enable_on_commit: true  # Enable monitoring for new versions
-  notification_channels: [slack, email]  # Alert channels
-
-alerts:
-  architecture_change: true  # Alert on model architecture changes
-  performance_degradation: true  # Alert on performance drop
-```
-
-### Minimal Configuration
+A `.whiteboxxai.yml` file in the root of a tracked repository controls auto-registration. Every key is
+optional.
 
 ```yaml
-version: "1.0"
-
-models:
-  - path: "*.pkl"
-    framework: "sklearn"
+# .whiteboxxai.yml
+enabled: true                      # auto-register model files from this repository
+model_patterns:                    # which files are models (glob patterns)
+  - "models/**/*.pkl"
+  - "models/**/*.joblib"
+exclude_patterns:
+  - "**/tests/**"
+storage_mode: full                 # "metadata" (default) or "full"
+model_name: credit_scoring         # defaults to a name derived from the file
+model_type: random_forest          # xgboost, random_forest, neural_network, linear_model, llm, custom
+framework: sklearn                 # detected from the file extension if omitted
+description: Retail credit approval model
+features: [income, utilisation, tenure_months]
+target_variable: default_within_12m
+baseline_metrics:
+  accuracy: 0.94
+tags: [production, credit]
 ```
 
----
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `enabled` | `true` | Turn auto-registration on or off for the repository |
+| `model_patterns` | `**/*.pkl`, `**/*.h5`, `**/*.pt`, `**/*.onnx`, `**/*.safetensors` | Files treated as models |
+| `exclude_patterns` | `**/test/**`, `**/tests/**`, `**/__pycache__/**` | Files never treated as models |
+| `storage_mode` | `metadata` | `metadata` records the file's hash, size, commit and parsed architecture. `full` also stores the model file itself, which [server-side explanations](../user-guide/assurance.md#explainability) need. |
+| `model_name` | from the file | Name of the Governed AI System the file is registered under |
+| `model_type` | `custom` | One of `xgboost`, `random_forest`, `neural_network`, `linear_model`, `llm`, `custom`. Task names such as `classification` aren't model types and fall back to `custom`. |
+| `framework` | from the extension | For example `sklearn`, `pytorch`, `tensorflow`, `huggingface` |
+| `features`, `target_variable`, `baseline_metrics`, `description`, `tags` | empty | Recorded on the registered model |
+
+Each matching file pushed to a tracked branch registers a new version of the system, with the commit,
+branch, author and file hash, so production behaviour traces back to the exact code. With
+`storage_mode: full`, the model file is stored too. Files tracked with Git LFS are recorded as
+metadata only.
+
+!!! note "Storing model files"
+    `storage_mode: full` uploads your model file to WhiteBoxXAI. Use it when you want explanations
+    computed by WhiteBoxXAI; leave the default when model files mustn't leave your environment.
+    Explanations currently load scikit-learn-style pickle and joblib files.
 
 ## CI/PR Automation
 
@@ -284,7 +263,7 @@ Content-Type: application/json
   "model_name": "fraud-detection-v3",
   "validation_passed": true,
   "validation_details": { "accuracy": 0.94 },
-  "dashboard_url": "https://app.whiteboxxai.com/dashboard/models/..."
+  "dashboard_url": "https://whiteboxxai.com/dashboard/register?d=..."
 }
 ```
 
@@ -319,11 +298,15 @@ Content-Type: application/json
 
 ### Authentication
 
-All API requests require a JWT token in the `Authorization` header:
+All API requests take an [API key](../account/api-keys.md) (or a signed-in session token) in the
+`Authorization` header:
 
 ```bash
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer $WHITEBOX_API_KEY
 ```
+
+Model-diff reviews are included on Business Cloud and Enterprise Edition. See
+[GitHub Diff Reviews](github-diff.md).
 
 ### Endpoints
 
@@ -511,8 +494,8 @@ POST /api/v1/github/repositories/{repository_id}/webhook
 **Problem**: OAuth callback fails
 
 **Solution**:
-- Check `OAUTH_REDIRECT_URI` is configured correctly in backend settings
-- Ensure GitHub OAuth app redirect URI matches configuration
+- Disconnect and reconnect GitHub from **Settings → Integrations**
+- If you use a GitHub organization with third-party app restrictions, ask an org owner to approve the WhiteBoxXAI app
 - Clear browser cache and try again
 
 ---
@@ -532,7 +515,7 @@ POST /api/v1/github/repositories/{repository_id}/webhook
 
 **Solution**:
 - Verify `.whiteboxxai.yml` exists in repository root
-- Check `auto_register: true` in configuration
+- Check auto-register is enabled on the tracked repository, and `enabled` isn't `false` in `.whiteboxxai.yml`
 - Ensure model files match path patterns
 - Review webhook delivery logs in GitHub repository settings
 
@@ -589,19 +572,11 @@ You can revoke WhiteBoxXAI's access anytime:
 For additional help:
 - **Documentation**: [docs.whiteboxxai.com](https://docs.whiteboxxai.com)
 - **Email**: support@whiteboxxai.com
-- **GitHub Issues**: [github.com/whiteboxxai/issues](https://github.com/whiteboxxai/issues)
+- **In the dashboard**: **Support** in the sidebar footer
 
 ---
 
-## Changelog
+## What's new
 
-### Version 1.1 (August 2026)
-- CI/PR automation: branch protection, GitHub check runs, and PR comments for model validation
-  and comparison results
-
-### Version 1.0 (January 2026)
-- Initial GitHub integration release
-- OAuth and PAT authentication
-- Webhook support for push, release, and tag events
-- Auto-registration with `.whiteboxxai.yml` configuration
-- Model version tracking and traceability
+See [What's new](../help/whats-new.md) for recent changes, including model-diff reviews from the model
+dossier.

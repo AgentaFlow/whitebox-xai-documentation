@@ -1,377 +1,150 @@
-# GitHub Integration Phase 3 - Quick Reference
-
-## Model Version Comparison
-
-### Access Comparison UI
-
-1. Navigate to a model detail page: `/dashboard/models/{model_id}`
-2. Click **"Compare Versions"** button (visible when 2+ versions exist)
-3. Or visit directly: `/dashboard/models/{model_id}/compare`
-
-### Compare Two Versions
-
-1. **Select Baseline Version** (older version) from dropdown
-2. **Select Comparison Version** (newer version) from dropdown
-3. View automatic comparison results
-
+---
+description: Model-diff architecture reviews in WhiteBoxXAI — compare two Git-backed model versions for parameter, layer, hyperparameter, shape and framework changes, generate a changelog, and use the results in CI and governance reviews. Business Cloud and Enterprise Edition.
 ---
 
-## API Usage Examples
+# GitHub Diff Reviews
 
-### Compare Two Model Versions
+A reviewer approving a model change needs to know *what actually changed*: not just a new version
+number, but whether layers were added, the input shape moved, or the framework was upgraded.
+Model-diff reviews compare two versions of a model file from your repository and report those
+changes, with an impact level for each, so a review request can cite them.
+
+!!! note "Plan"
+    Model-diff architecture reviews are included on **Business Cloud** and **Enterprise Edition**.
+    On the Free plan these endpoints return `403`. See [Plans & Limits](../get-started/plans.md).
+
+## Where versions come from
+
+Diffs compare **Git-backed model versions**: model files WhiteBoxXAI has read from a repository you
+connected and track. Connect GitHub and track the repository first; see [GitHub](github.md). Each tracked
+change to a model file becomes a version you can compare.
+
+List a model's versions to get the ids to compare:
 
 ```bash
-curl -X POST "https://api.example.com/v1/github/diff/compare" \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "version1_id": 123,
-    "version2_id": 124
-  }'
+curl "https://api.whiteboxxai.com/api/v1/github/diff/model/<model-id>/versions?limit=10" \
+  -H "Authorization: Bearer $WHITEBOX_API_KEY"
 ```
 
-**Response:**
-```json
-{
-  "has_changes": true,
-  "breaking_changes": false,
-  "change_summary": "Parameters increased by 1,024 (+5.2%); 2 layer(s) added",
-  "parameter_delta": 1024,
-  "parameter_change_pct": 5.2,
-  "layers_added": ["conv_layer_5", "batch_norm_5"],
-  "layers_removed": [],
-  "layers_modified": ["dense_output"]
-}
-```
+Version ids are UUIDs.
 
-### Generate Changelog
+## In the dashboard
 
-```bash
-curl "https://api.example.com/v1/github/diff/changelog?version1_id=123&version2_id=124" \
-  -H "Authorization: Bearer <token>"
-```
+Open the system in the [Model Register](../user-guide/model-register.md), go to the dossier's **Lineage &
+versions** tab, and choose **Compare versions and see the code diff**. Pick a baseline version and a
+comparison version.
 
-**Response:**
-```json
-{
-  "changelog": "# Model Changelog: 123 → 124\n\n## Summary\nParameters increased by 1,024 (+5.2%); 2 layer(s) added\n\n## 🟡 Medium Impact Changes\n- **Layer: conv_layer_5** (added)\n- **Hyperparameter: learning_rate** (modified)\n  - `0.001` → `0.0005`"
-}
-```
+## Compare two versions
 
-### Get Version History
+=== "Python SDK"
 
-```bash
-curl "https://api.example.com/v1/github/diff/model/456/versions?limit=10" \
-  -H "Authorization: Bearer <token>"
-```
+    ```python
+    diff = client.models.compare_versions(version1_id, version2_id)
+    print(diff["change_summary"], diff["breaking_changes"])
 
-### Get Architecture Timeline
+    changelog = client.models.version_changelog(version1_id, version2_id)   # markdown
+    timeline = client.models.architecture_changes_timeline(model_id)
+    ```
 
-```bash
-curl "https://api.example.com/v1/github/diff/architecture-changes/456" \
-  -H "Authorization: Bearer <token>"
-```
+=== "REST"
 
----
+    ```bash
+    curl -X POST https://api.whiteboxxai.com/api/v1/github/diff/compare \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY" -H "Content-Type: application/json" \
+      -d '{"version1_id": "<baseline-version-id>", "version2_id": "<new-version-id>"}'
 
-## Python SDK Usage
+    curl "https://api.whiteboxxai.com/api/v1/github/diff/changelog?version1_id=<id>&version2_id=<id>" \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
 
-### Compare Models Programmatically
+    curl https://api.whiteboxxai.com/api/v1/github/diff/architecture-changes/<model-id> \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
+    ```
 
-```python
-import requests
+=== "MCP"
 
-API_URL = "https://api.example.com"
-TOKEN = "your-token"
+    `whitebox_models_compare_versions`, `whitebox_models_version_changelog`,
+    `whitebox_models_list_git_versions` and `whitebox_models_architecture_timeline`. In clients that
+    support MCP Apps, the result renders as a model version diff card. See [MCP Server](mcp.md).
 
-def compare_versions(version1_id: int, version2_id: int):
-    """Compare two model versions."""
-    response = requests.post(
-        f"{API_URL}/v1/github/diff/compare",
-        headers={"Authorization": f"Bearer {TOKEN}"},
-        json={"version1_id": version1_id, "version2_id": version2_id}
-    )
-    return response.json()
+### What a comparison returns
 
-# Usage
-diff = compare_versions(123, 124)
+| Field | Meaning |
+| --- | --- |
+| `has_changes`, `breaking_changes` | Whether anything changed, and whether any change is breaking |
+| `change_summary` | One-line summary, for example *"Parameters increased by 1,024 (+5.2%); 2 layer(s) added"* |
+| `parameter_delta`, `parameter_change_pct`, `trainable_parameter_delta` | Change in parameter counts |
+| `layers_added`, `layers_removed`, `layers_modified` | Layer names, by change type |
+| `hyperparameter_changes` | Hyperparameters that changed, old and new |
+| `input_shape_changed`, `output_shape_changed` | With old and new shapes |
+| `framework_changed`, `framework_version_changed` | With old and new framework names and versions |
+| `architecture_changes` | Every individual change, with its type and impact level |
 
-if diff["breaking_changes"]:
-    print("⚠️ Breaking changes detected!")
-    print(f"Summary: {diff['change_summary']}")
+## Supported model formats
 
-print(f"Parameter change: {diff['parameter_delta']:+,} ({diff['parameter_change_pct']:+.1f}%)")
-print(f"Layers added: {len(diff['layers_added'])}")
-print(f"Layers removed: {len(diff['layers_removed'])}")
-```
+| Framework | Files | What's read |
+| --- | --- | --- |
+| PyTorch | `.pt`, `.pth` | Total and trainable parameters, layer names and configuration, state-dict structure |
+| TensorFlow / Keras | `.h5`, SavedModel | Model type, layer configuration, parameter counts, optimizer settings, input and output shapes |
+| scikit-learn | `.pkl`, `.joblib` | Estimator type, pipeline steps, hyperparameters, feature names, number of classes |
+| Hugging Face | `.safetensors` with `config.json` | Architecture, hidden layers, attention heads, vocabulary size, parameters |
 
-### Generate Release Notes
+## Impact levels
 
-```python
-def generate_release_notes(base_version: int, new_version: int, output_file: str):
-    """Generate markdown release notes."""
-    response = requests.get(
-        f"{API_URL}/v1/github/diff/changelog",
-        params={"version1_id": base_version, "version2_id": new_version},
-        headers={"Authorization": f"Bearer {TOKEN}"}
-    )
+| Level | Typical changes |
+| --- | --- |
+| **High** (breaking) | Framework changes, input or output shape changes, removed layers, architecture changes |
+| **Medium** | Added or modified layers, hyperparameter changes, parameter changes over 10% |
+| **Low** | Parameter changes under 10%, framework version updates |
 
-    changelog = response.json()["changelog"]
+## Use it in CI
 
-    with open(output_file, "w") as f:
-        f.write(changelog)
-
-    print(f"Release notes saved to {output_file}")
-
-# Usage
-generate_release_notes(123, 124, "RELEASE_NOTES.md")
-```
-
-### Automated Regression Detection
-
-```python
-def check_regression(baseline_version: int, new_version: int) -> bool:
-    """Check if new version has regressions."""
-    diff = compare_versions(baseline_version, new_version)
-
-    # Check for breaking changes
-    if diff["breaking_changes"]:
-        print("❌ FAIL: Breaking changes detected")
-        return False
-
-    # Check parameter increase threshold
-    if diff["parameter_change_pct"] > 20:
-        print(f"⚠️  WARNING: Parameters increased by {diff['parameter_change_pct']:.1f}%")
-
-    # Check for removed layers
-    if diff["layers_removed"]:
-        print(f"❌ FAIL: {len(diff['layers_removed'])} layer(s) removed")
-        return False
-
-    print("✅ PASS: No regressions detected")
-    return True
-
-# Usage in CI/CD
-import sys
-if not check_regression(baseline_version=123, new_version=124):
-    sys.exit(1)  # Fail the build
-```
-
----
-
-## Supported Model Formats
-
-### PyTorch (.pt, .pth)
-```python
-# Parser extracts:
-- Total parameters
-- Trainable parameters
-- Layer names and configurations
-- State dict structure
-- Model architecture (Conv, Linear, LSTM, etc.)
-```
-
-### TensorFlow (.h5, SavedModel)
-```python
-# Parser extracts:
-- Model type (Sequential, Functional)
-- Layer configurations
-- Parameter counts
-- Optimizer settings
-- Input/output shapes
-```
-
-### Scikit-learn (.pkl, .joblib)
-```python
-# Parser extracts:
-- Estimator type
-- Pipeline steps
-- Hyperparameters
-- Feature names
-- Number of classes
-```
-
-### Hugging Face (.safetensors, config.json)
-```python
-# Parser extracts:
-- Model architecture (BERT, GPT, T5, etc.)
-- Hidden layers and attention heads
-- Vocab size
-- Total parameters
-- Config from config.json
-```
-
----
-
-## Understanding Comparison Results
-
-### Impact Levels
-
-- **🔴 High Impact**: Breaking changes requiring immediate attention
-  - Framework changes
-  - Input/output shape modifications
-  - Layer removals
-  - Architecture changes
-
-- **🟡 Medium Impact**: Significant changes that should be reviewed
-  - Layer additions/modifications
-  - Hyperparameter changes
-  - Parameter changes >10%
-
-- **🟢 Low Impact**: Minor changes with limited effect
-  - Small parameter changes <10%
-  - Framework version updates
-
-### Change Types
-
-- **Added**: New components (layers, hyperparameters)
-- **Removed**: Deleted components (typically breaking)
-- **Modified**: Changed components (value or configuration updates)
-
----
-
-## CI/CD Integration
-
-### GitHub Actions Example
+Fail a pull request when a model change is breaking, or post the changelog for reviewers:
 
 ```yaml
-name: Model Regression Check
-
-on:
-  push:
-    paths:
-      - 'models/**'
-
+# .github/workflows/model-diff.yml
+name: Model diff
+on: pull_request
 jobs:
-  check-regression:
+  diff:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install whitebox-xai-sdk
       - name: Compare model versions
+        env:
+          WHITEBOX_API_KEY: ${{ secrets.WHITEBOX_API_KEY }}
+          BASELINE_VERSION_ID: ${{ vars.BASELINE_VERSION_ID }}
+          CANDIDATE_VERSION_ID: ${{ vars.CANDIDATE_VERSION_ID }}
         run: |
-          BASELINE_VERSION=$(git rev-parse HEAD~1)
-          NEW_VERSION=$(git rev-parse HEAD)
-
-          curl -X POST "${{ secrets.WhiteBoxXAI_URL }}/v1/github/diff/compare" \
-            -H "Authorization: Bearer ${{ secrets.WhiteBoxXAI_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"version1_id\": \"$BASELINE_VERSION\", \"version2_id\": \"$NEW_VERSION\"}" \
-            -o diff.json
-
-      - name: Check for breaking changes
-        run: |
-          BREAKING=$(jq -r '.breaking_changes' diff.json)
-          if [ "$BREAKING" == "true" ]; then
-            echo "❌ Breaking changes detected!"
-            jq -r '.change_summary' diff.json
-            exit 1
-          fi
-          echo "✅ No breaking changes"
+          python - <<'PY'
+          import os, sys
+          from whiteboxxai import WhiteBoxXAI
+          client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
+          diff = client.models.compare_versions(os.environ["BASELINE_VERSION_ID"], os.environ["CANDIDATE_VERSION_ID"])
+          print(diff["change_summary"])
+          sys.exit(1 if diff["breaking_changes"] else 0)
+          PY
 ```
 
-### Pre-commit Hook
+Version ids are UUIDs from the versions list above, not Git commit SHAs.
 
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
+## Use it in a governance review
 
-MODEL_FILES=$(git diff --cached --name-only | grep "models/.*\\.pt$")
-
-if [ -n "$MODEL_FILES" ]; then
-    echo "Checking model changes..."
-
-    # Get latest version from WhiteBoxXAI
-    LATEST_VERSION=$(curl -s "$WhiteBoxXAI_URL/v1/github/diff/model/$MODEL_ID/versions?limit=1" \
-        -H "Authorization: Bearer $WhiteBoxXAI_TOKEN" | jq -r '.[0].id')
-
-    echo "Latest version: $LATEST_VERSION"
-    echo "⚠️  Model changes detected. Run comparison manually after push."
-fi
-```
-
----
+Attach the changelog to an **Architecture change** review request in
+[Reviews & Decisions](../user-guide/governance.md), so the board votes on the documented change. The
+request's evidence snapshot covers what reviewers saw when they voted.
 
 ## Troubleshooting
 
-### Comparison Fails
+**`403`.** Model diff isn't included in your plan, or your API key's creator lacks access.
 
-**Problem**: API returns 500 error when comparing versions
+**`404 Version not found`.** The version id doesn't exist in your organization. List versions with the
+endpoint above.
 
-**Solutions**:
-1. Ensure both versions exist: `GET /v1/github/diff/model/{id}/versions`
-2. Check model files are accessible in storage
-3. Verify framework dependencies are installed (torch, tensorflow, etc.)
-4. Check model file size (<1GB recommended)
+**No parser for the file.** Check the extension is one of the supported formats; Hugging Face models
+need their `config.json`, and TensorFlow SavedModels need `saved_model.pb`.
 
-### Parser Not Detecting Model
-
-**Problem**: Model file returns "No parser available"
-
-**Solutions**:
-1. Check file extension matches supported format
-2. Verify file is not corrupted
-3. For Hugging Face models, ensure `config.json` exists
-4. For TensorFlow, check SavedModel has `saved_model.pb`
-
-### Missing Comparison Data
-
-**Problem**: Frontend shows "No changes detected" but changes exist
-
-**Solutions**:
-1. Check both versions use same framework
-2. Verify models have complete metadata
-3. Try re-parsing models (may need manual intervention)
-4. Check parser implementation for your framework
-
----
-
-## Best Practices
-
-### 1. Regular Comparisons
-- Compare every commit to previous version
-- Track trends over time
-- Set up automated alerts for breaking changes
-
-### 2. Version Selection
-- Use tagged versions for production comparisons
-- Compare consecutive commits for development
-- Maintain baseline versions for regression testing
-
-### 3. Changelog Usage
-- Generate changelogs for all releases
-- Include in PR descriptions
-- Share with stakeholders and team
-
-### 4. Performance Optimization
-- Cache comparison results (frontend does this automatically)
-- Use version history endpoint efficiently
-- Limit timeline queries to recent versions
-
-### 5. Alert Configuration
-- Monitor high-impact changes
-- Set thresholds for parameter increases
-- Alert on breaking changes immediately
-
----
-
-## Additional Resources
-
-- **Full API Documentation**: `/docs/api/github-diff-api.md`
-- **GitHub Configuration Guide**: `/docs/integrations/github-configuration.md`
-- **Architecture Documentation**: `/docs/architecture/ARCHITECTURE.md`
-
----
-
-## Support
-
-For issues or questions:
-- GitHub Issues: https://github.com/your-org/whiteboxxai/issues
-- Documentation: https://docs.whiteboxxai.com
-- Email: support@whiteboxxai.com
-
----
-
-**Last Updated**: January 2024
-**Phase**: 3 - Model Diff & Performance Analysis
-**Status**: ✅ Production Ready
+**"No changes detected" when you expect some.** Check both versions are the same framework and that
+the model files were committed in full.

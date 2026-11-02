@@ -1,395 +1,92 @@
-# XGBoost & LightGBM - Quick Reference
+---
+description: Monitor XGBoost and LightGBM models with WhiteBoxXAI — register the model, wrap predict and predict_proba so every prediction is logged, and track feature importance.
+---
 
-Quick reference for monitoring gradient boosting models (XGBoost and LightGBM) with WhiteBoxXAI.
+# XGBoost & LightGBM
 
-## Installation
+`XGBoostMonitor` and `LightGBMMonitor` log your gradient-boosted model's predictions to WhiteBoxXAI,
+so drift, explanations (SHAP's fast tree explainer) and fairness audits can be computed from real
+traffic. Feature importance is recorded alongside.
+
+## Install
 
 ```bash
-# XGBoost
-pip install whitebox-xai-sdk xgboost
-
-# LightGBM
-pip install whitebox-xai-sdk lightgbm
-
-# Both
-pip install whitebox-xai-sdk xgboost lightgbm
+pip install "whitebox-xai-sdk[xgboost]"     # or [lightgbm]
 ```
 
-## Basic Setup
+## Register, then wrap
 
-### XGBoost
+Register the model with the client, then attach the monitor to it by id and wrap the model:
 
 ```python
+import os
+
 import xgboost as xgb
+from sklearn.metrics import accuracy_score
 from whiteboxxai import WhiteBoxXAI
-from whiteboxxai.integrations.boosting import XGBoostMonitor
+from whiteboxxai.integrations.boosting import XGBoostMonitor, wrap_xgboost_model
 
-client = WhiteBoxXAI(api_key="your-api-key")
-monitor = XGBoostMonitor(
-    client=client,
-    model_name="fraud_detector",
-    track_feature_importance=True,
-    importance_type="gain"
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
+
+model = xgb.XGBClassifier(n_estimators=200, max_depth=6).fit(X_train, y_train)
+
+registered = client.models.register(
+    name="fraud_detection",
+    model_type="xgboost",
+    framework="xgboost",
+    version="3.1.0",
+    features=list(X_train.columns),
+    baseline_metrics={"accuracy": accuracy_score(y_test, model.predict(X_test))},
 )
+
+monitor = XGBoostMonitor(client, model_name="fraud_detection", model_id=registered["id"])
+model = wrap_xgboost_model(model, monitor)
+
+model.predict(X_live)          # logged
+model.predict_proba(X_live)    # logged
 ```
 
-### LightGBM
+LightGBM works the same way with `LightGBMMonitor` and `wrap_lightgbm_model`. Use `model_type="custom"`
+and `framework="lightgbm"` when registering.
+
+!!! warning "Register explicitly"
+    Pass `model_id` from `client.models.register(...)` to the monitor, as above. Don't rely on
+    `register_from_model()` or the wrapper's automatic registration in SDK 1.3.0. They don't send the
+    `version`, `features` and `baseline_metrics` fields the API requires, so registration is refused.
+
+## Log without wrapping
+
+If you'd rather not replace the model's methods, call the monitor's `predict` yourself:
 
 ```python
-import lightgbm as lgb
-from whiteboxxai import WhiteBoxXAI
-from whiteboxxai.integrations.boosting import LightGBMMonitor
-
-client = WhiteBoxXAI(api_key="your-api-key")
-monitor = LightGBMMonitor(
-    client=client,
-    model_name="churn_predictor",
-    track_feature_importance=True,
-    importance_type="gain"
-)
+predictions = monitor.predict(model, X_live, metadata={"batch": "2026-10-27"})
 ```
 
-## Quick Patterns
+Pass `y_true=` when you already know the outcomes, for example when backfilling a labelled batch.
 
-### Register and Monitor
+## Feature importance
+
+The monitor records the model's feature importance with its predictions. Choose the measure with
+`importance_type`: `weight`, `gain` (the default), `cover`, `total_gain` or `total_cover`. Turn it off
+with `track_feature_importance=False`.
 
 ```python
-# Train model
-model = xgb.XGBClassifier(n_estimators=100, max_depth=5)
-model.fit(X_train, y_train)
-
-# Register with WhiteBoxXAI
-monitor.register_from_model(model, X_train, y_train)
-
-# Make monitored predictions
-predictions = monitor.predict(model, X_test, y_test)
+monitor = XGBoostMonitor(client, model_name="fraud_detection", model_id=registered["id"],
+                         importance_type="total_gain")
 ```
 
-### Wrapped Model (Recommended)
+Feature importance describes the model as a whole. For why a single prediction came out the way it
+did, request an explanation: SHAP's tree method is exact and fast for boosted trees. Explanations
+run the model, so it must be stored with WhiteBoxXAI through
+[GitHub registration](github.md#configuration-file) with `storage_mode: full`.
 
 ```python
-from whiteboxxai.integrations.boosting import wrap_xgboost_model
-
-# Wrap for automatic monitoring
-wrapped = wrap_xgboost_model(model, monitor, auto_register=True)
-
-# Predictions automatically logged
-predictions = wrapped.predict(X_test)
+client.explanations.generate(registered["id"], instance=X_live.iloc[0].to_dict(), method="shap")
 ```
 
-## Common Use Cases
-
-### Binary Classification (XGBoost)
-
-```python
-import xgboost as xgb
-
-# Train model
-model = xgb.XGBClassifier(
-    n_estimators=100,
-    max_depth=5,
-    learning_rate=0.1,
-    random_state=42
-)
-model.fit(X_train, y_train)
-
-# Register and monitor
-monitor = XGBoostMonitor(client=client, model_name="fraud_classifier")
-monitor.register_from_model(model, X_train, y_train, metadata={
-    'description': 'Fraud detection model',
-    'dataset': 'transactions_2024'
-})
-
-# Predict with monitoring
-predictions = monitor.predict(model, X_test, y_test)
-```
-
-### Regression (LightGBM)
-
-```python
-import lightgbm as lgb
-
-# Train model
-model = lgb.LGBMRegressor(
-    n_estimators=100,
-    max_depth=5,
-    learning_rate=0.1,
-    random_state=42
-)
-model.fit(X_train, y_train)
-
-# Register and monitor
-monitor = LightGBMMonitor(client=client, model_name="price_predictor")
-monitor.register_from_model(model, X_train, y_train)
-
-# Predict
-predictions = monitor.predict(model, X_test, y_test)
-```
-
-### Feature Importance Tracking
-
-```python
-# XGBoost - different importance types
-for imp_type in ['weight', 'gain', 'cover', 'total_gain', 'total_cover']:
-    monitor = XGBoostMonitor(
-        client=client,
-        model_name=f"model_{imp_type}",
-        importance_type=imp_type
-    )
-    monitor.register_from_model(model, X_train, y_train)
-
-# LightGBM - different importance types
-for imp_type in ['split', 'gain']:
-    monitor = LightGBMMonitor(
-        client=client,
-        model_name=f"model_{imp_type}",
-        importance_type=imp_type
-    )
-    monitor.register_from_model(model, X_train, y_train)
-```
-
-### Named Features
-
-```python
-import pandas as pd
-
-# Use DataFrame for automatic feature name tracking
-X_train_df = pd.DataFrame(X_train, columns=['age', 'income', 'score'])
-y_train = np.array([0, 1, 1, 0])
-
-model = xgb.XGBClassifier()
-model.fit(X_train_df, y_train)
-
-# Feature names automatically tracked
-monitor = XGBoostMonitor(client=client, model_name="named_features")
-monitor.register_from_model(model, X_train_df, y_train)
-
-# Feature importance uses real names
-importance = monitor._get_feature_importance(model)
-# {'age': 0.45, 'income': 0.35, 'score': 0.20}
-```
-
-### Model Comparison
-
-```python
-# Train both frameworks
-xgb_model = xgb.XGBClassifier(n_estimators=100)
-xgb_model.fit(X_train, y_train)
-
-lgb_model = lgb.LGBMClassifier(n_estimators=100)
-lgb_model.fit(X_train, y_train)
-
-# Monitor both
-xgb_monitor = XGBoostMonitor(client=client, model_name="xgb_model")
-xgb_monitor.register_from_model(xgb_model, X_train, y_train)
-xgb_preds = xgb_monitor.predict(xgb_model, X_test, y_test)
-
-lgb_monitor = LightGBMMonitor(client=client, model_name="lgb_model")
-lgb_monitor.register_from_model(lgb_model, X_train, y_train)
-lgb_preds = lgb_monitor.predict(lgb_model, X_test, y_test)
-
-# Compare in WhiteBoxXAI dashboard
-```
-
-## Configuration Options
-
-### XGBoostMonitor
-
-```python
-monitor = XGBoostMonitor(
-    client=client,                        # WhiteBoxXAI client
-    model_name="my_model",                # Model identifier
-    track_feature_importance=True,        # Track importance
-    importance_type="gain"                # Type: weight, gain, cover, total_gain, total_cover
-)
-```
-
-### LightGBMMonitor
-
-```python
-monitor = LightGBMMonitor(
-    client=client,                        # WhiteBoxXAI client
-    model_name="my_model",                # Model identifier
-    track_feature_importance=True,        # Track importance
-    importance_type="gain"                # Type: split, gain
-)
-```
-
-## Monitoring Methods
-
-| Method | Purpose | Example |
-|--------|---------|---------|
-| `register_from_model()` | Register model | `monitor.register_from_model(model, X_train, y_train)` |
-| `predict()` | Make predictions & log | `predictions = monitor.predict(model, X_test, y_test)` |
-| `log_predictions()` | Log existing predictions | `monitor.log_predictions(X, predictions, actuals)` |
-| `set_baseline()` | Update baseline data | `monitor.set_baseline(X_train, y_train)` |
-
-## Wrapper Functions
-
-| Function | Purpose | Example |
-|----------|---------|---------|
-| `wrap_xgboost_model()` | Wrap XGBoost for auto-logging | `wrapped = wrap_xgboost_model(model, monitor)` |
-| `wrap_lightgbm_model()` | Wrap LightGBM for auto-logging | `wrapped = wrap_lightgbm_model(model, monitor)` |
-
-## Feature Importance Types
-
-### XGBoost
-
-- **weight**: Number of times feature is used to split
-- **gain**: Average gain when feature is used
-- **cover**: Average coverage when feature is used
-- **total_gain**: Total gain when feature is used
-- **total_cover**: Total coverage when feature is used
-
-### LightGBM
-
-- **split**: Number of times feature is used to split
-- **gain**: Total gain when feature is used
-
-## Tracked Metadata
-
-Automatically extracted and logged:
-
-- **Framework**: xgboost or lightgbm
-- **Version**: Framework version
-- **Features**: Feature names (if available)
-- **Num Features**: Number of features
-- **Num Trees**: Number of trees/estimators
-- **Parameters**: Model hyperparameters
-- **Feature Importance**: Importance scores
-- **Model Type**: classification, regression, or ranking
-
-## Supported Model Types
-
-### XGBoost
-
-- `xgb.XGBClassifier` - Binary and multiclass classification
-- `xgb.XGBRegressor` - Regression
-- `xgb.XGBRanker` - Learning to rank
-- `xgb.Booster` - Native XGBoost booster
-
-### LightGBM
-
-- `lgb.LGBMClassifier` - Binary and multiclass classification
-- `lgb.LGBMRegressor` - Regression
-- `lgb.LGBMRanker` - Learning to rank
-- `lgb.Booster` - Native LightGBM booster
-
-## Integration Patterns
-
-### Pattern 1: Explicit Monitoring
-
-```python
-monitor = XGBoostMonitor(client=client, model_name="my_model")
-monitor.register_from_model(model, X_train, y_train)
-predictions = monitor.predict(model, X_test, y_test)
-```
-
-### Pattern 2: Wrapped Model
-
-```python
-monitor = XGBoostMonitor(client=client, model_name="my_model")
-wrapped = wrap_xgboost_model(model, monitor, auto_register=True)
-predictions = wrapped.predict(X_test)  # Auto-logged
-```
-
-### Pattern 3: Batch Prediction Logging
-
-```python
-# Make predictions separately
-predictions = model.predict(X_test)
-probabilities = model.predict_proba(X_test)
-
-# Log later
-monitor.log_predictions(
-    inputs=X_test,
-    predictions=predictions,
-    actuals=y_test,
-    probabilities=probabilities,
-    metadata={'batch_id': '2024-01'}
-)
-```
-
-## Best Practices
-
-1. **Use Feature Names**
-   ```python
-   # ✅ Use DataFrame with named columns
-   X_train_df = pd.DataFrame(X_train, columns=feature_names)
-   model.fit(X_train_df, y_train)
-   ```
-
-2. **Track Feature Importance**
-   ```python
-   # ✅ Enable for interpretability
-   monitor = XGBoostMonitor(
-       client=client,
-       track_feature_importance=True
-   )
-   ```
-
-3. **Set Appropriate Importance Type**
-   ```python
-   # ✅ Use 'gain' for model quality insights
-   monitor = XGBoostMonitor(importance_type="gain")
-   ```
-
-4. **Include Metadata**
-   ```python
-   # ✅ Add context to registrations
-   monitor.register_from_model(
-       model, X_train, y_train,
-       metadata={
-           'dataset': 'training_v2',
-           'date': '2024-01-15',
-           'engineer': 'data-team'
-       }
-   )
-   ```
-
-5. **Use Wrappers for Production**
-   ```python
-   # ✅ Simplifies deployment
-   wrapped_model = wrap_xgboost_model(model, monitor)
-   # All predictions automatically logged
-   ```
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Import error | `pip install xgboost` or `pip install lightgbm` |
-| Feature names missing | Use pandas DataFrame with named columns |
-| Importance extraction fails | Check model is trained and has feature_importances_ |
-| High overhead | Set `track_feature_importance=False` |
-| Version conflicts | Check XGBoost/LightGBM versions match |
-
-## Performance Tips
-
-1. **Disable Feature Importance for Speed**
-   ```python
-   monitor = XGBoostMonitor(track_feature_importance=False)
-   ```
-
-2. **Use Sampling for Large Datasets**
-   ```python
-   monitor = XGBoostMonitor(sampling_rate=0.1)  # Log 10% of predictions
-   ```
-
-3. **Batch Predictions**
-   ```python
-   # More efficient than individual predictions
-   predictions = monitor.predict(model, X_test_batch, y_test_batch)
-   ```
-
-## Examples
-
-Full examples in:
-- `sdk/examples/boosting_example.py`
-- `sdk/guides/BOOSTING_INTEGRATION.md`
-
-## Resources
-
-- XGBoost Docs: https://xgboost.readthedocs.io/
-- LightGBM Docs: https://lightgbm.readthedocs.io/
-- WhiteBoxXAI Docs: https://docs.whiteboxxai.com
+## Next steps
+
+- [Assurance](../user-guide/assurance.md): drift, explanations and fairness for this model in the dashboard
+- [GitHub Diff Reviews](github-diff.md): compare model versions
+- [Python SDK](../sdk/index.md)
+- Example: [`boosting_example.py`](https://github.com/AgentaFlow/whitebox-python-sdk/blob/main/examples/boosting_example.py) in the public SDK repository

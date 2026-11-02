@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  # Build (strict, no deploy) on every pull request so broken links, anchors and nav entries
+  # are caught before they reach the published site.
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -31,4 +34,5 @@ jobs:
         run: mkdocs build --strict
 
       - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
         run: mkdocs gh-deploy --force --no-history

@@ -1,3 +1,7 @@
+---
+description: Quick reference for the WhiteBoxXAI GitHub integration — connecting, tracking repositories, the .whiteboxxai.yml file, SDK Git tracking and the main endpoints.
+---
+
 # GitHub Integration Quick Reference
 
 ## Connection Setup
@@ -21,20 +25,15 @@ Dashboard → Settings → GitHub Integration → Connect with PAT
 Create `.whiteboxxai.yml` in repository root:
 
 ```yaml
-version: "1.0"
-
-github:
-  auto_register: true
-  track_branches: [main, production]
-  track_tags: true
-  track_releases: true
-
-models:
-  - path: "models/**/*.pkl"
-    framework: "sklearn"
-    model_type: "classification"
-    auto_baseline: true
+enabled: true
+model_patterns: ["models/**/*.pkl"]
+storage_mode: metadata        # or "full" to store model files (needed for explanations)
+model_type: random_forest     # xgboost, random_forest, neural_network, linear_model, llm, custom
+framework: sklearn
+features: [income, utilisation, tenure_months]
 ```
+
+See [GitHub → Configuration File](github.md#configuration-file) for every key.
 
 ## Webhook Events
 
@@ -46,16 +45,21 @@ WhiteBoxXAI processes these GitHub events:
 ## CLI Git Tracking
 
 ```python
+import os
+
 from whiteboxxai import WhiteBoxXAI
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Automatic Git detection (requires GitPython)
-client.register_model(
+client.models.register(
     name="fraud-detector",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
-    auto_detect_git=True  # Captures commit hash, branch, repo URL
+    version="1.0.0",
+    features=["amount", "merchant_category", "hour"],
+    baseline_metrics={},
+    auto_detect_git=True,  # captures commit hash, branch and repository URL
 )
 ```
 
@@ -112,4 +116,4 @@ models:
 
 ## Full Documentation
 
-See the [GitHub Integration guide](/integrations/github/) for the complete walkthrough.
+See the [GitHub Integration guide](github.md) for the complete walkthrough.

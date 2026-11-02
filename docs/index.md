@@ -1,4 +1,5 @@
 ---
+description: WhiteBoxXAI documentation — turn how your AI systems actually behave into audit evidence for ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF, using the Enhanced Dashboard, the Python SDK, the REST API or the MCP server.
 hide:
   - navigation
   - toc
@@ -9,15 +10,15 @@ hide:
 # Audit evidence and explanations you don't have to translate yourself
 
 <p class="wbx-tagline">
-WhiteBox XAI packages what your AI actually did — SHAP and LIME explanations, bias audits,
-drift history, governance decisions — into reports you can hand to an auditor or a board
-without building a slide deck at midnight. It's also the observability and monitoring
-platform your engineering team uses to produce that evidence in the first place.
+WhiteBoxXAI packages what your AI actually did (SHAP, LIME and counterfactual explanations, bias
+audits, drift history, LLM audit trails, governance decisions) into evidence you can hand to an auditor
+or a board, with every number traceable to the data that produced it. It's also the monitoring platform
+your engineering team uses to produce that evidence in the first place.
 </p>
 
-[Generate an Audit Report](/user-guide/reports/){ .md-button .md-button--primary }
-[Get started](/get-started/getting-started/){ .md-button }
-[Install the SDK](/sdk/){ .md-button }
+[Get started](get-started/getting-started.md){ .md-button .md-button--primary }
+[Generate a report](user-guide/reports.md){ .md-button }
+[Install the SDK](sdk/index.md){ .md-button }
 
 </div>
 
@@ -27,44 +28,50 @@ platform your engineering team uses to produce that evidence in the first place.
 
 <div class="grid cards" markdown>
 
--   :material-file-certificate: **[Audit & Explanation Reports](/user-guide/reports/)**
+-   :material-rocket-launch: **[Getting Started](get-started/getting-started.md)**
 
     ---
 
-    Generate bias-audit, compliance, and explainability reports from the dashboard — no code
-    required — with every number traceable back to real computed data.
+    Create an account, run the readiness setup, connect a model, and generate your first report.
 
--   :material-rocket-launch: **[Getting Started](/get-started/getting-started/)**
-
-    ---
-
-    Create your account, install the SDK, register your first model, and see monitoring in
-    action — end to end.
-
--   :material-book-open-page-variant: **[User Guide](/user-guide/)**
+-   :material-view-dashboard: **[The Enhanced Dashboard](user-guide/index.md)**
 
     ---
 
-    A tour of the platform: dashboards, explanations, drift detection, bias auditing, LLM
-    monitoring, alerts, and reports.
+    Overview, Needs Attention, Model Register, Assurance, Observability, Compliance & Evidence,
+    Reviews & Decisions and the Risk Register: what each shows and how to use it.
 
--   :material-language-python: **[Python SDK](/sdk/)**
-
-    ---
-
-    Instrument your models in a few lines. Decorators, async logging, offline buffering, and
-    multi-agent monitoring included.
-
--   :material-puzzle: **[Integrations](/integrations/examples/)**
+-   :material-file-certificate: **[Reports](user-guide/reports.md)**
 
     ---
 
-    Native support for scikit-learn, PyTorch, TensorFlow, Hugging Face, LangChain, XGBoost,
-    LightGBM, GitHub, n8n — and an [MCP server](/integrations/mcp/) for any AI client.
+    Board packs, ISO/IEC 42001 Statements of Applicability, EU AI Act Annex IV documentation, model
+    cards and evidence packs, signed off and shared with auditors through verified links.
+
+-   :material-language-python: **[Python SDK](sdk/index.md)**
+
+    ---
+
+    Register models, log predictions and LLM calls from any provider, and group runs into Governance
+    Events in a few lines.
+
+-   :material-robot: **[MCP & AI agents](agent-resources/index.md)**
+
+    ---
+
+    Give Claude, Copilot, Cursor or your own agent 197 tools over your WhiteBoxXAI data, with agent
+    skills that keep it honest.
+
+-   :material-school: **[Tutorials](learn/index.md)**
+
+    ---
+
+    Explore with sample data, take a model to an evidence pack, govern an LLM app, or connect an
+    assistant over MCP.
 
 </div>
 
-## What you can do with WhiteBox XAI
+## What you can do with WhiteBoxXAI
 
 <div class="grid cards" markdown>
 
@@ -72,43 +79,44 @@ platform your engineering team uses to produce that evidence in the first place.
 
     ---
 
-    Generate human-readable explanations with SHAP and LIME, so you can answer *why* a model
-    made a given prediction — and hand the explanation to someone who wasn't in the room.
+    SHAP, LIME and DiCE counterfactuals computed from your model, so you can answer *why* a
+    prediction was made and *what would have changed it*.
 
 -   :material-scale-balance: **Audit for fairness**
 
     ---
 
-    Run bias and fairness audits and produce the [evidence](/user-guide/reports/) your
-    stakeholders and regulators expect — not a summary of one.
+    Fairness audits across the groups you define, with per-group comparisons and the
+    [evidence](user-guide/reports.md) regulators expect, not a summary of one.
+
+-   :material-clipboard-check: **Show compliance readiness**
+
+    ---
+
+    Control catalogs for ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF, with your
+    applicability decisions and approved evidence counted control by control.
+    [Compliance frameworks](account/ai-regulations.md)
 
 -   :material-gavel: **Govern with confidence**
 
     ---
 
-    Multi-party [governance review boards](/user-guide/governance/), automated periodic
-    reviews, and an immutable decision archive — aligned with ISO 42001 and the EU AI Act.
+    [Review boards](user-guide/governance.md) with votes signed by an authenticator code, separation
+    of duties, and an immutable decision archive.
 
 -   :material-shield-alert: **Track AI risk**
 
     ---
 
-    A structured [AI Risk Register](/user-guide/risk-register/) with owners, likelihood ×
-    impact scoring, and a full audit trail — the artifact ISO 42001 and the EU AI Act ask for.
+    An [AI Risk Register](user-guide/risk-register.md) with owners, likelihood × impact scoring and a
+    full audit trail, and a [Trust Score](user-guide/trust-score.md) per model a board can read.
 
--   :material-speedometer: **Report one number**
-
-    ---
-
-    A [Trust Score](/user-guide/trust-score/) per model, combining fairness, drift, and
-    explainability into a single 0–100 index your board can actually read.
-
--   :material-chart-line: **Monitor in real time**
+-   :material-chart-line: **Monitor LLMs, agents and models**
 
     ---
 
-    Track production models for performance degradation, data drift, and concept drift — with
-    proactive alerts before problems reach your users.
+    Drift, performance, LLM and RAG audit trails, safety scans, prompt versions and multi-agent
+    workflows, with alert rules evaluated as new evidence arrives.
 
 </div>
 
@@ -119,16 +127,17 @@ pip install whitebox-xai-sdk
 ```
 
 ```python
+import os
+
 from whiteboxxai import WhiteBoxXAI
 
-client = WhiteBoxXAI(api_key="your-api-key")
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 ```
 
-Then follow the [Getting Started guide](/get-started/getting-started/) to register a model
-and log your first predictions.
+Then follow [Getting Started](get-started/getting-started.md) to register a model and log your first
+predictions. AI agents can start from [`llms.txt`](https://docs.whiteboxxai.com/llms.txt).
 
 ## Need help?
 
-- Browse the [FAQ](/help/faq/) and [Troubleshooting guide](/help/troubleshooting/)
-- Explore hands-on [workshops, demos, and case studies](/learn/)
-- Email us at [support@whiteboxxai.com](mailto:support@whiteboxxai.com)
+- [What's new](help/whats-new.md), the [FAQ](help/faq.md) and [Troubleshooting](help/troubleshooting.md)
+- [Getting support](help/support.md), or email [support@whiteboxxai.com](mailto:support@whiteboxxai.com)

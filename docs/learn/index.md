@@ -1,42 +1,18 @@
-# Learn
+---
+description: Hands-on WhiteBoxXAI tutorials — explore with sample data, take a tabular model from training to an auditor-ready evidence pack, govern an LLM application, and connect an AI assistant over MCP.
+---
 
-Go beyond the basics. This section collects hands-on material to help you and your team get
-more out of WhiteBoxXAI — from real-world examples to guided practice and formal
-certification.
+# Tutorials
 
-<div class="grid cards" markdown>
+Step-by-step walkthroughs that end with something you could show an auditor or a review board. Each
+uses real WhiteBoxXAI features and runnable code; none needs data you don't already have, and the first
+needs no code at all.
 
--   :material-book-open-variant: **[Case Studies](/learn/case-studies/)**
+| Tutorial | You'll end up with | Time | Code? |
+| --- | --- | --- | --- |
+| [Explore with sample data](interactive-demos.md) | A populated dashboard, a board presentation and a sample evidence pack | 15 min | No |
+| [From model to evidence pack](workshops.md) | A monitored credit model with drift, explanations, a fairness audit, a review decision and an evidence pack | 45 min | Python |
+| [Govern an LLM application](tutorial-llm-app.md) | An LLM app with logged calls, safety scans, a governed prompt version and a regression check | 40 min | Python |
+| [Connect an AI assistant over MCP](tutorial-agent-mcp.md) | An assistant that answers compliance questions from your WhiteBoxXAI data and prepares a review | 20 min | Config only |
 
-    ---
-
-    See how teams use WhiteBoxXAI to monitor models, catch drift, and pass audits — with
-    the patterns and outcomes behind each story.
-
--   :material-hammer-wrench: **[Hands-On Workshops](/learn/workshops/)**
-
-    ---
-
-    Step-by-step exercises that walk you through monitoring, explainability, drift
-    detection, and bias auditing on real scenarios.
-
--   :material-play-circle: **[Interactive Demos](/learn/interactive-demos/)**
-
-    ---
-
-    Guided, click-through demos of the platform's core workflows — a fast way to explore
-    what's possible.
-
--   :material-certificate: **[Certification Program](/learn/certification/)**
-
-    ---
-
-    Validate your WhiteBoxXAI skills and earn a credential you can share with your team and
-    on your profile.
-
-</div>
-
-## New to WhiteBoxXAI?
-
-If you're just getting started, begin with the [Getting Started guide](/get-started/getting-started/)
-and the [User Guide](/user-guide/), then come back here to go deeper.
+New to WhiteBoxXAI? Start with [Getting Started](../get-started/getting-started.md), then come back here.

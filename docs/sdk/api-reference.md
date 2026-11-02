@@ -1,1409 +1,911 @@
-# WhiteBoxXAI API Reference
-
-Complete API documentation for the WhiteBoxXAI platform.
-
-**Base URL:** `https://api.whiteboxxai.com/api/v1`
-
+---
+description: WhiteBoxXAI REST API reference — base URL, authentication with API keys, the error envelope, rate limits, Governance Event metering and the X-WhiteBox-Run-Id header, pagination, and every customer-facing endpoint grouped by area.
 ---
 
-## Table of Contents
+# REST API Reference
 
-1. [Authentication](#authentication)
-2. [Models](#models)
-3. [Predictions](#predictions)
-4. [Metrics](#metrics)
-5. [Drift Detection](#drift-detection)
-6. [Explainability (XAI)](#explainability-xai)
-7. [Bias & Fairness](#bias--fairness)
-8. [LLM Monitoring](#llm-monitoring)
-9. [Trust Score](#trust-score)
-10. [Risk Register](#risk-register)
-11. [Governance Review Boards](#governance-review-boards)
-12. [Alerts](#alerts)
-13. [Exports & Reports](#exports--reports)
-14. [Users & RBAC](#users--rbac)
-15. [Dashboard](#dashboard)
-16. [Error Handling](#error-handling)
+Everything in the dashboard and the [Python SDK](index.md) is built on this REST API. Use it from any
+language. In Python, the SDK is usually simpler: it handles retries, offline queuing and run grouping
+for you.
 
----
+!!! note "Machine-readable contract"
+    This page lists every customer-facing endpoint. A published, machine-readable OpenAPI contract
+    with full request and response schemas is planned. Until then, the SDK's method signatures and
+    the examples on each guide page are the reference for payload fields.
+
+## Base URL and versioning
+
+```text
+https://api.whiteboxxai.com/api/v1
+```
+
+Business Cloud tenants use the API address they were given when the tenant was set up. All endpoints
+are under `/api/v1`. Additive changes, such as new fields and new endpoints, happen within `v1`; clients
+should ignore response fields they don't recognise.
 
 ## Authentication
 
-### Overview
+Send an [API key](../account/api-keys.md) as a bearer token on every request:
 
-Every request (except login and register) needs a bearer token in the `Authorization`
-header. Two kinds of token are accepted, and they're sent identically:
-
-```http
-GET /models
-Authorization: Bearer <token>
+```bash
+curl https://api.whiteboxxai.com/api/v1/models \
+  -H "Authorization: Bearer $WHITEBOX_API_KEY"
 ```
 
-| Token | Lifetime | Use for |
+- Keys look like `wbx_live_...`. They're created by administrators in **Settings → API keys**, and
+  act with the permissions of the administrator who created them.
+- A signed-in session token (about 30 minutes) is also accepted, and is required for actions that
+  must be made by a person, such as [voting on a review request](../user-guide/governance.md#vote-with-an-authenticator-code).
+- A missing, wrong, revoked or expired credential returns `401`.
+
+Every response carries an `X-Request-ID` header. Include it when you contact support.
+
+## Errors
+
+Errors share one envelope:
+
+```json
+{
+  "error": "HTTPException",
+  "detail": "Model not found",
+  "status_code": 404
+}
+```
+
+| Status | `error` | Meaning |
 | --- | --- | --- |
-| **API key** (`wbx_live_...`) | Until revoked, or its optional expiry | The SDK, CI/CD, pipelines, the MCP server, webhooks |
-| **Login JWT** | ~30 minutes | Interactive scripts and the dashboard |
+| `400` | `HTTPException` | The request was understood but can't be carried out as sent |
+| `401` | `HTTPException` | Missing or invalid credential |
+| `403` | `HTTPException` | Not allowed: wrong role, an action that needs a person's own session, or your plan's [Governed AI Systems](../get-started/governance-events.md#what-is-one-governed-ai-system) are all in use |
+| `404` | `HTTPException` | Doesn't exist **in your organization**. Records in other organizations are indistinguishable from records that don't exist. |
+| `409` | `HTTPException` | Conflict, such as a duplicate name, or a review request that changed after you opened it |
+| `422` | `ValidationError` | The body or parameters didn't match the schema; `detail` lists each problem |
+| `429` | `QuotaExceeded` | The Free plan's monthly [Governance Events](../get-started/governance-events.md#when-you-reach-the-limit) are used up, or a batch is larger than what remains |
+| `429` | `RateLimitExceeded` | Too many requests in the current window; wait for `Retry-After` |
+| `5xx` | | A server error; safe to retry with back-off |
 
-For anything running unattended, use an API key. A JWT expires after about 30 minutes and
-carries the full privileges of a human account, which is the wrong credential for a nightly
-job.
+## Rate limits
 
-### API keys
+The default rate limit is **100 requests per 60 seconds** per client. Responses include
+`X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`. A `429 RateLimitExceeded`
+response also includes `Retry-After`, in seconds. Prefer batch endpoints for volume.
 
-Creation and revocation are admin-only, since a key is an organization-wide credential.
+## Metering and run grouping
 
-```http
-POST /api-keys
-Content-Type: application/json
+Requests authenticated with an API key that record AI activity (logging predictions, LLM calls, RAG
+retrievals and safety scans, generating explanations, running evaluations, starting agent workflows)
+count as [Governance Events](../get-started/governance-events.md). Reads, configuration, reports and
+dashboard use don't. Events are counted only for successful responses.
 
-{
-  "name": "CI pipeline",
-  "scopes": ["read", "write"],
-  "expires_in_days": 365
-}
-```
-
-The `201` response contains `raw_key` — the **only** time the key material is available.
-Store it immediately.
-
-```http
-GET    /api-keys            # List keys (metadata only, never key material)
-DELETE /api-keys/{key_id}   # Revoke a key -> 204, effective immediately
-```
-
-See [API Keys](/account/api-keys/) for the full reference.
-
-### Login
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "username": "user@example.com",
-  "password": "your_password"
-}
-```
-
-**Response:**
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 1800,
-  "user": {
-    "id": "uuid",
-    "username": "user@example.com",
-    "role": "admin"
-  }
-}
-```
-
-### Register
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "username": "user@example.com",
-  "email": "user@example.com",
-  "password": "secure_password",
-  "full_name": "John Doe"
-}
-```
-
----
-
-## Models
-
-### Register Model
-Register a new ML model for monitoring.
-
-```http
-POST /models
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "name": "fraud_detection_v1",
-  "description": "Credit card fraud detection model",
-  "model_type": "classification",
-  "framework": "scikit-learn",
-  "version": "1.0.0",
-  "metadata": {
-    "algorithm": "random_forest",
-    "features": ["amount", "merchant_category", "time_of_day"],
-    "target": "is_fraud",
-    "training_samples": 100000
-  },
-  "baseline_metrics": {
-    "accuracy": 0.95,
-    "precision": 0.92,
-    "recall": 0.88,
-    "f1_score": 0.90
-  }
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "id": "model_uuid",
-  "name": "fraud_detection_v1",
-  "model_type": "classification",
-  "framework": "scikit-learn",
-  "version": "1.0.0",
-  "status": "active",
-  "created_at": "2025-12-05T10:00:00Z",
-  "monitoring_enabled": true
-}
-```
-
-### List Models
-```http
-GET /models?status_filter=ACTIVE&model_type=classification&skip=0&limit=100
-Authorization: Bearer {token}
-```
-
-**Query Parameters:**
-- `status_filter` (optional): Filter by status (`ACTIVE`, `INACTIVE`, `DEPRECATED`, `ARCHIVED`)
-- `model_type` (optional): Filter by type (classification, regression, clustering, llm)
-- `owner_id` (optional): Filter by owner UUID
-- `tags` (optional): Comma-separated list of tags
-- `search` (optional): Search term matched against name and description
-- `skip` (optional): Number of results to skip (default: 0)
-- `limit` (optional): Items per page (default: 100, max: 1000)
-
-**Response (200 OK):** a JSON array of model objects.
-```json
-[
-  {
-    "id": "model_uuid",
-    "name": "fraud_detection_v1",
-    "model_type": "classification",
-    "framework": "scikit-learn",
-    "version": "1.0.0",
-    "status": "ACTIVE",
-    "created_at": "2025-12-05T10:00:00Z"
-  }
-]
-```
-
-### Get Model Details
-```http
-GET /models/{model_id}
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": "model_uuid",
-  "name": "fraud_detection_v1",
-  "description": "Credit card fraud detection model",
-  "model_type": "classification",
-  "framework": "scikit-learn",
-  "version": "1.0.0",
-  "status": "active",
-  "metadata": {
-    "algorithm": "random_forest",
-    "features": ["amount", "merchant_category", "time_of_day"]
-  },
-  "baseline_metrics": {
-    "accuracy": 0.95,
-    "precision": 0.92
-  },
-  "monitoring_config": {
-    "sampling_rate": 0.1,
-    "drift_threshold": 0.05
-  },
-  "created_at": "2025-12-05T10:00:00Z",
-  "updated_at": "2025-12-05T15:30:00Z"
-}
-```
-
-### Update Model
-```http
-PATCH /models/{model_id}
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "description": "Updated description"
-}
-```
-
-### Update Model Status
-```http
-PATCH /models/{model_id}/status
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "status": "DEPRECATED"
-}
-```
-
-### Update Baseline
-Refresh a model's baseline metrics, e.g. after retraining.
-
-```http
-PATCH /models/{model_id}/baseline
-Authorization: Bearer {token}
-```
-
-### Versions
-```http
-GET /models/{model_name}/versions   # All versions, newest first
-GET /models/{model_name}/latest     # Most recent version
-Authorization: Bearer {token}
-```
-
-### Archive and Restore Model
-```http
-POST /models/{model_id}/archive
-POST /models/{model_id}/restore
-Authorization: Bearer {token}
-```
-
-### Delete Model
-Permanent. Prefer archiving.
-
-```http
-DELETE /models/{model_id}
-Authorization: Bearer {token}
-```
-
-Returns `204`.
-
----
-
-## Predictions
-
-### Log Prediction
-Log a single prediction for monitoring.
-
-```http
-POST /predictions/log
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "prediction_id": "pred_12345",
-  "input_data": {
-    "amount": 150.50,
-    "merchant_category": "grocery",
-    "time_of_day": "afternoon"
-  },
-  "output_data": {
-    "prediction": 0,
-    "probability": 0.92,
-    "class": "not_fraud"
-  },
-  "latency_ms": 12.4,
-  "metadata": {
-    "user_id": "user_789",
-    "request_id": "req_xyz"
-  }
-}
-```
-
-!!! warning "Field names are `input_data` and `output_data`"
-    Not `inputs`/`output`. A request using the wrong names is rejected as a validation error.
-
-**Response (201 Created):**
-```json
-{
-  "model_id": "model_uuid",
-  "prediction_id": "pred_12345",
-  "input_data": { "amount": 150.50 },
-  "output_data": { "prediction": 0, "probability": 0.92 },
-  "latency_ms": 12.4,
-  "timestamp": "2025-12-05T15:30:00Z"
-}
-```
-
-### Batch Log Predictions
-Up to 1,000 predictions per call.
-
-```http
-POST /predictions/log/batch
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "predictions": [
-    {
-      "model_id": "model_uuid",
-      "prediction_id": "pred_001",
-      "input_data": {...},
-      "output_data": {...}
-    },
-    {
-      "model_id": "model_uuid",
-      "prediction_id": "pred_002",
-      "input_data": {...},
-      "output_data": {...}
-    }
-  ]
-}
-```
-
-### Get a Prediction
-```http
-GET /predictions/{prediction_id}
-Authorization: Bearer {token}
-```
-
-### Query Predictions
-Filtering is a `POST` with a JSON body, not query-string parameters.
-
-```http
-POST /predictions/query
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "start_time": "2025-12-01T00:00:00Z",
-  "end_time": "2025-12-05T00:00:00Z",
-  "limit": 100,
-  "offset": 0
-}
-```
-
-**Body Parameters:**
-
-- `model_id` (optional): Model UUID
-- `start_time` / `end_time` (optional): ISO 8601 timestamps
-- `limit` (optional): Max results (default: 100, max: 1000)
-- `offset` (optional): Results to skip (default: 0)
-
-**Response (200 OK):** a JSON array of prediction objects.
-
-### Prediction Statistics
-```http
-GET /predictions/models/{model_id}/stats?start_time=2025-12-01T00:00:00Z&end_time=2025-12-05T00:00:00Z
-Authorization: Bearer {token}
-```
-
-Returns `total_predictions`, the time period, and latency statistics
-(`avg_latency_ms`, `min_latency_ms`, `max_latency_ms`, `predictions_per_hour`).
-
-### Recent Predictions
-```http
-GET /predictions/models/{model_id}/recent?limit=10
-Authorization: Bearer {token}
-```
-
-`limit` defaults to 10, max 100.
-
----
-
-## Metrics
-
-### Log Metrics
-```http
-POST /metrics
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "metric_type": "accuracy",
-  "value": 0.94,
-  "metadata": {
-    "dataset_size": 1000,
-    "evaluation_date": "2025-12-05"
-  }
-}
-```
-
-### Batch Log Metrics
-```http
-POST /metrics/batch
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "metrics": [
-    {"metric_type": "accuracy", "value": 0.94},
-    {"metric_type": "precision", "value": 0.91},
-    {"metric_type": "recall", "value": 0.89},
-    {"metric_type": "f1_score", "value": 0.90}
-  ]
-}
-```
-
-### Calculate Metrics
-Calculate metrics from predictions.
-
-```http
-POST /metrics/calculate
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "y_true": [0, 1, 1, 0, 1],
-  "y_pred": [0, 1, 0, 0, 1],
-  "metric_types": ["accuracy", "precision", "recall", "f1_score"]
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "metrics": {
-    "accuracy": 0.8,
-    "precision": 0.67,
-    "recall": 0.67,
-    "f1_score": 0.67
-  },
-  "calculated_at": "2025-12-05T15:30:00Z"
-}
-```
-
-### Get Aggregated Metrics
-```http
-GET /metrics/aggregate?model_id={model_id}&metric_type=accuracy&aggregation=avg&time_window=7d
-Authorization: Bearer {token}
-```
-
-**Query Parameters:**
-- `model_id` (required): Model UUID
-- `metric_type` (required): Metric type
-- `aggregation` (required): Aggregation function (avg, min, max, sum, count)
-- `time_window` (required): Time window (1h, 24h, 7d, 30d)
-- `start_date` (optional): Start date
-- `end_date` (optional): End date
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "metric_type": "accuracy",
-  "aggregation": "avg",
-  "time_window": "7d",
-  "value": 0.93,
-  "data_points": 168,
-  "period": {
-    "start": "2025-11-28T00:00:00Z",
-    "end": "2025-12-05T00:00:00Z"
-  }
-}
-```
-
-### Get Metrics Trend
-```http
-GET /metrics/trend?model_id={model_id}&metric_type=accuracy&interval=1d&days=30
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "metric_type": "accuracy",
-  "interval": "1d",
-  "data": [
-    {"timestamp": "2025-11-05T00:00:00Z", "value": 0.95},
-    {"timestamp": "2025-11-06T00:00:00Z", "value": 0.94},
-    {"timestamp": "2025-11-07T00:00:00Z", "value": 0.93}
-  ]
-}
-```
-
----
-
-## Drift Detection
-
-### Detect Data Drift
-```http
-POST /drift/detect
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "reference_data": {
-    "feature1": [1.2, 3.4, 2.1, ...],
-    "feature2": ["A", "B", "A", ...]
-  },
-  "current_data": {
-    "feature1": [1.5, 3.8, 2.5, ...],
-    "feature2": ["A", "C", "B", ...]
-  },
-  "config": {
-    "threshold": 0.05,
-    "method": "ks_test"
-  }
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "drift_detected": true,
-  "overall_drift_score": 0.12,
-  "features": {
-    "feature1": {
-      "drift_detected": true,
-      "drift_score": 0.08,
-      "p_value": 0.001,
-      "method": "ks_test",
-      "severity": "medium"
-    },
-    "feature2": {
-      "drift_detected": true,
-      "drift_score": 0.15,
-      "p_value": 0.0001,
-      "method": "chi_squared",
-      "severity": "high"
-    }
-  },
-  "timestamp": "2025-12-05T15:30:00Z"
-}
-```
-
-### Get Drift Reports
-```http
-GET /drift/reports?model_id={model_id}&drift_type=data&start_date=2025-11-01
-Authorization: Bearer {token}
-```
-
-**Query Parameters:**
-- `model_id` (required): Model UUID
-- `drift_type` (optional): Filter by type (data, concept)
-- `severity` (optional): Filter by severity (low, medium, high)
-- `start_date` (optional): Start date
-- `end_date` (optional): End date
-
-### Get Drift Trend
-```http
-GET /drift/trend?model_id={model_id}&feature=feature1&days=30
-Authorization: Bearer {token}
-```
-
----
-
-## Explainability (XAI)
-
-### Request Explanation
-Generate an explanation for a prediction.
-
-```http
-POST /explanations/generate
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "prediction_id": "pred_12345",
-  "method": "shap",
-  "config": {
-    "background_samples": 100,
-    "max_features": 10
-  }
-}
-```
-
-**Response (202 Accepted):**
-```json
-{
-  "explanation_id": "exp_uuid",
-  "status": "processing",
-  "estimated_time": 5
-}
-```
-
-### Get Explanation
-```http
-GET /explanations/{explanation_id}
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": "exp_uuid",
-  "model_id": "model_uuid",
-  "prediction_id": "pred_12345",
-  "method": "shap",
-  "status": "completed",
-  "result": {
-    "base_value": 0.2,
-    "predicted_value": 0.92,
-    "feature_contributions": {
-      "amount": 0.15,
-      "merchant_category": -0.05,
-      "time_of_day": 0.62
-    },
-    "top_features": [
-      {"feature": "time_of_day", "value": 0.62, "impact": "positive"},
-      {"feature": "amount", "value": 0.15, "impact": "positive"}
-    ]
-  },
-  "created_at": "2025-12-05T15:30:00Z",
-  "completed_at": "2025-12-05T15:30:05Z"
-}
-```
-
-### Get Global Feature Importance
-```http
-GET /explanations/global?model_id={model_id}&method=shap
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "method": "shap",
-  "feature_importance": {
-    "time_of_day": 0.45,
-    "amount": 0.30,
-    "merchant_category": 0.15,
-    "location": 0.10
-  },
-  "calculated_at": "2025-12-05T15:30:00Z"
-}
-```
-
----
-
-## Bias & Fairness
-
-### Run Fairness Audit
-```http
-POST /bias/audit
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "protected_attributes": ["gender", "age_group"],
-  "reference_group": {"gender": "male", "age_group": "30-50"},
-  "metrics": ["demographic_parity", "equal_opportunity", "equalized_odds"],
-  "threshold": 0.8
-}
-```
-
-**Response (202 Accepted):**
-```json
-{
-  "audit_id": "audit_uuid",
-  "status": "processing"
-}
-```
-
-### Get Audit Results
-```http
-GET /bias/audits/{audit_id}
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": "audit_uuid",
-  "model_id": "model_uuid",
-  "status": "completed",
-  "overall_fairness_score": 0.85,
-  "bias_detected": true,
-  "protected_attributes": ["gender", "age_group"],
-  "results": {
-    "demographic_parity": {
-      "passed": false,
-      "score": 0.72,
-      "threshold": 0.8,
-      "groups": {
-        "male_30-50": {"rate": 0.45},
-        "female_30-50": {"rate": 0.62},
-        "male_50+": {"rate": 0.40}
-      }
-    },
-    "equal_opportunity": {
-      "passed": true,
-      "score": 0.88
-    }
-  },
-  "recommendations": [
-    "Consider rebalancing training data for gender groups",
-    "Review feature importance for age-related features"
-  ],
-  "created_at": "2025-12-05T15:30:00Z"
-}
-```
-
-### List Audits
-```http
-GET /bias/audits?model_id={model_id}&status=completed
-Authorization: Bearer {token}
-```
-
----
-
-## LLM Monitoring
-
-### Log LLM Completion
-```http
-POST /llm/completions
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "model_id": "model_uuid",
-  "provider": "openai",
-  "model_name": "gpt-4",
-  "prompt": "Explain quantum computing",
-  "completion": "Quantum computing is...",
-  "tokens": {
-    "prompt_tokens": 15,
-    "completion_tokens": 120,
-    "total_tokens": 135
-  },
-  "latency_ms": 1500,
-  "cost": 0.0027,
-  "metadata": {
-    "temperature": 0.7,
-    "max_tokens": 200
-  }
-}
-```
-
-### Get LLM Metrics
-```http
-GET /llm/metrics?model_id={model_id}&start_date=2025-12-01&end_date=2025-12-05
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "period": {
-    "start": "2025-12-01T00:00:00Z",
-    "end": "2025-12-05T23:59:59Z"
-  },
-  "totals": {
-    "completions": 15420,
-    "total_tokens": 2345678,
-    "prompt_tokens": 1234567,
-    "completion_tokens": 1111111,
-    "total_cost": 47.89,
-    "avg_latency_ms": 1245
-  },
-  "by_model": {
-    "gpt-4": {
-      "completions": 10000,
-      "cost": 35.00
-    },
-    "gpt-3.5-turbo": {
-      "completions": 5420,
-      "cost": 12.89
-    }
-  }
-}
-```
-
-### Analyze Toxicity
-```http
-POST /llm/toxicity
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "text": "Example text to analyze",
-  "completion_id": "completion_uuid"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "completion_id": "completion_uuid",
-  "toxicity_detected": false,
-  "scores": {
-    "toxicity": 0.02,
-    "severe_toxicity": 0.001,
-    "obscene": 0.01,
-    "threat": 0.002,
-    "insult": 0.015,
-    "identity_attack": 0.003
-  },
-  "flagged": false
-}
-```
-
----
-
-## Trust Score
-
-A 0–100 index per model over fairness, drift, and explainability signals. See [Trust
-Score](/user-guide/trust-score/) for the methodology.
-
-### Get a Model's Trust Score
-```http
-GET /trust-score/{model_id}
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "model_id": "model_uuid",
-  "model_name": "fraud-detection-v3",
-  "trust_score": 78.5,
-  "fairness_component": 85.0,
-  "drift_component": 80.0,
-  "explainability_component": 66.0,
-  "inputs_available": { "fairness": true, "drift": true, "explainability": true },
-  "last_bias_audit_at": "2026-07-21T09:12:00Z",
-  "last_drift_report_at": "2026-07-28T02:00:00Z",
-  "explained_predictions_ratio": 0.66,
-  "weights": { "fairness": 0.4, "drift": 0.3, "explainability": 0.3 },
-  "methodology_note": "..."
-}
-```
-
-`trust_score` is `null` when none of the three inputs exist for the model. Weights are
-renormalized over whichever inputs are available.
-
-### Portfolio Rollup
-```http
-GET /trust-score/portfolio
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "org_average_trust_score": 81.2,
-  "models": [ { "model_id": "...", "model_name": "...", "trust_score": 78.5 } ],
-  "models_with_insufficient_data": 2,
-  "methodology_note": "..."
-}
-```
-
-### Score History
-```http
-GET /trust-score/{model_id}/history
-Authorization: Bearer {token}
-```
-
-Returns `data_points` (each with `snapshot_at` and the component values) and
-`trend_direction` — `improving`, `declining`, `stable`, or `null` with fewer than two points.
-
-### Weight Configuration
-```http
-GET /trust-score/config
-PUT /trust-score/config          # org admin only
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "fairness_weight": 0.5,
-  "drift_weight": 0.3,
-  "explainability_weight": 0.2
-}
-```
-
-`GET` returns the weights in use plus `is_default`, which is `true` when no override is on
-file.
-
----
-
-## Risk Register
-
-Structured AI risk inventory with owners, scoring, workflow, and audit trail. See [AI Risk
-Register](/user-guide/risk-register/).
-
-### Create a Risk Entry
-```http
-POST /risk-register
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "title": "Credit model may under-approve rural applicants",
-  "description": "Fairness audit showed a 9% approval gap by geography.",
-  "category": "bias",
-  "likelihood": 4,
-  "impact": 4,
-  "owner_id": "user_uuid",
-  "mitigation_plan": "Retrain with balanced sampling; re-audit before release.",
-  "target_resolution_date": "2026-09-30",
-  "review_cadence_days": 30,
-  "model_ids": ["model_uuid"]
-}
-```
-
-**Response (201 Created):** the entry with computed `risk_score` (16) and `severity`
-(`high`), plus `status` (`identified`) and `next_review_at`.
-
-`likelihood` and `impact` are 1–5. `category` must be in your organization's taxonomy.
-
-### List Risk Entries
-```http
-GET /risk-register?status=identified&category=bias&skip=0&limit=50
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{ "items": [ ... ], "total": 137, "skip": 0, "limit": 50 }
-```
-
-### Get / Update a Risk Entry
-```http
-GET   /risk-register/{entry_id}
-PATCH /risk-register/{entry_id}
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "status": "mitigated",
-  "status_reason": "Retrained v4.1 closed the gap to 1.2%; re-audit passed."
-}
-```
-
-`status_reason` is **required** whenever `status` is included — it becomes the audit-trail
-entry. Changing `likelihood` or `impact` recomputes `risk_score` and `severity`.
-
-Valid statuses: `identified`, `assessed`, `mitigation_planned`, `mitigated`, `closed`.
-
-### Entry History
-```http
-GET /risk-register/{entry_id}/history
-Authorization: Bearer {token}
-```
-
-Returns every create, edit, and status change with the acting user and timestamp.
-
-### Portfolio Heat Map
-```http
-GET /risk-register/portfolio
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "heatmap": [ { "likelihood": 4, "impact": 4, "count": 3 } ],
-  "top_risks": [ ... ],
-  "open_count": 41,
-  "open_by_severity": { "critical": 2, "high": 9, "medium": 21, "low": 9 }
-}
-```
-
-### Scoring Configuration
-```http
-GET /risk-register/config
-PUT /risk-register/config        # org admin only
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "category_taxonomy": ["bias", "drift", "security", "regulatory", "model_risk"],
-  "severity_thresholds": { "critical": 20, "high": 12, "medium": 6 }
-}
-```
-
-Also accepts `likelihood_scale` and `impact_scale`. `GET` includes `is_default`.
-
----
-
-## Governance Review Boards
-
-Multi-party approval workflows with an immutable decision archive. The full endpoint list and
-the governance guarantees are documented in [Governance Review
-Boards](/user-guide/governance/).
-
-```http
-POST   /governance/review-boards
-GET    /governance/review-boards
-GET|PUT|DELETE /governance/review-boards/{board_id}
-POST   /governance/review-boards/{board_id}/members
-POST   /governance/review-boards/requests
-POST   /governance/review-boards/requests/{request_id}/submit
-POST   /governance/review-boards/requests/{request_id}/decisions
-GET    /governance/review-boards/requests/{request_id}/status
-POST   /governance/review-boards/requests/{request_id}/finalize
-GET    /governance/review-boards/my-reviews
-POST   /governance/review-boards/archive/search
-POST   /governance/review-boards/archive/export
-```
-
----
-
-## Alerts
+Group the records of one AI run with the optional header:
 
-### Alert Rules
-
-```http
-POST   /alerts/rules                        # Create a rule (threshold or anomaly-based)
-GET    /alerts/rules                        # List rules for the organization
-GET    /alerts/rules/{rule_id}
-PATCH  /alerts/rules/{rule_id}
-DELETE /alerts/rules/{rule_id}
-POST   /alerts/rules/{rule_id}/evaluate      # Test whether a rule would fire, without creating a real alert
-Authorization: Bearer {token}
-```
-
-### Alert Instances
-
-```http
-GET  /alerts/instances                       # List triggered alerts, with filters
-GET  /alerts/instances/{alert_id}
-POST /alerts/instances/{alert_id}/acknowledge
-POST /alerts/instances/{alert_id}/resolve
-POST /alerts/instances/{alert_id}/snooze
-GET  /alerts/statistics                      # Counts, severity distribution, MTTA/MTTR
-Authorization: Bearer {token}
-```
-
-The SDK exposes this as `client.alerts.create()` / `list()` / `get_rule()` / `update_rule()` /
-`delete_rule()` / `evaluate_rule()` / `list_instances()` / `get_instance()` / `acknowledge()` /
-`resolve()`, and the simpler `ModelMonitor.create_alert_rule()` / `get_active_alerts()` — see
-[SDK Documentation](/sdk/#2-modelmonitor) for the full signatures. All of it is also available
-from the dashboard under **Observability → Alerts**.
-
-Drift and bias thresholds are *separately* configurable through the API — see [Drift
-Detection](#drift-detection) and [Bias & Fairness](#bias--fairness). A `high` or
-`critical` result there auto-drafts a [risk register](#risk-register) entry regardless of
-whether an alert rule is also configured for it.
-
----
-
-## Exports & Reports
-
-Report generation lives under `/export/*`. There is no `/reports` endpoint — it returns `404`.
-
-See [Audit & Explanation Reports](/user-guide/reports/) for the dashboard walkthrough, report
-categories, and what a report contains — this section is the endpoint reference.
-
-**Formats:** `pdf`, `csv`, `excel`, `json`, `html`, `markdown`.
-
-**Report categories:** `model_performance`, `drift_analysis`, `bias_audit`, `compliance`,
-`explainability`, `llm_monitoring`, `risk_register`, `trust_score`, `custom`.
-
-### Generate an Export
-```http
-POST /export/exports
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "template_id": "template_uuid",
-  "format": "pdf",
-  "model_ids": ["model_uuid"],
-  "date_from": "2026-07-01",
-  "date_to": "2026-07-31"
-}
-```
-
-Queue several at once with `POST /export/exports/bulk`.
-
-### Check Export Status
-```http
-GET /export/exports/{export_id}
-Authorization: Bearer {token}
-```
-
-`status` moves through `pending` → `in_progress` → `completed`, or `failed`. Also
-`cancelled` if you cancel it.
-
-### List and Download
-```http
-GET /export/exports
-GET /export/exports/{export_id}/download
-Authorization: Bearer {token}
-```
-
-### Templates and Configurations
-```http
-GET|POST       /export/templates
-GET|PUT|DELETE /export/templates/{template_id}
-GET|POST       /export/configs
-GET|PUT|DELETE /export/configs/{config_id}
-```
-
-Templates define report contents; configurations define how a report is produced and
-delivered. Delivery methods: `download`, `email`, `webhook`, `s3`, `sftp`, `api`.
-
-### Scheduled Reports
-```http
-GET|POST       /export/scheduled-reports
-GET|PUT|DELETE /export/scheduled-reports/{report_id}
-POST           /export/scheduled-reports/{report_id}/run
-```
-
-```json
-{
-  "name": "Weekly Performance Summary",
-  "template_id": "template_uuid",
-  "format": "pdf",
-  "cron_expression": "0 9 * * 1",
-  "recipients": ["team@company.com"]
-}
-```
-
-### Third-Party Integrations
-```http
-GET|POST       /export/integrations
-GET|PUT|DELETE /export/integrations/{integration_id}
-```
-
----
-
-## Users & RBAC
-
-### List Users
-```http
-GET /users?role=admin&status=active
-Authorization: Bearer {token}
-```
-
-### Create User
-```http
-POST /users
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "username": "newuser@example.com",
-  "email": "newuser@example.com",
-  "password": "secure_password",
-  "full_name": "New User",
-  "role": "viewer"
-}
-```
-
-### Update User Role
-```http
-PUT /users/{user_id}/role
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "role": "admin"
-}
-```
-
-### List Roles
-```http
-GET /roles
-Authorization: Bearer {token}
-```
-
-### Create Role
-```http
-POST /roles
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "name": "data_scientist",
-  "description": "Data scientist with model access",
-  "permissions": [
-    "models:read",
-    "models:create",
-    "predictions:read",
-    "explanations:read"
-  ]
-}
-```
-
----
-
-## Dashboard
-
-### Get Dashboard Stats
-```http
-GET /dashboard/stats?time_range=7d
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "models": {
-    "total": 45,
-    "active": 38,
-    "inactive": 7
-  },
-  "predictions": {
-    "total": 1542000,
-    "today": 45000,
-    "avg_per_day": 220285
-  },
-  "alerts": {
-    "active": 3,
-    "acknowledged": 12,
-    "resolved": 45
-  },
-  "drift": {
-    "models_with_drift": 5,
-    "high_severity": 2
-  }
-}
-```
-
-### WebSocket Connection
-```javascript
-// Connect to real-time dashboard updates
-const ws = new WebSocket('wss://api.whiteboxxai.com/dashboard/ws?token={token}');
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Update:', data);
-};
-```
-
----
-
-## Error Handling
-
-### Error Response Format
-All errors follow a consistent format:
-
-```json
-{
-  "error": {
-    "code": "MODEL_NOT_FOUND",
-    "message": "Model with ID 'model_uuid' not found",
-    "details": {
-      "model_id": "model_uuid"
-    },
-    "timestamp": "2025-12-05T15:30:00Z",
-    "request_id": "req_xyz"
-  }
-}
-```
-
-### HTTP Status Codes
-
-| Status Code | Meaning |
-|-------------|---------|
-| 200 | OK - Request successful |
-| 201 | Created - Resource created successfully |
-| 202 | Accepted - Request accepted for processing |
-| 204 | No Content - Successful deletion |
-| 400 | Bad Request - Invalid request data |
-| 401 | Unauthorized - Missing or invalid token |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource not found |
-| 409 | Conflict - Resource already exists |
-| 422 | Unprocessable Entity - Validation error |
-| 429 | Too Many Requests - Rate limit exceeded |
-| 500 | Internal Server Error - Server error |
-| 503 | Service Unavailable - Service temporarily unavailable |
-
-### Common Error Codes
-
-| Code | Description |
-|------|-------------|
-| `AUTHENTICATION_FAILED` | Invalid credentials |
-| `TOKEN_EXPIRED` | JWT token has expired |
-| `INSUFFICIENT_PERMISSIONS` | User lacks required permissions |
-| `MODEL_NOT_FOUND` | Model does not exist |
-| `VALIDATION_ERROR` | Request data validation failed |
-| `RATE_LIMIT_EXCEEDED` | Too many requests |
-| `RESOURCE_CONFLICT` | Resource already exists |
-| `PROCESSING_ERROR` | Error processing request |
-
----
-
-## Rate Limits
-
-- **Standard:** 1000 requests per hour
-- **Prediction Logging:** 10,000 requests per hour
-- **Batch Operations:** 100 requests per hour
-- **Report Generation:** 10 requests per hour
-
-Rate limit headers:
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 950
-X-RateLimit-Reset: 1638720000
+```text
+X-WhiteBox-Run-Id: ticket-4821
 ```
 
----
+Up to 128 letters, digits, `.`, `_`, `:` or `-`. Predictions, LLM calls, RAG retrievals and safety scans
+sharing a run id cost one event per 100 records. A value in any other format is ignored.
 
 ## Pagination
 
-List endpoints support pagination:
+List endpoints take `skip` (offset, default `0`) and `limit` (page size). The maximum `limit` varies by
+endpoint and is usually 100 or 1,000. A few newer endpoints use `limit` and `offset`. Time-range filters
+take ISO 8601 timestamps, for example `start_time=2026-10-01T00:00:00Z`.
 
-**Request:**
-```http
-GET /models?page=2&page_size=20
-```
+## Common requests
 
-**Response:**
-```json
-{
-  "total": 145,
-  "page": 2,
-  "page_size": 20,
-  "total_pages": 8,
-  "has_next": true,
-  "has_prev": true,
-  "next_page": 3,
-  "prev_page": 1,
-  "models": [...]
-}
-```
+=== "Register a model"
 
----
+    ```bash
+    curl -X POST https://api.whiteboxxai.com/api/v1/models \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY" -H "Content-Type: application/json" \
+      -d '{
+        "name": "credit_scoring",
+        "version": "1.0.0",
+        "model_type": "xgboost",
+        "model_framework": "xgboost",
+        "features": ["income", "utilisation", "tenure_months"],
+        "baseline_metrics": {"accuracy": 0.94}
+      }'
+    ```
 
-## Versioning
+    `model_type` is one of `xgboost`, `random_forest`, `neural_network`, `linear_model`, `llm`, `custom`.
 
-The API uses URL versioning. Current version: **v1**
+=== "Log a prediction"
 
-Future versions will be available at:
-- `/api/v2/...`
-- `/api/v3/...`
+    ```bash
+    curl -X POST https://api.whiteboxxai.com/api/v1/predictions/log \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY" -H "Content-Type: application/json" \
+      -d '{
+        "model_id": "<model-id>",
+        "input_data": {"income": 52000, "utilisation": 0.31, "tenure_months": 18},
+        "output_data": {"prediction": 0, "probability": 0.12},
+        "latency_ms": 4.2
+      }'
+    ```
 
----
+=== "Log an LLM call"
 
-## SDK Integration
+    ```bash
+    curl -X POST https://api.whiteboxxai.com/api/v1/llm/logs \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY" -H "Content-Type: application/json" \
+      -H "X-WhiteBox-Run-Id: ticket-4821" \
+      -d '{
+        "provider": "xai",
+        "model_name": "grok-4",
+        "prompt": "Summarise this complaint...",
+        "completion": "The customer reports...",
+        "latency_ms": 712,
+        "prompt_tokens": 210,
+        "completion_tokens": 64
+      }'
+    ```
 
-For easier integration, use the Python SDK:
+=== "Check drift"
 
-```python
-from whiteboxxai import WhiteBoxXAI
+    ```bash
+    # Ad-hoc check, not stored
+    curl -X POST "https://api.whiteboxxai.com/api/v1/drift/detect/<model-id>?window_size=1000" \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
 
-client = WhiteBoxXAI(api_key="your_api_key")
+    # Stored drift reports for a model
+    curl https://api.whiteboxxai.com/api/v1/drift/reports/<model-id> \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
+    ```
 
-# Register model
-model = client.models.register(
-    name="my_model",
-    model_type="classification"
-)
+=== "Generate a report"
 
-# Log prediction
-client.predictions.log(
-    model_id=model.id,
-    input_data={"feature": 1.5},
-    output_data={"prediction": 0}
-)
-```
+    ```bash
+    curl -X POST "https://api.whiteboxxai.com/api/v1/report-types/model_card/generate?format=pdf&model_id=<model-id>" \
+      -H "Authorization: Bearer $WHITEBOX_API_KEY"
+    ```
 
-See [SDK Documentation](/sdk/) for details.
+    See [Report types reference](../user-guide/report-engine.md).
 
----
+## Endpoints
 
-## Support
+Grouped by area. Paths are relative to `https://api.whiteboxxai.com`. Guides for each area are linked
+from the [Feature reference](../user-guide/features.md#where-each-feature-lives).
 
-- **Documentation:** https://docs.whiteboxxai.com
-- **API Status:** https://status.whiteboxxai.com
-- **Support:** support@whiteboxxai.com
+### Models
 
----
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/models` | List Models |
+| `POST` | `/api/v1/models` | Register Model |
+| `GET` | `/api/v1/models/{model_id}` | Get Model |
+| `PATCH` | `/api/v1/models/{model_id}` | Update Model |
+| `DELETE` | `/api/v1/models/{model_id}` | Delete Model |
+| `POST` | `/api/v1/models/{model_id}/archive` | Archive Model |
+| `PATCH` | `/api/v1/models/{model_id}/baseline` | Update Baseline |
+| `GET` | `/api/v1/models/{model_id}/dossier` | Get Model Dossier |
+| `POST` | `/api/v1/models/{model_id}/restore` | Restore Model |
+| `PATCH` | `/api/v1/models/{model_id}/status` | Update Model Status |
+| `GET` | `/api/v1/models/{model_name}/latest` | Get Latest Version |
+| `GET` | `/api/v1/models/{model_name}/versions` | Get Model Versions |
 
-*Last Updated: December 5, 2025*
+### Predictions
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/predictions/log` | Log a single prediction |
+| `POST` | `/api/v1/predictions/log/batch` | Log multiple predictions in batch |
+| `GET` | `/api/v1/predictions/models/{model_id}/recent` | Get recent predictions for a model |
+| `GET` | `/api/v1/predictions/models/{model_id}/stats` | Get prediction statistics for a model |
+| `POST` | `/api/v1/predictions/query` | Query predictions with filters |
+| `GET` | `/api/v1/predictions/{prediction_id}` | Get prediction by ID |
+
+### Metrics
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/metrics` | Create Metric |
+| `POST` | `/api/v1/metrics/batch` | Create Metrics Batch |
+| `POST` | `/api/v1/metrics/calculate/classification` | Calculate Classification Metrics |
+| `POST` | `/api/v1/metrics/calculate/regression` | Calculate Regression Metrics |
+| `GET` | `/api/v1/metrics/{model_id}` | Get Model Metrics |
+| `DELETE` | `/api/v1/metrics/{model_id}` | Delete Model Metrics |
+| `GET` | `/api/v1/metrics/{model_id}/aggregate` | Get Aggregated Metrics |
+| `GET` | `/api/v1/metrics/{model_id}/latest/{metric_type}` | Get Latest Metric |
+| `GET` | `/api/v1/metrics/{model_id}/rolling/{metric_type}` | Get Rolling Statistics |
+| `GET` | `/api/v1/metrics/{model_id}/summary` | Get Model Metrics Summary |
+| `GET` | `/api/v1/metrics/{model_id}/timeseries/{metric_type}` | Get Metric Timeseries |
+| `GET` | `/api/v1/metrics/{model_id}/trend/{metric_type}` | Get Metric Trend |
+
+### Explanations
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/explanations/compare` | Compare Explanations |
+| `POST` | `/api/v1/explanations/config` | Create Or Update Config |
+| `GET` | `/api/v1/explanations/config/{model_id}` | Get Config |
+| `DELETE` | `/api/v1/explanations/config/{model_id}` | Delete Config |
+| `POST` | `/api/v1/explanations/generate` | Generate Explanation |
+| `POST` | `/api/v1/explanations/generate/async` | Generate Explanation Async |
+| `POST` | `/api/v1/explanations/generate/bulk` | Generate Bulk Explanations |
+| `GET` | `/api/v1/explanations/model/{model_id}` | Get Model Explanations |
+| `GET` | `/api/v1/explanations/model/{model_id}/stats` | Get Explanation Stats |
+| `GET` | `/api/v1/explanations/prediction/{prediction_id}` | Get Prediction Explanation |
+| `POST` | `/api/v1/explanations/visualizations/multi` | Generate Multi Visualization |
+| `POST` | `/api/v1/explanations/visualizations/single` | Generate Single Visualization |
+| `GET` | `/api/v1/explanations/{explanation_id}` | Get Explanation |
+
+### Drift
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/concept-drift/detect/{model_id}` | Detect Concept Drift |
+| `POST` | `/api/v1/concept-drift/reports` | Create Concept Drift Report |
+| `GET` | `/api/v1/concept-drift/reports/{model_id}` | Get Concept Drift Reports |
+| `GET` | `/api/v1/concept-drift/reports/{model_id}/{report_id}` | Get Concept Drift Report |
+| `GET` | `/api/v1/concept-drift/trend/{model_id}` | Get Concept Drift Trend |
+| `GET` | `/api/v1/drift-config/presets` | Get Sensitivity Presets |
+| `GET` | `/api/v1/drift-config/presets/{preset_name}` | Get Sensitivity Preset |
+| `GET` | `/api/v1/drift-config/{model_id}` | Get Drift Config |
+| `POST` | `/api/v1/drift-config/{model_id}` | Create Drift Config |
+| `PUT` | `/api/v1/drift-config/{model_id}` | Update Drift Config |
+| `DELETE` | `/api/v1/drift-config/{model_id}` | Delete Drift Config |
+| `POST` | `/api/v1/drift-config/{model_id}/default` | Create Default Config |
+| `POST` | `/api/v1/drift-config/{model_id}/sensitivity/{sensitivity}` | Apply Sensitivity Preset |
+| `POST` | `/api/v1/drift/detect/{model_id}` | Detect Drift |
+| `POST` | `/api/v1/drift/reports` | Create Drift Report |
+| `GET` | `/api/v1/drift/reports/{model_id}` | Get Drift Reports |
+| `GET` | `/api/v1/drift/reports/{model_id}/{report_id}` | Get Drift Report |
+| `GET` | `/api/v1/drift/trend/{model_id}` | Get Drift Trend |
+
+### Fairness
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/fairness/audit` | Run Bias Audit |
+| `GET` | `/api/v1/fairness/audits` | List Audits |
+| `GET` | `/api/v1/fairness/audits/{audit_id}` | Get Audit Results |
+| `DELETE` | `/api/v1/fairness/models/{model_id}/audits/cleanup` | Cleanup Old Audits |
+| `GET` | `/api/v1/fairness/models/{model_id}/bias-history` | Get Bias History |
+| `GET` | `/api/v1/fairness/models/{model_id}/latest-audit` | Get Latest Audit |
+| `GET` | `/api/v1/fairness/models/{model_id}/metrics/{metric_type}/history` | Get Metric History |
+
+### LLM monitoring
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/llm/alerts/cost-threshold` | Check Cost Threshold |
+| `GET` | `/api/v1/llm/alerts/error-rate` | Check Error Rate |
+| `GET` | `/api/v1/llm/alerts/latency-threshold` | Check Latency Threshold |
+| `GET` | `/api/v1/llm/costs/breakdown` | Get Cost Breakdown |
+| `POST` | `/api/v1/llm/logs` | Create Llm Log |
+| `POST` | `/api/v1/llm/logs/batch` | Create Llm Logs Batch |
+| `DELETE` | `/api/v1/llm/logs/cleanup` | Cleanup Old Logs |
+| `POST` | `/api/v1/llm/logs/query` | Query Llm Logs |
+| `GET` | `/api/v1/llm/logs/recent` | Get Recent Logs |
+| `GET` | `/api/v1/llm/logs/session/{session_id}` | Get Logs By Session |
+| `GET` | `/api/v1/llm/logs/{log_id}` | Get Llm Log |
+| `GET` | `/api/v1/llm/performance` | Get Performance Metrics |
+| `GET` | `/api/v1/llm/stats` | Get Usage Stats |
+| `GET` | `/api/v1/llm/trends/costs` | Get Cost Trend |
+| `GET` | `/api/v1/llm/trends/tokens` | Get Token Usage Trend |
+| `POST` | `/api/v1/llm/usage-stats` | Get Usage Stats Detailed |
+
+### LLM explainability
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/llm-xai/attention` | Analyze Attention |
+| `GET` | `/api/v1/llm-xai/attention/visualize/{explanation_id}` | Visualize Attention |
+| `POST` | `/api/v1/llm-xai/batch-analyze` | Batch Analyze |
+| `POST` | `/api/v1/llm-xai/counterfactuals` | Generate Counterfactuals |
+| `POST` | `/api/v1/llm-xai/debug-prompt` | Debug Prompt |
+| `GET` | `/api/v1/llm-xai/explanations` | Get Explanations |
+| `GET` | `/api/v1/llm-xai/explanations/{explanation_id}` | Get Explanation |
+| `GET` | `/api/v1/llm-xai/prompt-analyses` | Get Prompt Analyses |
+| `GET` | `/api/v1/llm-xai/prompt-analyses/{analysis_id}` | Get Prompt Analysis |
+| `POST` | `/api/v1/llm-xai/sensitivity` | Analyze Sensitivity |
+| `GET` | `/api/v1/llm-xai/stats` | Get Xai Stats |
+| `POST` | `/api/v1/llm-xai/token-importance` | Analyze Token Importance |
+| `GET` | `/api/v1/llm-xai/token-importance/visualize/{explanation_id}` | Visualize Token Importance |
+
+### RAG
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/rag/evaluations` | List Evaluations |
+| `POST` | `/api/v1/rag/evaluations` | Create Evaluation |
+| `GET` | `/api/v1/rag/evaluations/{evaluation_id}` | Get Evaluation |
+| `GET` | `/api/v1/rag/metrics/precision` | Get Precision Metrics |
+| `GET` | `/api/v1/rag/metrics/relevance` | Get Relevance Metrics |
+| `GET` | `/api/v1/rag/retrievals` | Query Retrieval Logs |
+| `POST` | `/api/v1/rag/retrievals` | Log Retrieval |
+| `GET` | `/api/v1/rag/retrievals/{log_id}` | Get Retrieval Log |
+| `GET` | `/api/v1/rag/stats` | Get Rag Statistics |
+| `GET` | `/api/v1/rag/trends` | Get Rag Trend |
+
+### Safety
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/safety/analyze` | Analyze Content |
+| `POST` | `/api/v1/safety/analyze/batch` | Analyze Batch |
+| `GET` | `/api/v1/safety/scores` | Get Safety Scores |
+| `GET` | `/api/v1/safety/scores/{score_id}` | Get Safety Score |
+| `GET` | `/api/v1/safety/stats` | Get Safety Statistics |
+| `GET` | `/api/v1/safety/thresholds` | List Thresholds |
+| `POST` | `/api/v1/safety/thresholds` | Create Threshold |
+| `GET` | `/api/v1/safety/thresholds/{threshold_id}` | Get Threshold |
+| `PATCH` | `/api/v1/safety/thresholds/{threshold_id}` | Update Threshold |
+| `DELETE` | `/api/v1/safety/thresholds/{threshold_id}` | Delete Threshold |
+| `GET` | `/api/v1/safety/trends` | Get Safety Trend |
+
+### Prompts
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/prompts` | List governed prompt templates |
+| `POST` | `/api/v1/prompts` | Create a governed prompt template |
+| `GET` | `/api/v1/prompts/{template_id}` | Get prompt template details |
+| `POST` | `/api/v1/prompts/{template_id}/rollback` | Execute an emergency rollback on a deployed prompt version |
+| `GET` | `/api/v1/prompts/{template_id}/versions` | List all versions of a prompt template |
+| `POST` | `/api/v1/prompts/{template_id}/versions` | Create a new version for a prompt template |
+| `GET` | `/api/v1/prompts/{template_id}/versions/{version_id}` | Get prompt version details |
+| `POST` | `/api/v1/prompts/{template_id}/versions/{version_id}/advance-stage` | Advance prompt version lifecycle stage |
+| `POST` | `/api/v1/prompts/{template_id}/versions/{version_id}/deploy` | Promote prompt version into production deployment |
+| `GET` | `/api/v1/prompts/{template_id}/versions/{version_id}/drift-reports` | List historical drift reports |
+| `POST` | `/api/v1/prompts/{template_id}/versions/{version_id}/drift-reports` | Compute prompt drift report |
+| `GET` | `/api/v1/prompts/{template_id}/versions/{version_id}/drift-reports/{report_id}` | Get prompt drift report details |
+| `GET` | `/api/v1/prompts/{template_id}/versions/{version_id}/incidents` | List incidents and alerts tied to a prompt version |
+
+### Evaluations
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/evaluations/golden-datasets` | List golden benchmark datasets |
+| `POST` | `/api/v1/evaluations/golden-datasets` | Create a golden benchmark dataset |
+| `GET` | `/api/v1/evaluations/golden-datasets/{dataset_id}` | Get a golden dataset with its benchmark rows |
+| `PUT` | `/api/v1/evaluations/golden-datasets/{dataset_id}` | Update a golden dataset |
+| `DELETE` | `/api/v1/evaluations/golden-datasets/{dataset_id}` | Delete a golden dataset |
+| `POST` | `/api/v1/evaluations/golden-datasets/{dataset_id}/rows` | Add benchmark rows to a golden dataset |
+| `DELETE` | `/api/v1/evaluations/golden-datasets/{dataset_id}/rows/{row_id}` | Delete a row from a golden dataset |
+| `GET` | `/api/v1/evaluations/prompt` | List prompt evaluations |
+| `POST` | `/api/v1/evaluations/prompt` | Run or record a prompt evaluation harness against a golden dataset |
+| `GET` | `/api/v1/evaluations/prompt-templates` | List prompt templates |
+| `POST` | `/api/v1/evaluations/prompt-templates` | Create a prompt template entity |
+| `GET` | `/api/v1/evaluations/prompt-templates/{template_id}` | Get prompt template by ID |
+| `GET` | `/api/v1/evaluations/prompt-templates/{template_id}/versions` | List all versions of a prompt template |
+| `POST` | `/api/v1/evaluations/prompt-templates/{template_id}/versions` | Create a new version for a prompt template |
+| `GET` | `/api/v1/evaluations/prompt-versions/{version_id}` | Get prompt version by ID |
+| `POST` | `/api/v1/evaluations/prompt/compare` | Compare two prompt evaluations to detect regressions across versions |
+| `GET` | `/api/v1/evaluations/prompt/{evaluation_id}` | Get prompt evaluation details and row results |
+
+### Agent workflows
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/workflows/multi-agent` | List Workflows |
+| `POST` | `/api/v1/workflows/multi-agent/start` | Create And Start Workflow |
+| `PATCH` | `/api/v1/workflows/multi-agent/tasks/{task_id}` | Update Task Status |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}` | Get Workflow |
+| `DELETE` | `/api/v1/workflows/multi-agent/{workflow_id}` | Delete Workflow |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/agents` | List Workflow Agents |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/agents` | Register Agent |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/analytics` | Get Workflow Analytics |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/bottlenecks` | Get Bottlenecks |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/complete` | Complete Workflow |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/cost-breakdown` | Get Cost Breakdown |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/executions` | Create Agent Execution |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/interactions` | List Workflow Interactions |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/interactions` | Log Agent Interaction |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/start` | Start Workflow |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/tasks` | List Workflow Tasks |
+| `POST` | `/api/v1/workflows/multi-agent/{workflow_id}/tasks` | Create Task |
+| `GET` | `/api/v1/workflows/multi-agent/{workflow_id}/timeline` | Get Workflow Timeline |
+
+### Alerts
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/alerts/instances` | Get Alerts |
+| `GET` | `/api/v1/alerts/instances/{alert_id}` | Get Alert |
+| `POST` | `/api/v1/alerts/instances/{alert_id}/acknowledge` | Acknowledge Alert |
+| `POST` | `/api/v1/alerts/instances/{alert_id}/resolve` | Resolve Alert |
+| `POST` | `/api/v1/alerts/instances/{alert_id}/snooze` | Snooze Alert |
+| `GET` | `/api/v1/alerts/rules` | Get Alert Rules |
+| `POST` | `/api/v1/alerts/rules` | Create Alert Rule |
+| `GET` | `/api/v1/alerts/rules/{rule_id}` | Get Alert Rule |
+| `PATCH` | `/api/v1/alerts/rules/{rule_id}` | Update Alert Rule |
+| `DELETE` | `/api/v1/alerts/rules/{rule_id}` | Delete Alert Rule |
+| `POST` | `/api/v1/alerts/rules/{rule_id}/evaluate` | Evaluate Alert Rule |
+| `GET` | `/api/v1/alerts/statistics` | Get Alert Statistics |
+
+### Alert intelligence
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/alert-intelligence/alerts/{alert_id}/correlations` | Detect Alert Correlations |
+| `POST` | `/api/v1/alert-intelligence/alerts/{alert_id}/priority` | Calculate Alert Priority |
+| `PATCH` | `/api/v1/alert-intelligence/alerts/{alert_id}/priority` | Adjust Alert Priority |
+| `POST` | `/api/v1/alert-intelligence/alerts/{alert_id}/root-cause` | Analyze Alert Root Cause |
+| `GET` | `/api/v1/alert-intelligence/correlations/clusters` | Get Correlation Clusters |
+| `POST` | `/api/v1/alert-intelligence/fatigue-reduction/apply` | Apply Fatigue Reduction |
+| `GET` | `/api/v1/alert-intelligence/fatigue-reduction/recommendations` | Get Throttle Recommendations |
+| `POST` | `/api/v1/alert-intelligence/grouping/ml` | Ml Based Grouping |
+| `POST` | `/api/v1/alert-intelligence/grouping/temporal` | Temporal Grouping |
+| `GET` | `/api/v1/alert-intelligence/patterns` | Detect Alert Patterns |
+| `GET` | `/api/v1/alert-intelligence/patterns/{pattern_id}` | Get Pattern |
+| `PATCH` | `/api/v1/alert-intelligence/patterns/{pattern_id}/deactivate` | Deactivate Pattern |
+| `GET` | `/api/v1/alert-intelligence/priority/distribution` | Get Priority Distribution |
+| `GET` | `/api/v1/alert-intelligence/priority/queue` | Get Priority Queue |
+| `GET` | `/api/v1/alert-intelligence/root-causes/similar` | Get Similar Incidents |
+| `POST` | `/api/v1/alert-intelligence/root-causes/{root_cause_id}/verify` | Verify Root Cause |
+| `POST` | `/api/v1/alert-intelligence/trends/enhanced` | Enhanced Trend Analysis |
+| `POST` | `/api/v1/alert-intelligence/trends/forecast` | Forecast Alert Volume |
+| `POST` | `/api/v1/alert-intelligence/trends/predict` | Predict Alert Trends |
+| `GET` | `/api/v1/alert-intelligence/trends/seasonality` | Detect Seasonality |
+
+### Alert management
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/alert-management/alerts/bulk-action` | Bulk Alert Action |
+| `POST` | `/api/v1/alert-management/alerts/{alert_id}/acknowledge` | Acknowledge Alert |
+| `GET` | `/api/v1/alert-management/alerts/{alert_id}/comments` | Get Alert Comments |
+| `POST` | `/api/v1/alert-management/alerts/{alert_id}/comments` | Create Alert Comment |
+| `GET` | `/api/v1/alert-management/alerts/{alert_id}/history` | Get Alert History |
+| `POST` | `/api/v1/alert-management/alerts/{alert_id}/resolve` | Resolve Alert |
+| `POST` | `/api/v1/alert-management/alerts/{alert_id}/snooze` | Snooze Alert |
+| `GET` | `/api/v1/alert-management/analytics` | Get Alert Analytics |
+| `GET` | `/api/v1/alert-management/analytics/fatigue` | Detect Alert Fatigue |
+| `GET` | `/api/v1/alert-management/analytics/grouping` | Get Alert Grouping |
+| `POST` | `/api/v1/alert-management/analytics/trend` | Get Alert Trend |
+| `GET` | `/api/v1/alert-management/analytics/velocity` | Get Alert Velocity |
+| `GET` | `/api/v1/alert-management/escalation-policies` | List Escalation Policies |
+| `POST` | `/api/v1/alert-management/escalation-policies` | Create Escalation Policy |
+| `GET` | `/api/v1/alert-management/escalation-policies/{policy_id}` | Get Escalation Policy |
+| `PATCH` | `/api/v1/alert-management/escalation-policies/{policy_id}` | Update Escalation Policy |
+| `DELETE` | `/api/v1/alert-management/escalation-policies/{policy_id}` | Delete Escalation Policy |
+| `POST` | `/api/v1/alert-management/maintenance/process-escalations` | Process Pending Escalations |
+| `POST` | `/api/v1/alert-management/maintenance/unsnooze-alerts` | Unsnooze Expired Alerts |
+
+### Notifications
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/notifications/channels` | List Notification Channels |
+| `POST` | `/api/v1/notifications/channels` | Create Notification Channel |
+| `GET` | `/api/v1/notifications/channels/{channel_id}` | Get Notification Channel |
+| `PATCH` | `/api/v1/notifications/channels/{channel_id}` | Update Notification Channel |
+| `DELETE` | `/api/v1/notifications/channels/{channel_id}` | Delete Notification Channel |
+| `GET` | `/api/v1/notifications/channels/{channel_id}/statistics` | Get Channel Statistics |
+| `POST` | `/api/v1/notifications/channels/{channel_id}/test` | Test Notification Channel |
+| `GET` | `/api/v1/notifications/deliveries` | List Notification Deliveries |
+| `GET` | `/api/v1/notifications/deliveries/{delivery_id}` | Get Notification Delivery |
+| `GET` | `/api/v1/notifications/preferences` | Get Notification Preferences |
+| `POST` | `/api/v1/notifications/preferences` | Create Notification Preferences |
+| `PATCH` | `/api/v1/notifications/preferences` | Update Notification Preferences |
+| `DELETE` | `/api/v1/notifications/preferences` | Delete Notification Preferences |
+| `POST` | `/api/v1/notifications/retry-failed` | Retry Failed Deliveries |
+
+### Trust score
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/trust-score/config` | Get Trust Score Config |
+| `PUT` | `/api/v1/trust-score/config` | Update Trust Score Config |
+| `GET` | `/api/v1/trust-score/portfolio` | Get Trust Score Portfolio |
+| `GET` | `/api/v1/trust-score/{model_id}` | Get Trust Score Detail |
+| `GET` | `/api/v1/trust-score/{model_id}/history` | Get Trust Score History |
+
+### Risk register
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/risk-register` | List Risk Entries |
+| `POST` | `/api/v1/risk-register` | Create Risk Entry |
+| `GET` | `/api/v1/risk-register/config` | Get Scoring Config |
+| `PUT` | `/api/v1/risk-register/config` | Update Scoring Config |
+| `GET` | `/api/v1/risk-register/portfolio` | Get Risk Portfolio |
+| `GET` | `/api/v1/risk-register/{entry_id}` | Get Risk Entry |
+| `PATCH` | `/api/v1/risk-register/{entry_id}` | Update Risk Entry |
+| `GET` | `/api/v1/risk-register/{entry_id}/history` | Get Risk Entry History |
+
+### Governance and review boards
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/governance/accountability/approvals/pending` | Get Pending Approvals |
+| `POST` | `/api/v1/governance/accountability/approvals/request` | Request Approval |
+| `POST` | `/api/v1/governance/accountability/approvals/{workflow_id}/deny` | Deny Approval |
+| `POST` | `/api/v1/governance/accountability/approvals/{workflow_id}/grant` | Grant Approval |
+| `POST` | `/api/v1/governance/accountability/overrides` | Override Decision |
+| `GET` | `/api/v1/governance/accountability/responsibility-matrix` | Get Responsibility Matrix |
+| `POST` | `/api/v1/governance/accountability/responsibility-matrix` | Create Responsibility Matrix |
+| `GET` | `/api/v1/governance/accountability/workflows` | Get Workflows |
+| `POST` | `/api/v1/governance/accountability/workflows` | Create Workflow |
+| `POST` | `/api/v1/governance/accountability/workflows/{workflow_id}/escalate` | Escalate Workflow |
+| `GET` | `/api/v1/governance/dashboard` | Get Governance Dashboard |
+| `POST` | `/api/v1/governance/privacy/anonymize` | Anonymize Data |
+| `GET` | `/api/v1/governance/privacy/assessments` | Get Privacy Assessments |
+| `POST` | `/api/v1/governance/privacy/assessments` | Create Privacy Assessment |
+| `POST` | `/api/v1/governance/privacy/detect-pii` | Detect Pii |
+| `POST` | `/api/v1/governance/privacy/impact-assessments` | Conduct Privacy Impact Assessment |
+| `POST` | `/api/v1/governance/privacy/minimize-data` | Analyze Data Minimization |
+| `GET` | `/api/v1/governance/review-boards` | List Boards |
+| `POST` | `/api/v1/governance/review-boards` | Create Board |
+| `POST` | `/api/v1/governance/review-boards/ai/generate-template` | Generate Ai Template |
+| `POST` | `/api/v1/governance/review-boards/ai/suggest-best-practices` | Suggest Best Practices |
+| `POST` | `/api/v1/governance/review-boards/archive/export` | Export Decision Archive |
+| `GET` | `/api/v1/governance/review-boards/archive/facets` | Get Decision Facets |
+| `GET` | `/api/v1/governance/review-boards/archive/recent` | Get Recent Decisions |
+| `POST` | `/api/v1/governance/review-boards/archive/search` | Search Decision Archive |
+| `GET` | `/api/v1/governance/review-boards/archive/{decision_id}` | Get Decision Archive |
+| `GET` | `/api/v1/governance/review-boards/my-reviews` | Get My Review Tasks |
+| `PATCH` | `/api/v1/governance/review-boards/participants/{participant_id}` | Update Raci Participant |
+| `DELETE` | `/api/v1/governance/review-boards/participants/{participant_id}` | Remove Raci Participant |
+| `GET` | `/api/v1/governance/review-boards/raci-grid` | Get Raci Grid |
+| `GET` | `/api/v1/governance/review-boards/requests` | List Review Requests |
+| `POST` | `/api/v1/governance/review-boards/requests` | Create Review Request |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}` | Get Review Request |
+| `PUT` | `/api/v1/governance/review-boards/requests/{request_id}` | Update Review Request |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/attachments` | Add Attachment |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}/attachments/{attachment_id}/download` | Download Attachment |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}/comments` | Get Comments |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/comments` | Add Comment |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}/decisions` | Get Decisions |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/decisions` | Submit Decision |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/finalize` | Finalize Review |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}/participants` | Get Raci Participants |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/participants` | Assign Raci Participant |
+| `GET` | `/api/v1/governance/review-boards/requests/{request_id}/status` | Get Vote Status |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/submit` | Submit Review Request |
+| `POST` | `/api/v1/governance/review-boards/requests/{request_id}/withdraw` | Withdraw Review Request |
+| `GET` | `/api/v1/governance/review-boards/schedules` | List Automated Schedules |
+| `POST` | `/api/v1/governance/review-boards/schedules` | Create Automated Schedule |
+| `GET` | `/api/v1/governance/review-boards/schedules/{schedule_id}` | Get Automated Schedule |
+| `PUT` | `/api/v1/governance/review-boards/schedules/{schedule_id}` | Update Automated Schedule |
+| `DELETE` | `/api/v1/governance/review-boards/schedules/{schedule_id}` | Delete Automated Schedule |
+| `POST` | `/api/v1/governance/review-boards/schedules/{schedule_id}/execute` | Execute Automated Schedule |
+| `GET` | `/api/v1/governance/review-boards/{board_id}` | Get Board |
+| `PUT` | `/api/v1/governance/review-boards/{board_id}` | Update Board |
+| `DELETE` | `/api/v1/governance/review-boards/{board_id}` | Delete Board |
+| `GET` | `/api/v1/governance/review-boards/{board_id}/dashboard` | Get Board Dashboard |
+| `GET` | `/api/v1/governance/review-boards/{board_id}/members` | Get Board Members |
+| `POST` | `/api/v1/governance/review-boards/{board_id}/members` | Add Board Member |
+| `PUT` | `/api/v1/governance/review-boards/{board_id}/members/{member_id}` | Update Board Member |
+| `DELETE` | `/api/v1/governance/review-boards/{board_id}/members/{member_id}` | Remove Board Member |
+| `POST` | `/api/v1/governance/security/detect-adversarial` | Detect Adversarial Attack |
+| `GET` | `/api/v1/governance/security/incidents` | Get Security Incidents |
+| `POST` | `/api/v1/governance/security/incidents` | Create Security Incident |
+| `PATCH` | `/api/v1/governance/security/incidents/{incident_id}` | Update Security Incident |
+| `GET` | `/api/v1/governance/security/robustness-tests` | Get Robustness Tests |
+| `POST` | `/api/v1/governance/security/robustness-tests` | Create Robustness Test |
+| `GET` | `/api/v1/governance/transparency/logs` | Get Transparency Logs |
+| `POST` | `/api/v1/governance/transparency/logs` | Create Transparency Log |
+| `GET` | `/api/v1/governance/transparency/models/{model_id}/behavior` | Get Model Behavior Summary |
+| `GET` | `/api/v1/governance/transparency/models/{model_id}/explanation-coverage` | Get Explanation Coverage |
+| `POST` | `/api/v1/governance/transparency/reports/stakeholder` | Generate Stakeholder Report |
+
+### Policy-as-Code
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/policy` | Get Policy |
+| `POST` | `/api/v1/policy/evaluate/{model_id}` | Evaluate Model Policy |
+| `POST` | `/api/v1/policy/sync` | Sync Policy |
+
+### Compliance: frameworks, controls and evidence
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/compliance/adoption-proposals` | List Adoption Proposals |
+| `POST` | `/api/v1/compliance/adoption-proposals/{proposal_id}/confirm` | Confirm Adoption Proposal |
+| `POST` | `/api/v1/compliance/adoption-proposals/{proposal_id}/reject` | Reject Adoption Proposal |
+| `GET` | `/api/v1/compliance/attestations` | List Attestations |
+| `POST` | `/api/v1/compliance/attestations` | Create Attestation |
+| `GET` | `/api/v1/compliance/attestations/{attestation_id}` | Get Attestation |
+| `PUT` | `/api/v1/compliance/attestations/{attestation_id}` | Update Attestation |
+| `POST` | `/api/v1/compliance/attestations/{attestation_id}/controls` | Add Control |
+| `PUT` | `/api/v1/compliance/attestations/{attestation_id}/controls/{control_id}` | Update Control |
+| `POST` | `/api/v1/compliance/attestations/{attestation_id}/controls/{control_id}/check` | Run Automated Check |
+| `POST` | `/api/v1/compliance/attestations/{attestation_id}/scorecard` | Generate Scorecard |
+| `GET` | `/api/v1/compliance/audit/events` | List Audit Events |
+| `POST` | `/api/v1/compliance/audit/events` | Log Audit Event |
+| `GET` | `/api/v1/compliance/audit/events/{event_id}` | Get Audit Event |
+| `POST` | `/api/v1/compliance/audit/findings` | Create Audit Finding |
+| `GET` | `/api/v1/compliance/audit/findings/{finding_id}` | Get Audit Finding |
+| `POST` | `/api/v1/compliance/audit/findings/{finding_id}/resolve` | Resolve Audit Finding |
+| `GET` | `/api/v1/compliance/audit/reports` | List Audit Reports |
+| `POST` | `/api/v1/compliance/audit/reports` | Generate Audit Report |
+| `GET` | `/api/v1/compliance/audit/reports/{report_id}` | Get Audit Report |
+| `GET` | `/api/v1/compliance/calendar` | Get Calendar |
+| `GET` | `/api/v1/compliance/coverage/summary` | Get Coverage Summary |
+| `POST` | `/api/v1/compliance/datasheets` | Create Datasheet |
+| `GET` | `/api/v1/compliance/datasheets/{sheet_id}` | Get Datasheet |
+| `POST` | `/api/v1/compliance/datasheets/{sheet_id}/publish` | Publish Datasheet |
+| `GET` | `/api/v1/compliance/evidence` | List Compliance Evidence |
+| `POST` | `/api/v1/compliance/evidence` | Upload Compliance Evidence |
+| `POST` | `/api/v1/compliance/evidence/collect` | Collect Automated System Evidence |
+| `GET` | `/api/v1/compliance/evidence/coverage-matrix` | Get Compliance Coverage Matrix |
+| `GET` | `/api/v1/compliance/evidence/{evidence_id}` | Get Compliance Evidence |
+| `PUT` | `/api/v1/compliance/evidence/{evidence_id}/approve` | Approve Compliance Evidence |
+| `PATCH` | `/api/v1/compliance/evidence/{evidence_id}/coverage` | Manually Override Framework Coverage |
+| `GET` | `/api/v1/compliance/frameworks` | List Frameworks |
+| `PUT` | `/api/v1/compliance/frameworks/{framework}/adoption` | Set Framework Adoption |
+| `POST` | `/api/v1/compliance/frameworks/{framework}/adoption-proposals` | Create Adoption Proposal |
+| `POST` | `/api/v1/compliance/frameworks/{framework}/applicability-review` | Mark Applicability Reviewed |
+| `PUT` | `/api/v1/compliance/frameworks/{framework}/applicability/{control_ref}` | Set Applicability |
+| `GET` | `/api/v1/compliance/frameworks/{framework}/controls` | Get Framework Controls |
+| `GET` | `/api/v1/compliance/frameworks/{framework}/custom-controls` | List Custom Controls |
+| `POST` | `/api/v1/compliance/frameworks/{framework}/custom-controls` | Create Custom Control |
+| `PATCH` | `/api/v1/compliance/frameworks/{framework}/custom-controls/{ref}` | Update Custom Control |
+| `DELETE` | `/api/v1/compliance/frameworks/{framework}/custom-controls/{ref}` | Deactivate Custom Control |
+| `GET` | `/api/v1/compliance/frameworks/{framework}/gaps` | Get Framework Gaps |
+| `POST` | `/api/v1/compliance/gap-analysis` | Create Gap Analysis |
+| `GET` | `/api/v1/compliance/gap-analysis/{analysis_id}` | Get Gap Analysis |
+| `GET` | `/api/v1/compliance/iso42001/aims/objectives` | List AI Objectives |
+| `POST` | `/api/v1/compliance/iso42001/aims/objectives` | Create AI Objective |
+| `GET` | `/api/v1/compliance/iso42001/aims/policies` | List AIMS Policies |
+| `POST` | `/api/v1/compliance/iso42001/aims/policies` | Create AIMS Policy |
+| `PUT` | `/api/v1/compliance/iso42001/aims/policies/{policy_id}/approve` | Approve AIMS Policy |
+| `POST` | `/api/v1/compliance/iso42001/assessment` | Create ISO 42001 Compliance Assessment |
+| `POST` | `/api/v1/compliance/iso42001/continual-improvement` | Track Continual Improvement |
+| `GET` | `/api/v1/compliance/iso42001/gaps` | Get Compliance Gaps |
+| `POST` | `/api/v1/compliance/iso42001/lifecycle/impact-assessment/{model_id}` | Create AI Impact Assessment |
+| `GET` | `/api/v1/compliance/iso42001/lifecycle/stage/{model_id}` | Get AI System Lifecycle Stage |
+| `PUT` | `/api/v1/compliance/iso42001/lifecycle/stage/{model_id}/advance` | Advance AI System Lifecycle Stage |
+| `POST` | `/api/v1/compliance/iso42001/management-review` | Create Management Review |
+| `GET` | `/api/v1/compliance/iso42001/nist-mapping` | Get NIST AI RMF to ISO 42001 Mapping |
+| `POST` | `/api/v1/compliance/iso42001/reports/certification` | Generate Certification Report |
+| `GET` | `/api/v1/compliance/iso42001/score` | Get ISO 42001 Readiness Score |
+| `POST` | `/api/v1/compliance/lineage/edges` | Create Lineage Edge |
+| `GET` | `/api/v1/compliance/lineage/edges/{edge_id}` | Get Lineage Edge |
+| `POST` | `/api/v1/compliance/lineage/edges/{edge_id}/execute` | Record Edge Execution |
+| `POST` | `/api/v1/compliance/lineage/graph` | Get Lineage Graph |
+| `POST` | `/api/v1/compliance/lineage/impact-analysis` | Create Impact Analysis |
+| `GET` | `/api/v1/compliance/lineage/impact-analysis/{analysis_id}` | Get Impact Analysis |
+| `GET` | `/api/v1/compliance/lineage/nodes` | List Lineage Nodes |
+| `POST` | `/api/v1/compliance/lineage/nodes` | Create Lineage Node |
+| `GET` | `/api/v1/compliance/lineage/nodes/{node_id}` | Get Lineage Node |
+| `PUT` | `/api/v1/compliance/lineage/nodes/{node_id}` | Update Lineage Node |
+| `GET` | `/api/v1/compliance/lineage/predictions/{prediction_id}` | Get Prediction Lineage |
+| `POST` | `/api/v1/compliance/lineage/provenance` | Record Provenance |
+| `GET` | `/api/v1/compliance/milestones` | List Milestones |
+| `POST` | `/api/v1/compliance/milestones` | Create Milestone |
+| `PATCH` | `/api/v1/compliance/milestones/{milestone_id}` | Update Milestone |
+| `DELETE` | `/api/v1/compliance/milestones/{milestone_id}` | Delete Milestone |
+| `GET` | `/api/v1/compliance/model-cards` | List Model Cards |
+| `POST` | `/api/v1/compliance/model-cards` | Create Model Card |
+| `POST` | `/api/v1/compliance/model-cards/refresh/{model_id}` | Refresh Model Card |
+| `GET` | `/api/v1/compliance/model-cards/{card_id}` | Get Model Card |
+| `PUT` | `/api/v1/compliance/model-cards/{card_id}` | Update Model Card |
+| `DELETE` | `/api/v1/compliance/model-cards/{card_id}` | Delete Model Card |
+| `POST` | `/api/v1/compliance/model-cards/{card_id}/publish` | Publish Model Card |
+
+### Regulatory: EU AI Act and NIST AI RMF
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/regulatory/assessments` | Get Compliance Assessments |
+| `POST` | `/api/v1/regulatory/assessments` | Create Compliance Assessment |
+| `GET` | `/api/v1/regulatory/assessments/{assessment_id}` | Get Compliance Assessment |
+| `PUT` | `/api/v1/regulatory/assessments/{assessment_id}` | Update Compliance Assessment |
+| `GET` | `/api/v1/regulatory/compliance-summary` | Get Compliance Summary |
+| `GET` | `/api/v1/regulatory/documentation` | Get Regulatory Documentation |
+| `POST` | `/api/v1/regulatory/documentation` | Create Regulatory Documentation |
+| `POST` | `/api/v1/regulatory/eu-ai-act/conformity-assessment` | Initiate Conformity Assessment |
+| `GET` | `/api/v1/regulatory/eu-ai-act/conformity-assessments` | Get Conformity Assessments |
+| `POST` | `/api/v1/regulatory/eu-ai-act/risk-classification` | Classify Eu Ai Act Risk |
+| `POST` | `/api/v1/regulatory/nist-ai-rmf/assessment` | Assess Nist Ai Rmf |
+| `GET` | `/api/v1/regulatory/risk-classifications` | Get Risk Classifications |
+| `GET` | `/api/v1/regulatory/risk-classifications/high-risk` | Get High Risk Models |
+
+### Data protection: GDPR and CCPA
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/data-protection/breach` | List Breach Notifications |
+| `POST` | `/api/v1/data-protection/breach` | Report Breach |
+| `PUT` | `/api/v1/data-protection/breach/{breach_id}/notify` | Process Breach Notifications |
+| `POST` | `/api/v1/data-protection/ccpa/consumer-request` | Submit Ccpa Request |
+| `GET` | `/api/v1/data-protection/ccpa/do-not-sell/{organization_id}/{consumer_email}` | Track Do Not Sell |
+| `GET` | `/api/v1/data-protection/ccpa/metrics/{organization_id}` | Get Ccpa Metrics |
+| `POST` | `/api/v1/data-protection/ccpa/opt-in` | Process Ccpa Opt In |
+| `POST` | `/api/v1/data-protection/ccpa/opt-out` | Process Ccpa Opt Out |
+| `GET` | `/api/v1/data-protection/ccpa/portal-compliance/{organization_id}` | Verify Consumer Portal |
+| `GET` | `/api/v1/data-protection/ccpa/sale-disclosure/{organization_id}` | Get Ccpa Sale Disclosure |
+| `GET` | `/api/v1/data-protection/consent` | List Consent Records |
+| `POST` | `/api/v1/data-protection/gdpr/consent` | Create Consent Record |
+| `POST` | `/api/v1/data-protection/gdpr/consent/{consent_id}/withdraw` | Withdraw Consent |
+| `GET` | `/api/v1/data-protection/gdpr/data-minimization/{organization_id}` | Check Data Minimization |
+| `GET` | `/api/v1/data-protection/gdpr/dsar` | List Gdpr Dsars |
+| `POST` | `/api/v1/data-protection/gdpr/dsar` | Submit Gdpr Dsar |
+| `PUT` | `/api/v1/data-protection/gdpr/dsar/{request_id}` | Update Gdpr Dsar |
+| `GET` | `/api/v1/data-protection/gdpr/metrics/{organization_id}` | Get Gdpr Metrics |
+| `GET` | `/api/v1/data-protection/gdpr/privacy-impact-assessment/{model_id}` | Conduct Privacy Impact Assessment |
+| `POST` | `/api/v1/data-protection/gdpr/processing-record` | Document Processing Activity |
+| `POST` | `/api/v1/data-protection/gdpr/retention-policy` | Create Retention Policy |
+
+### Audit trail
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/audit-trail` | Create Audit Log |
+| `GET` | `/api/v1/audit-trail/activity/users/{user_id}` | Get User Activity |
+| `POST` | `/api/v1/audit-trail/compliance/data-subject-request` | Process Data Subject Request |
+| `POST` | `/api/v1/audit-trail/compliance/query` | Query Compliance Events |
+| `GET` | `/api/v1/audit-trail/compliance/report` | Get Compliance Report |
+| `POST` | `/api/v1/audit-trail/export` | Request Export |
+| `GET` | `/api/v1/audit-trail/export/{export_id}` | Get Export Status |
+| `GET` | `/api/v1/audit-trail/export/{export_id}/download` | Download Export |
+| `POST` | `/api/v1/audit-trail/query` | Query Audit Logs |
+| `GET` | `/api/v1/audit-trail/retention-policies` | Get Retention Policies |
+| `POST` | `/api/v1/audit-trail/retention-policies` | Create Retention Policy |
+| `POST` | `/api/v1/audit-trail/retention-policies/apply` | Apply Retention Policies |
+| `PUT` | `/api/v1/audit-trail/retention-policies/{policy_id}` | Update Retention Policy |
+| `GET` | `/api/v1/audit-trail/security/summary` | Get Security Summary |
+| `GET` | `/api/v1/audit-trail/statistics` | Get Statistics |
+| `GET` | `/api/v1/audit-trail/timeline` | Get Timeline |
+| `POST` | `/api/v1/audit-trail/verify-integrity` | Verify Integrity |
+| `GET` | `/api/v1/audit-trail/{log_id}` | Get Audit Log |
+
+### Report types
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/report-brand-profiles` | List Brand Profiles |
+| `POST` | `/api/v1/report-brand-profiles` | Create Brand Profile |
+| `GET` | `/api/v1/report-brand-profiles/{profile_id}` | Get Brand Profile |
+| `PATCH` | `/api/v1/report-brand-profiles/{profile_id}` | Update Brand Profile |
+| `DELETE` | `/api/v1/report-brand-profiles/{profile_id}` | Delete Brand Profile |
+| `GET` | `/api/v1/report-brand-profiles/{profile_id}/logo` | Get Brand Profile Logo |
+| `POST` | `/api/v1/report-brand-profiles/{profile_id}/logo` | Upload Brand Profile Logo |
+| `GET` | `/api/v1/report-studio/templates` | List Studio Templates |
+| `POST` | `/api/v1/report-studio/templates` | Create Studio Template |
+| `GET` | `/api/v1/report-studio/templates/{template_id}` | Get Studio Template |
+| `PATCH` | `/api/v1/report-studio/templates/{template_id}` | Update Studio Template |
+| `DELETE` | `/api/v1/report-studio/templates/{template_id}` | Delete Studio Template |
+| `GET` | `/api/v1/report-types` | List Report Types |
+| `POST` | `/api/v1/report-types/{report_type_id}/generate` | Generate Report |
+| `POST` | `/api/v1/report-types/{report_type_id}/preview` | Preview Report |
+
+### Reports and exports
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/export/configs` | List Export Configs |
+| `POST` | `/api/v1/export/configs` | Create Export Config |
+| `GET` | `/api/v1/export/configs/{config_id}` | Get Export Config |
+| `PUT` | `/api/v1/export/configs/{config_id}` | Update Export Config |
+| `DELETE` | `/api/v1/export/configs/{config_id}` | Delete Export Config |
+| `POST` | `/api/v1/export/evidence-pack` | Create Evidence Pack |
+| `GET` | `/api/v1/export/exports` | List Exports |
+| `POST` | `/api/v1/export/exports` | Create Export |
+| `POST` | `/api/v1/export/exports/bulk` | Create Bulk Export |
+| `POST` | `/api/v1/export/exports/verify` | Verify Export |
+| `GET` | `/api/v1/export/exports/{export_id}` | Get Export |
+| `GET` | `/api/v1/export/exports/{export_id}/download` | Download Export |
+| `POST` | `/api/v1/export/exports/{export_id}/share` | Create Export Share |
+| `GET` | `/api/v1/export/exports/{export_id}/shares` | List Export Shares |
+| `GET` | `/api/v1/export/exports/{export_id}/signoffs` | List Export Signoffs |
+| `POST` | `/api/v1/export/exports/{export_id}/signoffs` | Create Export Signoff |
+| `GET` | `/api/v1/export/integrations` | List Integrations |
+| `POST` | `/api/v1/export/integrations` | Create Integration |
+| `GET` | `/api/v1/export/integrations/{integration_id}` | Get Integration |
+| `PUT` | `/api/v1/export/integrations/{integration_id}` | Update Integration |
+| `DELETE` | `/api/v1/export/integrations/{integration_id}` | Delete Integration |
+| `GET` | `/api/v1/export/integrations/{integration_id}/logs` | List Integration Logs |
+| `GET` | `/api/v1/export/integrations/{integration_id}/stats` | Get Integration Stats |
+| `POST` | `/api/v1/export/integrations/{integration_id}/test` | Test Integration |
+| `GET` | `/api/v1/export/scheduled-reports` | List Scheduled Reports |
+| `POST` | `/api/v1/export/scheduled-reports` | Create Scheduled Report |
+| `GET` | `/api/v1/export/scheduled-reports/{report_id}` | Get Scheduled Report |
+| `PUT` | `/api/v1/export/scheduled-reports/{report_id}` | Update Scheduled Report |
+| `DELETE` | `/api/v1/export/scheduled-reports/{report_id}` | Delete Scheduled Report |
+| `GET` | `/api/v1/export/scheduled-reports/{report_id}/deliveries` | List Deliveries |
+| `POST` | `/api/v1/export/scheduled-reports/{report_id}/run` | Run Scheduled Report |
+| `GET` | `/api/v1/export/share-presets` | List Share Presets |
+| `GET` | `/api/v1/export/shares/{share_slug}/download` | Download Export Share |
+| `POST` | `/api/v1/export/shares/{share_slug}/request-otp` | Request Export Share Otp |
+| `POST` | `/api/v1/export/shares/{share_slug}/revoke` | Revoke Export Share |
+| `POST` | `/api/v1/export/shares/{share_slug}/verify-otp` | Verify Export Share Otp |
+| `GET` | `/api/v1/export/templates` | List Report Templates |
+| `POST` | `/api/v1/export/templates` | Create Report Template |
+| `GET` | `/api/v1/export/templates/{template_id}` | Get Report Template |
+| `PUT` | `/api/v1/export/templates/{template_id}` | Update Report Template |
+| `DELETE` | `/api/v1/export/templates/{template_id}` | Delete Report Template |
+
+### GitHub and model diff
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/branch-protection/enable` | Enable Branch Protection |
+| `GET` | `/api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}` | Get Branch Protection |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}/required-checks` | Add Required Status Check |
+| `DELETE` | `/api/v1/github/automation/repositories/{repository_id}/branch-protection/{branch}/required-checks` | Remove Required Status Check |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/checks/comparison` | Create Comparison Check |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/checks/validation` | Create Validation Check |
+| `PUT` | `/api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}` | Upsert Comment |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}/comparison` | Post Comparison Comment |
+| `POST` | `/api/v1/github/automation/repositories/{repository_id}/pr-comments/{pr_number}/validation` | Post Validation Comment |
+| `POST` | `/api/v1/github/connect/pat` | Connect With Pat |
+| `GET` | `/api/v1/github/connections` | List Connections |
+| `DELETE` | `/api/v1/github/connections/{connection_id}` | Delete Connection |
+| `GET` | `/api/v1/github/connections/{connection_id}/repositories` | List Repositories |
+| `POST` | `/api/v1/github/connections/{connection_id}/verify` | Verify Connection |
+| `GET` | `/api/v1/github/diff/architecture-changes/{model_id}` | Get Architecture Changes Timeline |
+| `GET` | `/api/v1/github/diff/changelog` | Generate Changelog |
+| `POST` | `/api/v1/github/diff/compare` | Compare Model Versions |
+| `GET` | `/api/v1/github/diff/model/{model_id}/versions` | Get Model Version History |
+| `GET` | `/api/v1/github/oauth/authorize` | Github Oauth Authorize |
+| `GET` | `/api/v1/github/repositories` | List Tracked Repositories |
+| `POST` | `/api/v1/github/repositories/track` | Track Repository |
+| `DELETE` | `/api/v1/github/repositories/{repository_id}` | Untrack Repository |
+| `POST` | `/api/v1/github/repositories/{repository_id}/webhook` | Setup Webhook |
+
+### n8n webhooks
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/webhooks/n8n/config` | Get N8N Webhook Config |
+| `POST` | `/api/v1/webhooks/n8n/execution` | Receive N8N Execution |
+| `POST` | `/api/v1/webhooks/n8n/test` | Test N8N Webhook |
+
+### API keys and two-factor authentication
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/api-keys` | List Api Keys |
+| `POST` | `/api/v1/api-keys` | Create Api Key |
+| `DELETE` | `/api/v1/api-keys/{key_id}` | Revoke Api Key Endpoint |
+| `POST` | `/api/v1/two-factor/disable` | Disable Two Factor |
+| `POST` | `/api/v1/two-factor/enable` | Enable Two Factor |
+| `POST` | `/api/v1/two-factor/regenerate-backup-codes` | Regenerate Backup Codes |
+| `POST` | `/api/v1/two-factor/setup` | Setup Two Factor |
+| `GET` | `/api/v1/two-factor/status` | Get Two Factor Status |
+
+### Users and organization
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/organizations/me/subscription` | Get My Subscription |
+| `GET` | `/api/v1/organizations/{organization_id}/branding` | Get Organization Branding |
+| `PATCH` | `/api/v1/organizations/{organization_id}/branding` | Update Organization Branding |
+| `GET` | `/api/v1/organizations/{organization_id}/branding/logo` | Get Organization Branding Logo |
+| `POST` | `/api/v1/organizations/{organization_id}/branding/logo` | Upload Organization Logo |
+| `GET` | `/api/v1/organizations/{organization_id}/settings` | Get Organization Settings |
+| `PATCH` | `/api/v1/organizations/{organization_id}/settings` | Update Organization Settings |
+| `GET` | `/api/v1/users` | List Users |
+| `POST` | `/api/v1/users` | Create User |
+| `GET` | `/api/v1/users/me` | Get Current User Info |
+| `PATCH` | `/api/v1/users/me` | Update Current User Info |
+| `POST` | `/api/v1/users/me/avatar` | Upload Current User Avatar |
+| `POST` | `/api/v1/users/me/deletion` | Delete My Account |
+| `GET` | `/api/v1/users/me/export` | Export My Data |
+| `POST` | `/api/v1/users/me/password` | Change Current User Password |
+| `GET` | `/api/v1/users/me/preferences` | Get My Preferences |
+| `PUT` | `/api/v1/users/me/preferences` | Update My Preferences |
+| `GET` | `/api/v1/users/{user_id}` | Get User |
+| `PATCH` | `/api/v1/users/{user_id}` | Update User |
+| `DELETE` | `/api/v1/users/{user_id}` | Delete User |
+
+### Integrations
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/integrations/status` | Get Integrations Status |
+
+### Dashboard data
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/dashboard/health` | Get System Health |
+| `POST` | `/api/v1/dashboard/metrics/query` | Query Metrics |
+| `GET` | `/api/v1/dashboard/metrics/recent` | Get Recent Metrics |
+| `GET` | `/api/v1/dashboard/models/status` | Get Models Status |
+| `GET` | `/api/v1/dashboard/models/{model_id}/activity` | Get Model Activity |
+| `GET` | `/api/v1/dashboard/stats` | Get Dashboard Stats |
+
+## Related
+
+- [Python SDK](index.md)
+- [API Keys](../account/api-keys.md)
+- [Governance Events](../get-started/governance-events.md)
+- [Policy-as-Code & GitOps](../integrations/policy-as-code.md)
+- [MCP Server](../integrations/mcp.md)

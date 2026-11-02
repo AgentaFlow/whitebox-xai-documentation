@@ -1,3 +1,7 @@
+---
+description: The WhiteBoxXAI AI Risk Register — likelihood × impact scoring, severity thresholds, categories, workflow states, the portfolio heat map, automatic risk drafting from bias audits, drift and governance decisions, and audit history.
+---
+
 # AI Risk Register
 
 The AI Risk Register is a structured inventory of the risks across your model portfolio.
@@ -9,10 +13,17 @@ documented AI risk assessment and treatment, and the EU AI Act's risk-management
 obligations for high-risk systems expect the same evidence. The register also gives you a
 place to map technical controls to the NIST AI Risk Management Framework.
 
-You can manage everything from **Governance & Evidence → Risk Register** in the dashboard,
-or through the REST API. API examples below use the base URL
-`https://api.whiteboxxai.com` and require an [API key](/account/api-keys/)
-(`Authorization: Bearer YOUR_API_KEY`).
+In the [Enhanced Dashboard](index.md) it's **Risk Register**, with three tabs:
+
+- **Register**: every risk, with filters. **New risk** adds one, and auto-drafted entries are badged.
+- **Heat map**: a 5×5 likelihood × impact grid using your organization's own thresholds, with a
+  plain-language reading. Click a cell to see its open risks.
+- **Scales**: the likelihood and impact scales, severity thresholds and categories. Everyone can read
+  them; administrators can edit them.
+
+You can also manage it through the REST API. API examples below use the base URL
+`https://api.whiteboxxai.com` and an [API key](../account/api-keys.md)
+(`Authorization: Bearer $WHITEBOX_API_KEY`).
 
 ## Core concepts
 
@@ -57,7 +68,8 @@ Both the scale labels and the thresholds are configurable — see
 ### Categories
 
 The default category taxonomy: `bias`, `drift`, `security`, `regulatory`, `operational`,
-`reputational`, `third_party`, `other`. You can replace this list with your own taxonomy.
+`reputational`, `third_party`, `hallucination`, `privacy`, `other`. You can replace this list with
+your own taxonomy on the **Scales** tab.
 
 ### Workflow states
 
@@ -71,7 +83,7 @@ evidence rather than just a tracker.
 
 ## Create a risk entry
 
-In the dashboard, go to **Governance & Evidence → Risk Register → New Risk**, or use the
+In the dashboard, go to **Risk Register → New risk**, or use the
 API:
 
 ```bash
@@ -207,7 +219,7 @@ GET /api/v1/risk-register/portfolio
 
 `heatmap` is the 5×5 likelihood × impact grid with a count of open risks per cell.
 `top_risks` lists the highest-severity open risks, most severe first. The dashboard renders
-this at **Risk Register → Portfolio**.
+this on the **Risk Register → Heat map** tab.
 
 ## Automatic risk drafting
 
@@ -258,30 +270,26 @@ PUT /api/v1/risk-register/config
 }
 ```
 
-Send only the parts you want to override. In the dashboard this lives at
-**Risk Register → Settings**.
+Send only the parts you want to override. In the dashboard this lives on the **Risk Register →
+Scales** tab, where administrators can also rename the likelihood and impact steps.
 
-!!! warning "Changing thresholds is not retroactive"
-    New thresholds apply when an entry's `likelihood` or `impact` next changes. Existing
-    entries keep their stored `severity` until they're edited.
+!!! note "Changing thresholds re-rates every risk"
+    Saving new severity thresholds re-rates every risk your organization holds, so the register,
+    the heat map and reports stay consistent with the scale you've set. The change is recorded in the
+    audit trail.
 
 ## Evidence exports
 
 Risk register data is available as an export category, so the register can be included in
 the compliance evidence package you hand to an auditor alongside bias audits, drift
-reports, and governance decisions. See [Evidence & Reports](/user-guide/#evidence--reports).
+reports, and governance decisions. See [Reports](reports.md).
 
 ## Related
 
-- [Trust Score](/user-guide/trust-score/) — the aggregate 0–100 index over fairness, drift, and
+- [Trust Score](trust-score.md) — the aggregate 0–100 index over fairness, drift, and
   explainability signals.
-- [Governance Review Boards](/user-guide/governance/) — multi-party approval workflows, one of the
+- [Governance Review Boards](governance.md) — multi-party approval workflows, one of the
   three sources that auto-draft risk entries.
-- [AI Regulations](/account/ai-regulations/) — background on the wider regulatory
+- [AI Regulations](../account/ai-regulations.md) — background on the wider regulatory
   landscape.
 
-!!! info "Two different risk views"
-    The Executive Dashboard also shows a computed, read-only risk heat map derived from
-    alert data (`GET /api/v1/executive-dashboard/risk-register`). That is a live snapshot,
-    not this register — it has no owners, workflow, or history. The AI Risk Register
-    described on this page is the persisted GRC artifact.

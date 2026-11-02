@@ -1,3 +1,7 @@
+---
+description: How the WhiteBoxXAI Trust Score is computed — fairness, drift and explainability components, weights, renormalization when data is missing, history, and where it appears.
+---
+
 # Trust Score
 
 The Trust Score is a single 0–100 index per model, combining three signals WhiteBoxXAI
@@ -10,7 +14,7 @@ methodology is documented in full below on purpose: an unexplainable trustworthi
 would be a strange thing for an explainability platform to ship.
 
 API examples use the base URL `https://api.whiteboxxai.com` and require an
-[API key](/account/api-keys/) (`Authorization: Bearer YOUR_API_KEY`).
+[API key](../account/api-keys.md) (`Authorization: Bearer YOUR_API_KEY`).
 
 ## How the score is calculated
 
@@ -69,10 +73,10 @@ portfolio average.
 
 | Surface | What it shows |
 | --- | --- |
-| **Executive Dashboard** | Portfolio gauge and org-wide average, with lowest-scoring models highlighted. |
-| **Model detail page** | That model's score plus the component breakdown. |
-| **Trust Score → Settings** | Weight configuration (admins). |
-| **Evidence exports** | Trust Score as a category in the compliance evidence package. |
+| **Overview** | The **Average trust score** tile, and its trend on the **Trends** tab |
+| **Model Register** | A **Trust score** column, and **Trust score history** with its three components in each system's dossier |
+| **Settings → Trust score weights** | Weight configuration (administrators) |
+| **Reports** | Trust Score in the Quarterly Board Pack and Evidence Pack |
 
 ## Get one model's score
 
@@ -181,7 +185,7 @@ PUT /api/v1/trust-score/config
 }
 ```
 
-In the dashboard this lives at **Trust Score → Settings**.
+In the dashboard this lives at **Settings → Trust score weights**.
 
 !!! tip "Document your weighting"
     If you reweight, record why. A score is only defensible in an audit if the methodology
@@ -196,12 +200,11 @@ Two things the Trust Score deliberately doesn't do:
   exists to support that claim honestly.
 - **Automated enforcement.** A low score doesn't pause a model or block a deployment. Acting
   on the score is a human decision, routed through [Governance Review
-  Boards](/user-guide/governance/) if you want approval gates.
+  Boards](governance.md) if you want approval gates.
 
 ## Related
 
-- [AI Risk Register](/user-guide/risk-register/) — the structured risk inventory, including entries
+- [AI Risk Register](risk-register.md) — the structured risk inventory, including entries
   auto-drafted from the same bias and drift signals that feed this score.
-- [Auditing for Bias](/user-guide/#auditing-for-bias) — the fairness audits behind the fairness
-  component.
-- [Detecting Drift](/user-guide/#detecting-drift) — the drift reports behind the drift component.
+- [Fairness](assurance.md#fairness): the fairness audits behind the fairness component.
+- [Drift](assurance.md#drift): the drift reports behind the drift component.

@@ -1,6 +1,15 @@
-# CLI Git Tracking Guide
+---
+description: Record the Git commit, branch, repository and author a model came from when you register it with the WhiteBoxXAI Python SDK — automatic detection, manual metadata, clean-tree enforcement and CI usage.
+---
 
-Comprehensive guide for using WhiteBoxXAI's CLI with automatic Git tracking to seamlessly link models to their source code.
+# Git context tracking (SDK)
+
+When an auditor asks which code produced a model in production, the answer should be recorded, not
+reconstructed. The Python SDK can capture the Git commit, branch, repository and author at the moment
+you register a model, so every version traces back to source. (Despite this page's address, this is an
+SDK feature; there's no separate command-line tool.)
+
+Examples assume a `client` and `feature_names`, your model's input feature names, are already defined.
 
 ## Table of Contents
 
@@ -56,9 +65,12 @@ client = WhiteBoxXAI(
 # Register model with auto Git detection
 model = client.models.register(
     name="fraud_detector",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
-    auto_detect_git=True  # 🔑 Enable Git auto-detection
+    auto_detect_git=True,  # 🔑 Enable Git auto-detection
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 
 # Git metadata automatically captured:
@@ -109,7 +121,7 @@ If you prefer manual control, pass Git metadata explicitly:
 ```python
 model = client.models.register(
     name="fraud_detector",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
     # Manual Git metadata
     github_repository_url="https://github.com/myorg/models",
@@ -117,7 +129,10 @@ model = client.models.register(
     github_branch="main",
     github_commit_author="Jane Smith <jane@example.com>",
     github_commit_message="Update fraud model",
-    github_tag="v2.0.0"
+    github_tag="v2.0.0",
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
@@ -135,10 +150,12 @@ client = WhiteBoxXAI(api_key="wbx_live_...")
 # Register with auto-detection
 model = client.models.register(
     name="churn_predictor",
-    model_type="classification",
+    model_type="xgboost",
     framework="xgboost",
     version="1.0.0",
-    auto_detect_git=True
+    auto_detect_git=True,
+    features=feature_names,
+    baseline_metrics={},
 )
 
 print(f"Model registered: {model['id']}")
@@ -160,10 +177,13 @@ Branch: main
 try:
     model = client.models.register(
         name="fraud_detector",
-        model_type="classification",
+        model_type="random_forest",
         framework="sklearn",
         auto_detect_git=True,
-        require_clean_git=True  # 🔒 Enforce clean state
+        require_clean_git=True,  # 🔒 Enforce clean state
+        version="1.0.0",
+        features=feature_names,
+        baseline_metrics={},
     )
 except Exception as e:
     print(f"Registration failed: {e}")
@@ -176,13 +196,16 @@ except Exception as e:
 # Auto-detect Git, but override specific fields
 model = client.models.register(
     name="sentiment_analyzer",
-    model_type="classification",
+    model_type="neural_network",
     framework="pytorch",
     auto_detect_git=True,
     # Override branch (useful in CI/CD)
     github_branch=os.getenv("CI_BRANCH", "main"),
     # Add custom metadata
-    deployment_environment="staging"
+    deployment_environment="staging",
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
@@ -192,9 +215,12 @@ model = client.models.register(
 # Gracefully handle non-Git environments
 model = client.models.register(
     name="recommendation_engine",
-    model_type="recommendation",
+    model_type="neural_network",
     framework="tensorflow",
-    auto_detect_git=True  # Will log warning but continue
+    auto_detect_git=True,  # Will log warning but continue
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 # If no Git repo found, model registers without Git metadata
 ```
@@ -220,9 +246,12 @@ if git_context:
 
         model = client.models.register(
             name="model_v1",
-            model_type="classification",
+            model_type="random_forest",
             framework="sklearn",
-            **git_data  # Spread Git metadata
+            **git_data,  # Spread Git metadata
+            version="1.0.0",
+            features=feature_names,
+            baseline_metrics={},
         )
 else:
     print("No Git repository found")
@@ -240,9 +269,12 @@ async def register_models():
     # Async registration with Git detection
     model = await client.models.aregister(
         name="async_model",
-        model_type="classification",
+        model_type="random_forest",
         framework="sklearn",
-        auto_detect_git=True
+        auto_detect_git=True,
+        version="1.0.0",
+        features=feature_names,
+        baseline_metrics={},
     )
 
     return model
@@ -264,9 +296,12 @@ git_context = detect_git_context(path="/path/to/repo")
 if git_context:
     model = client.models.register(
         name="model",
-        model_type="classification",
+        model_type="random_forest",
         framework="sklearn",
-        **git_context.to_dict()
+        **git_context.to_dict(),
+        version="1.0.0",
+        features=feature_names,
+        baseline_metrics={},
     )
 ```
 
@@ -301,11 +336,14 @@ print(f"Tag: {git_context.tag}")        # v1.0.0
 
 model = client.models.register(
     name="model",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
     auto_detect_git=True,
     # Override repository URL
-    github_repository_url="https://github.com/different/repo"
+    github_repository_url="https://github.com/different/repo",
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
@@ -322,19 +360,25 @@ github_repo = os.getenv("GITHUB_REPOSITORY")
 if github_sha:  # Running in GitHub Actions
     model = client.models.register(
         name="ci_model",
-        model_type="classification",
+        model_type="random_forest",
         framework="sklearn",
         # Use CI environment variables
         github_commit_hash=github_sha,
         github_branch=github_ref.replace("refs/heads/", ""),
-        github_repository_url=f"https://github.com/{github_repo}"
+        github_repository_url=f"https://github.com/{github_repo}",
+        version="1.0.0",
+        features=feature_names,
+        baseline_metrics={},
     )
 else:  # Local development
     model = client.models.register(
         name="ci_model",
-        model_type="classification",
+        model_type="random_forest",
         framework="sklearn",
-        auto_detect_git=True
+        auto_detect_git=True,
+        version="1.0.0",
+        features=feature_names,
+        baseline_metrics={},
     )
 ```
 
@@ -352,9 +396,12 @@ logger.setLevel(logging.INFO)
 
 model = client.models.register(
     name="model",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
-    auto_detect_git=True
+    auto_detect_git=True,
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 # Logs: "Detected Git context: GitContext(repo=..., commit=..., branch=...)"
 ```
@@ -454,9 +501,12 @@ from whiteboxxai import WhiteBoxXAI
 client = WhiteBoxXAI(api_key='...')
 model = client.models.register(
     name='fraud_detector',
-    model_type='classification',
+    model_type="random_forest",
     framework='sklearn',
-    auto_detect_git=True
+    auto_detect_git=True,
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 print(f'Tag: {model[\"github_tag\"]}')  # v1.0.0
 "
@@ -473,10 +523,13 @@ else:
 
 model = client.models.register(
     name="model",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
     auto_detect_git=True,
-    require_clean_git=require_clean
+    require_clean_git=require_clean,
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
@@ -490,10 +543,12 @@ version = f"1.0.0+{datetime.datetime.now().strftime('%Y%m%d')}"
 
 model = client.models.register(
     name="fraud_detector",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
-    version=version,  # 1.0.0+20240119
-    auto_detect_git=True
+    version=version,  # for example 1.0.0+20261027
+    auto_detect_git=True,
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
@@ -516,15 +571,18 @@ if git_context and not validate_git_context(git_context, require_clean=True):
 # Proceed with registration
 model = client.models.register(
     name="model",
-    model_type="classification",
+    model_type="random_forest",
     framework="sklearn",
     auto_detect_git=True,
-    require_clean_git=True
+    require_clean_git=True,
+    version="1.0.0",
+    features=feature_names,
+    baseline_metrics={},
 )
 ```
 
 ## Next Steps
 
-- [GitHub Integration](/integrations/github/)
-- [SDK Documentation](/sdk/)
-- [API Reference](/sdk/api-reference/)
+- [GitHub Integration](github.md)
+- [SDK Documentation](../sdk/index.md)
+- [API Reference](../sdk/api-reference.md)

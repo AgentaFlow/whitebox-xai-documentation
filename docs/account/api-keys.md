@@ -1,9 +1,12 @@
+---
+description: Create, use and revoke WhiteBoxXAI API keys (wbx_live_...) for the SDK, REST API, CI/CD and the MCP server — what a key can do, how it differs from a login token, and how it interacts with two-factor authentication.
+---
+
 # API Keys
 
-API keys are the credential your code uses to talk to WhiteBoxXAI. They're scoped,
-individually revocable, and don't expire on a fixed schedule — which makes them the right
-choice for the [SDK](/sdk/), CI/CD pipelines, the [MCP
-server](/integrations/mcp/), and anything else running unattended.
+API keys are the credential your code uses to talk to WhiteBoxXAI. They're individually revocable, and don't expire on a fixed schedule — which makes them the right
+choice for the [SDK](../sdk/index.md), CI/CD pipelines, the [MCP
+server](../integrations/mcp.md), and anything else running unattended.
 
 Keys look like this:
 
@@ -15,7 +18,10 @@ wbx_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ### In the dashboard
 
-Go to **Profile → API Keys → Generate New**, give the key a name, and copy it.
+Go to **Settings → API keys** (administrators only), create a key, give it a name and optional
+expiry, and copy it. Non-administrators see who their administrators are instead.
+
+The list shows each key's prefix, expiry and when it was **last used**, with **Revoke**.
 
 ### Via the API
 
@@ -24,7 +30,7 @@ credential rather than a personal one.
 
 ```bash
 curl -X POST https://api.whiteboxxai.com/api/v1/api-keys \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Authorization: Bearer $WHITEBOX_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "CI pipeline — nightly drift job",
@@ -36,7 +42,7 @@ curl -X POST https://api.whiteboxxai.com/api/v1/api-keys \
 | Field | Notes |
 | --- | --- |
 | `name` | Required, max 255 characters. Make it descriptive — it's how you'll identify the key later. |
-| `scopes` | Optional list of coarse scopes, e.g. `["read", "write"]`. Defaults to none. |
+| `scopes` | Optional list of labels, e.g. `["read", "write"]`. Recorded with the key, but **not yet enforced** (see below). |
 | `expires_in_days` | Optional, 1–3650. Omit for a key that never expires. |
 
 The `201` response is the **only** time you see the key material:
@@ -80,11 +86,13 @@ client = WhiteBoxXAI(api_key="wbx_live_...")
 Or, preferably, from the environment:
 
 ```bash
-export WHITEBOXXAI_API_KEY="wbx_live_..."
+export WHITEBOX_API_KEY="wbx_live_..."
 ```
 
 ```python
-client = WhiteBoxXAI()  # reads WHITEBOXXAI_API_KEY
+import os
+
+client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 ```
 
 ## List keys
@@ -107,6 +115,24 @@ Returns `204`. Revocation is immediate — any process still using that key star
 `401` on its next request. Revoke a key as soon as you suspect exposure; unlike a password,
 there's nothing else to rotate.
 
+## What a key can do
+
+An API key acts with **the permissions of the administrator who created it**, inside that
+administrator's organization. If that person is deactivated, their keys stop working.
+
+Scopes you set when creating a key are recorded with it, but they aren't enforced per request yet,
+so a key can do anything its creator can. Treat every key as an administrator credential: one key per
+consumer, expiry dates for temporary access, and revoke anything you don't recognise.
+
+Two things a key can never do:
+
+- **Vote on, or finalize, a governance review request.** Votes need a person's own session with
+  two-factor authentication and an authenticator code. See [Reviews & Decisions](../user-guide/governance.md).
+- **Act in another organization.** A request for another organization's record returns `404`.
+
+Requests made with a key are the ones metered as [Governance Events](../get-started/governance-events.md);
+using the dashboard is not.
+
 ## API keys vs. login tokens
 
 The `Authorization: Bearer` header accepts either an API key or a login JWT from
@@ -115,7 +141,7 @@ The `Authorization: Bearer` header accepts either an API key or a login JWT from
 | | API key | Login JWT |
 | --- | --- | --- |
 | Lifetime | Until you revoke it (or its optional expiry) | ~30 minutes |
-| Scope | Coarse scopes you choose | The full privileges of the human account |
+| Permissions | Those of the administrator who created it, in their organization | Those of the signed-in person |
 | Revocable individually | Yes | No — you'd rotate the account's credentials |
 | Good for | SDK, CI/CD, pipelines, MCP server, webhooks | Quick interactive scripts, the dashboard |
 
@@ -125,7 +151,7 @@ minute 31.
 
 ## Keys and two-factor authentication
 
-[Two-factor authentication](/account/two-factor-authentication/) protects interactive dashboard
+[Two-factor authentication](two-factor-authentication.md) protects interactive dashboard
 logins. It does **not** affect API keys — a key authenticates on its own, with no 2FA
 challenge. Enabling 2FA won't break your existing integrations, and no code changes are
 needed.
@@ -145,7 +171,7 @@ log output.
 - **Check `last_used_at` before revoking.** And revoke anything that hasn't been used in a
   while — an unused key is pure risk.
 - **Store keys in a secrets manager**, not in `.env` files that get committed. See
-  [Secure configuration](/sdk/#secure-configuration).
+  [Secure configuration](../sdk/index.md#secure-configuration).
 
 ## Troubleshooting
 
@@ -157,7 +183,10 @@ variable is actually set in the process making the request.
 
 **`403 Forbidden` on a request that should work**
 
-The key's scopes don't cover that operation. Issue a new key with the scopes you need.
+Check whether the administrator who created the key still has the administrator role, and whether
+the request is one that keys can't make by design, such as voting on a governance review. If you've
+reached your plan's [Governed AI Systems](../get-started/governance-events.md#what-is-one-governed-ai-system)
+limit, registering a model under a new name also returns `403`.
 
 **`403` when creating a key**
 
@@ -165,6 +194,6 @@ Key creation is admin-only. Ask an organization admin to issue it.
 
 ## Related
 
-- [Two-Factor Authentication](/account/two-factor-authentication/)
-- [MCP Server](/integrations/mcp/) — uses an API key via `WHITEBOXXAI_MCP_API_KEY`.
-- [SDK Authentication](/sdk/api-reference/#authentication)
+- [Two-Factor Authentication](two-factor-authentication.md)
+- [MCP Server](../integrations/mcp.md) — uses an API key via `WHITEBOXXAI_MCP_API_KEY`.
+- [SDK Authentication](../sdk/api-reference.md#authentication)
