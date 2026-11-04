@@ -178,6 +178,7 @@ nav:
       - Explore with Sample Data: learn/interactive-demos.md
       - From Model to Evidence Pack: learn/workshops.md
       - Govern an LLM Application: learn/tutorial-llm-app.md
+      - Govern Your Agents in 5 Minutes: learn/tutorial-agents-5-minutes.md
       - Connect an AI Assistant over MCP: learn/tutorial-agent-mcp.md
   - Account & Security:
       - API Keys: account/api-keys.md
