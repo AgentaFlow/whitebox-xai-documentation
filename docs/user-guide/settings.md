@@ -61,8 +61,9 @@ A key acts with the permissions of the administrator who created it. See [API Ke
 
 ### Integrations
 
-Health cards for **GitHub**, each notification channel type, the **SDK** and the **MCP server**,
-showing whether each is connected and working.
+Health cards for **GitHub**, each notification channel type, the **SDK**, the **LiteLLM gateway** and
+the **MCP server**, showing whether each is connected and working. The gateway card carries the same
+verdict as its own pane and links to it.
 
 **Notification channels** are where alerts and notifications are delivered: **Slack**, **email**,
 **webhook**, **SMS** and **PagerDuty**. Administrators can add, edit and delete channels, and use
@@ -118,6 +119,20 @@ Periodic user access reviews, which auditors routinely ask to see, are run from 
 
 A completed access review is filed as evidence through **Collect system evidence** in
 [Compliance & Evidence](compliance-evidence.md#collect-system-evidence).
+
+### LLM gateway
+
+Administrators connect their organisation's LiteLLM gateway here once. LiteLLM then sends every call
+through it to WhiteBoxXAI, which files each under the AI system it belongs to. The pane shows a verdict in
+words (receiving, gone quiet, calls being lost), what is stored from each call and what redaction misses,
+the configuration to paste into LiteLLM, the traffic no rule has claimed so you can assign it to an AI
+system, and the controls to rotate the token, switch acceptance off or disconnect. Non-administrators are
+told that administrators manage it.
+
+The pane opens on the **LiteLLM** tab. It also has tabs for OpenTelemetry (OTLP), Portkey AI, Kong AI
+Gateway and Azure APIM, which are not documented yet.
+
+See [LiteLLM gateway](../integrations/litellm.md).
 
 ### Sample data & tour
 

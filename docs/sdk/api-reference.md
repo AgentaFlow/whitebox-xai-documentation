@@ -847,6 +847,28 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 | `POST` | `/api/v1/webhooks/n8n/execution` | Receive N8N Execution |
 | `POST` | `/api/v1/webhooks/n8n/test` | Test N8N Webhook |
 
+### LiteLLM gateway
+
+The ingest route is called by your LiteLLM proxy with a `wbx_lgw_` gateway token, not an API key. The
+other routes need an organisation administrator; rotating the token also needs a signed-in session, not an
+API key. For LiteLLM, `{provider}` is `litellm`. The older `/api/v1/integrations/litellm/...` paths still
+work and behave the same. See [LiteLLM gateway](../integrations/litellm.md).
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `POST` | `/api/v1/llm/gateways/litellm/ingest` | Ingest Litellm |
+| `GET` | `/api/v1/integrations/llm-gateways` | List Gateway Connections |
+| `GET` | `/api/v1/integrations/llm-gateways/{provider}` | Get Gateway Connection |
+| `POST` | `/api/v1/integrations/llm-gateways/{provider}` | Connect Gateway |
+| `PATCH` | `/api/v1/integrations/llm-gateways/{provider}` | Update Gateway Connection |
+| `DELETE` | `/api/v1/integrations/llm-gateways/{provider}` | Delete Gateway Connection |
+| `POST` | `/api/v1/integrations/llm-gateways/{provider}/token/rotate` | Rotate Gateway Token |
+| `GET` | `/api/v1/integrations/llm-gateways/{provider}/rules` | List Gateway Rules |
+| `POST` | `/api/v1/integrations/llm-gateways/{provider}/rules` | Create Gateway Rule |
+| `DELETE` | `/api/v1/integrations/llm-gateways/{provider}/rules/{rule_id}` | Delete Gateway Rule |
+| `GET` | `/api/v1/integrations/llm-gateways/{provider}/unattributed` | Get Gateway Unattributed |
+| `GET` | `/api/v1/integrations/llm-gateways/{provider}/config-snippet` | Get Gateway Config Snippet |
+
 ### API keys and two-factor authentication
 
 | Method | Path | Summary |

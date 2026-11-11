@@ -6,6 +6,23 @@ description: What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashbo
 
 Changes since the previous documentation update (27 August 2026), newest areas first.
 
+## November 2026
+
+### LiteLLM gateway
+
+Connect a LiteLLM gateway once and every call through it is recorded in WhiteBoxXAI and filed under the AI
+system it belongs to, with no change to your teams' code. See [LiteLLM gateway](../integrations/litellm.md).
+
+- **Settings → LLM gateway** to connect, with a token shown once and a configuration block to paste into LiteLLM
+- A verdict in words on whether it is working, including when **calls are being lost** because a batch was
+  refused and LiteLLM will not resend it
+- **Redact personal data**, **Metadata only** or **Store everything as sent**, with the limits of pattern
+  redaction stated beside the choice
+- **Unregistered traffic**: every team, key, model and tag label seen in the last 30 days that no rule claims,
+  each assignable to an AI system; assigning also files the last 30 days of matching calls. **Add rule**
+  writes a rule for a label that hasn't appeared yet.
+- A card on **Settings → Integrations** with the same verdict
+
 ## October 2026
 
 ### Enhanced Dashboard
