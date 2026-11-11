@@ -172,6 +172,7 @@ nav:
       - GitHub Diff Reviews: integrations/github-diff.md
       - Git Context Tracking (SDK): integrations/cli-git-tracking.md
       - Policy-as-Code & GitOps: integrations/policy-as-code.md
+      - LiteLLM Gateway: integrations/litellm.md
       - n8n Webhooks: integrations/n8n-webhooks.md
   - Tutorials:
       - learn/index.md
