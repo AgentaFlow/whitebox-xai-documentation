@@ -35,7 +35,7 @@ would carry all of them. The gateway token can do one thing, which is send calls
 ## Set it up
 
 You need to be an administrator of your organisation. The gateway works on every plan; its calls count as
-[Governance Events](../get-started/governance-events.md#litellm-gateway-calls).
+[Governance Events](../get-started/governance-events.md#llm-gateway-calls).
 
 1. **Connect.** In **Settings → LLM gateway**, on the **LiteLLM** tab, name the gateway and choose what is
    stored from each call (see [What is stored](#what-is-stored)), then select **Connect LiteLLM**.
@@ -75,8 +75,8 @@ You need to be an administrator of your organisation. The gateway works on every
 An organisation has one LiteLLM connection. If you run several LiteLLM proxies, give them all the same
 configuration and token; their calls arrive as one gateway.
 
-The pane also has tabs for OpenTelemetry (OTLP), Portkey AI, Kong AI Gateway and Azure APIM. This page
-covers LiteLLM only; those tabs are not documented yet.
+The pane also has tabs for OpenTelemetry (OTLP), Portkey AI, Kong AI Gateway and Azure APIM. Those are
+covered in [LLM gateways](gateways.md).
 
 ### Three details that matter
 
@@ -189,8 +189,9 @@ The pane leads with a verdict in words, then what to do, then the counts.
 | **Disabled** | You switched acceptance off. | Switch it back on. |
 
 The counts are totals since you connected: calls recorded, records rejected, and calls lost before they
-arrived. The same verdict appears on the **Integrations** card, so a gateway that has stopped is visible
-without opening the pane.
+arrived. The **Integrations** card shows the verdict too, so a gateway that has stopped is visible without
+opening the pane. If you have connected more than one gateway, the card shows whichever
+[needs attention most](gateways.md#the-integrations-card).
 
 ### When calls are lost
 
@@ -223,7 +224,7 @@ when calls have arrived and none is unassigned. It never says every call is reco
 
 Each call that is **stored** is one Governance Event, the same as a call logged by the SDK. A call that is a
 duplicate (LiteLLM re-sending a batch) or that WhiteBoxXAI rejected as unreadable costs nothing. See
-[Governance Events](../get-started/governance-events.md#litellm-gateway-calls).
+[Governance Events](../get-started/governance-events.md#llm-gateway-calls).
 
 ## Limits
 
@@ -269,4 +270,4 @@ The endpoint accepts LiteLLM's default `json_array` body: a JSON array of standa
 A record it cannot read is counted in `rejected` and the rest of the batch is still stored, because an error
 status would make LiteLLM resend the whole batch. A single record object is accepted too, for LiteLLM's
 `single` log format. The administrator endpoints are under `/api/v1/integrations/llm-gateways/litellm`;
-see the [API reference](../sdk/api-reference.md#litellm-gateway).
+see the [API reference](../sdk/api-reference.md#llm-gateways).

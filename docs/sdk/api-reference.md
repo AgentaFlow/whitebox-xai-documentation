@@ -847,16 +847,20 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 | `POST` | `/api/v1/webhooks/n8n/execution` | Receive N8N Execution |
 | `POST` | `/api/v1/webhooks/n8n/test` | Test N8N Webhook |
 
-### LiteLLM gateway
+### LLM gateways
 
-The ingest route is called by your LiteLLM proxy with a `wbx_lgw_` gateway token, not an API key. The
-other routes need an organisation administrator; rotating the token also needs a signed-in session, not an
-API key. For LiteLLM, `{provider}` is `litellm`. The older `/api/v1/integrations/litellm/...` paths still
-work and behave the same. See [LiteLLM gateway](../integrations/litellm.md).
+The ingest routes are called by the gateway with a `wbx_lgw_` gateway token, not an API key; a token only
+works for its own gateway type, except that a Portkey token is accepted on the OTLP traces route. The other
+routes need an organisation administrator; rotating the token also needs a signed-in session, not an API
+key. `{provider}` is one of `litellm`, `otlp`, `portkey`, `kong` or `azure_apim`. The older
+`/api/v1/integrations/litellm/...` paths still work and behave the same as `{provider}` = `litellm`. See
+[LiteLLM gateway](../integrations/litellm.md) and [LLM gateways](../integrations/gateways.md).
 
 | Method | Path | Summary |
 | --- | --- | --- |
 | `POST` | `/api/v1/llm/gateways/litellm/ingest` | Ingest Litellm |
+| `POST` | `/api/v1/llm/gateways/otlp/v1/traces` | Ingest Otlp Traces |
+| `POST` | `/api/v1/llm/gateways/{provider}/ingest` | Ingest Gateway |
 | `GET` | `/api/v1/integrations/llm-gateways` | List Gateway Connections |
 | `GET` | `/api/v1/integrations/llm-gateways/{provider}` | Get Gateway Connection |
 | `POST` | `/api/v1/integrations/llm-gateways/{provider}` | Connect Gateway |

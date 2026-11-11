@@ -62,8 +62,8 @@ A key acts with the permissions of the administrator who created it. See [API Ke
 ### Integrations
 
 Health cards for **GitHub**, each notification channel type, the **SDK**, the **LiteLLM gateway** and
-the **MCP server**, showing whether each is connected and working. The gateway card carries the same
-verdict as its own pane and links to it.
+the **MCP server**, showing whether each is connected and working. The gateway card covers every
+connected LLM gateway, shows the one that most needs attention, and links to the LLM gateway pane.
 
 **Notification channels** are where alerts and notifications are delivered: **Slack**, **email**,
 **webhook**, **SMS** and **PagerDuty**. Administrators can add, edit and delete channels, and use
@@ -130,9 +130,9 @@ system, and the controls to rotate the token, switch acceptance off or disconnec
 told that administrators manage it.
 
 The pane opens on the **LiteLLM** tab. It also has tabs for OpenTelemetry (OTLP), Portkey AI, Kong AI
-Gateway and Azure APIM, which are not documented yet.
+Gateway and Azure APIM; each gateway is a separate connection with its own token.
 
-See [LiteLLM gateway](../integrations/litellm.md).
+See [LiteLLM gateway](../integrations/litellm.md) and [LLM gateways](../integrations/gateways.md).
 
 ### Sample data & tour
 

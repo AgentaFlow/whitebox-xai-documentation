@@ -8,6 +8,19 @@ Changes since the previous documentation update (27 August 2026), newest areas f
 
 ## November 2026
 
+### OpenTelemetry, Portkey, Kong and Azure API Management gateways
+
+**Settings → LLM gateway** now has tabs for four more sources besides LiteLLM, each a separate connection
+with its own token, rules and health. See [LLM gateways](../integrations/gateways.md).
+
+- **OpenTelemetry (OTLP)**: traces from a Collector or straight from an SDK, over HTTP as JSON or Protobuf.
+  Only GenAI spans are kept, and the others cost nothing
+- **Portkey**: Portkey's OpenTelemetry log export, with Portkey metadata and workspaces used to file calls
+- **Kong AI Gateway**: the `http-log` plugin alongside `ai-proxy`, with calls filed by Kong consumer
+- **Azure API Management**: an outbound policy that records model, tokens and timing per call, with calls
+  filed by APIM product and subscription
+- The **Integrations** card now shows whichever connected gateway needs attention most
+
 ### LiteLLM gateway
 
 Connect a LiteLLM gateway once and every call through it is recorded in WhiteBoxXAI and filed under the AI
