@@ -189,9 +189,9 @@ The pane leads with a verdict in words, then what to do, then the counts.
 | **Disabled** | You switched acceptance off. | Switch it back on. |
 
 The counts are totals since you connected: calls recorded, records rejected, and calls lost before they
-arrived. The **Integrations** card shows the verdict too, so a gateway that has stopped is visible without
-opening the pane. If you have connected more than one gateway, the card shows whichever
-[needs attention most](gateways.md#the-integrations-card).
+arrived. The **LLM gateways** card on **Settings → Integrations** shows the verdict too, so a gateway that
+has stopped is visible without opening the pane. If you have connected more than one gateway, the card
+shows whichever [needs attention most](gateways.md#the-integrations-card), and names it.
 
 ### When calls are lost
 
