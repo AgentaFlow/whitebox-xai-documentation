@@ -173,6 +173,7 @@ nav:
       - Git Context Tracking (SDK): integrations/cli-git-tracking.md
       - Policy-as-Code & GitOps: integrations/policy-as-code.md
       - LiteLLM Gateway: integrations/litellm.md
+      - Other LLM Gateways (OTLP, Portkey, Kong, APIM): integrations/gateways.md
       - n8n Webhooks: integrations/n8n-webhooks.md
   - Tutorials:
       - learn/index.md

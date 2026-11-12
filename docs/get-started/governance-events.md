@@ -19,7 +19,7 @@ A Governance Event is one unit of AI activity that WhiteBoxXAI records:
 | --- | --- | --- |
 | Logged prediction | `client.predictions.log` | 1 |
 | LLM interaction | `client.llm.log_call` | 1 |
-| LLM call recorded through a [LiteLLM gateway](../integrations/litellm.md) | none: the gateway sends it | 1 per call stored |
+| LLM call recorded through a gateway ([LiteLLM](../integrations/litellm.md), [OpenTelemetry, Portkey, Kong, Azure APIM](../integrations/gateways.md)) | none: the gateway sends it | 1 per call stored |
 | RAG retrieval | `client.rag.log_retrieval` | 1 |
 | Safety scan | `client.safety.analyze` | 1 |
 | Explanation (SHAP, LIME, DiCE) | `client.explanations.generate` / `generate_async` | 1 |
@@ -37,15 +37,19 @@ Batch endpoints cost one event per record in the batch: `predictions.log_batch`,
 `llm.log_calls_batch`, `safety.analyze_batch` and `explanations.generate_bulk`. Batching is neither
 a discount nor a penalty. It costs exactly what sending the records one at a time would.
 
-### LiteLLM gateway calls
+### LLM gateway calls
 
-A call recorded through a [LiteLLM gateway](../integrations/litellm.md) is one event, the same as a call you
-log with the SDK. What is counted is what was **stored**, not what LiteLLM sent: a batch that LiteLLM
+A call recorded through a [LiteLLM gateway](../integrations/litellm.md) or one of the other
+[LLM gateways](../integrations/gateways.md) is one event, the same as a call you log with the SDK. What is counted is what was **stored**, not what LiteLLM sent: a batch that LiteLLM
 re-sends is recognised and costs nothing the second time, and a record WhiteBoxXAI cannot read is rejected
 and costs nothing. A gateway's calls are not grouped by `X-WhiteBox-Run-Id`; each is its own event.
 
 On the Free plan, a batch larger than what is left of the month is refused whole with `429`. LiteLLM does not
 resend a refused batch, so those calls are lost; the gateway pane counts them and says so.
+
+For OpenTelemetry and Portkey, each GenAI span stored is one event. Spans that are not GenAI calls, such as
+HTTP or database spans in the same export, are dropped and cost nothing, as does a request that cannot be
+read at all.
 
 ### Agent workflows: one event per workflow
 
