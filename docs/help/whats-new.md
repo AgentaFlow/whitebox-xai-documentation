@@ -35,13 +35,13 @@ Records can also be pushed to the API. See
 - **Present** on the Overview is now five slides, adding **Trends & trajectory**, with **Home**, **End**,
   **1** to **5** and a **Fullscreen** button
 - **Value & impact** shows combined AI spend and returns computed only from the assumptions you set, and
-  says so where nothing is set. See [Overview](../user-guide/overview.md#value-impact)
+  says so where nothing is set. See [Overview](../user-guide/overview.md#value--impact)
 
 ### LLM & RAG attribution and explainability
 
 **Observability → LLM & RAG** has a panel for RAG claim grounding, token attribution and prompt
 robustness, and the API has `POST /api/v1/llm-xai/rag-attribution`. See
-[Attribution & explainability](../user-guide/observability.md#attribution-explainability).
+[Attribution & explainability](../user-guide/observability.md#attribution--explainability).
 
 ### How long data is kept
 
@@ -60,7 +60,9 @@ with its own token, rules and health. See [LLM gateways](../integrations/gateway
 - **Kong AI Gateway**: the `http-log` plugin alongside `ai-proxy`, with calls filed by Kong consumer
 - **Azure API Management**: an outbound policy that records model, tokens and timing per call, with calls
   filed by APIM product and subscription
-- The **Integrations** card now shows whichever connected gateway needs attention most
+- The **Integrations** card, now titled **LLM gateways**, counts calls recorded across every gateway and
+  shows whichever needs attention most, by name
+- The token banner says where each gateway takes the token, and each tab says what its gateway sends
 
 ### LiteLLM gateway
 
@@ -145,7 +147,10 @@ bias audits complete. See [Needs Attention](../user-guide/needs-attention.md#whe
 ### Policy-as-Code & GitOps
 
 Sync a `whitebox.yaml` policy from your repository and evaluate a model against it to warn or block a
-deployment from CI. See [Policy-as-Code & GitOps](../integrations/policy-as-code.md).
+deployment from CI. The [WhiteBoxXAI Governance Action](https://github.com/AgentaFlow/whitebox-governance-action)
+(`uses: AgentaFlow/whitebox-governance-action@v1`) runs both steps in GitHub Actions. Sync now refuses
+an action other than `warn` or `block`, and the old `agent_ticket` / `human_review` defaults are
+evaluated as `warn`. See [Policy-as-Code & GitOps](../integrations/policy-as-code.md).
 
 ### Pricing
 

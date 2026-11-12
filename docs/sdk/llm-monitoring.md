@@ -323,7 +323,7 @@ shape whatever method made it: `model_type` (`generative_llm` or `rag_pipeline`)
     [REST API Reference](api-reference.md#llm-explainability).
 
 The dashboard shows the same analyses in
-[Observability → LLM & RAG](../user-guide/observability.md#attribution-explainability).
+[Observability → LLM & RAG](../user-guide/observability.md#attribution--explainability).
 
 ## Next steps
 

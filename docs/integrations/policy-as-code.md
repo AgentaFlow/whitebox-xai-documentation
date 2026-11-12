@@ -27,10 +27,12 @@ auto_approve_minor: false     # whether a clean evaluation is eligible for autom
 
 - `block` fails the evaluation (`allowed: false`).
 - `warn` lets it pass, with the violation listed.
-- Until you set them, the two actions default to `agent_ticket` and `human_review`. With those
-  values, a violation is listed but doesn't change the result, so set `warn` or `block` explicitly.
-- Keys you leave out of a sync keep their current values. The whole file is stored with the policy,
-  so you can see exactly what was synced.
+- A key you leave out of your first sync starts at `warn` for drift and `block` for bias. On later
+  syncs, a key you leave out keeps its current value.
+- A policy synced before validation was added may still hold `agent_ticket` or `human_review`. Both
+  are evaluated as `warn`, so a violation is never silently passed.
+- The whole file is stored with the policy, other keys included, so you can see exactly what was
+  synced.
 
 ## Sync the policy
 
@@ -43,8 +45,13 @@ curl -X POST https://api.whiteboxxai.com/api/v1/policy/sync \
   -d "$(python -c 'import json,sys; print(json.dumps({"yaml_content": open("whitebox.yaml").read()}))')"
 ```
 
-A file that isn't valid YAML is refused with `400`. `GET /api/v1/policy` returns the policy currently in
-force.
+The sync is refused, and the policy in force stays unchanged, when:
+
+- the file isn't valid YAML, or isn't a mapping of keys to values: `400`
+- an action is anything other than `warn` or `block` (including a different case, such as `Block`), or
+  `auto_approve_minor` isn't `true` or `false`: `422`, naming the key
+
+`GET /api/v1/policy` returns the policy currently in force.
 
 ## Evaluate a model
 
@@ -81,6 +88,9 @@ deploy. Neither is created by the evaluation itself.
 
 ## Gate a deployment in GitHub Actions
 
+The [WhiteBoxXAI Governance Action](https://github.com/AgentaFlow/whitebox-governance-action) runs the
+sync and the evaluation in one step, and fails the job on `block`:
+
 ```yaml
 # .github/workflows/governance.yml
 name: Model governance
@@ -94,35 +104,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Sync policy and evaluate the model
-        env:
-          WHITEBOX_API_KEY: ${{ secrets.WHITEBOX_API_KEY }}
-          MODEL_ID: ${{ vars.WHITEBOX_MODEL_ID }}
-        run: |
-          python - <<'PY'
-          import json, os, sys, urllib.request
-
-          base = "https://api.whiteboxxai.com/api/v1/policy"
-          headers = {"Authorization": f"Bearer {os.environ['WHITEBOX_API_KEY']}",
-                     "Content-Type": "application/json"}
-
-          def post(url, body=None):
-              req = urllib.request.Request(url, data=json.dumps(body or {}).encode(),
-                                           headers=headers, method="POST")
-              with urllib.request.urlopen(req) as resp:
-                  return json.load(resp)
-
-          post(f"{base}/sync", {"yaml_content": open("whitebox.yaml").read()})
-          result = post(f"{base}/evaluate/{os.environ['MODEL_ID']}")
-          print(f"Policy result: {result['action']}")
-          for v in result["violations"]:
-              print(f"  [{v['action'].upper()}] {v['policy_rule']}: {v['detail']}")
-          sys.exit(1 if result["action"] == "block" else 0)
-          PY
+      - uses: AgentaFlow/whitebox-governance-action@v1
+        with:
+          api_key: ${{ secrets.WHITEBOX_API_KEY }}
+          model_id: ${{ vars.WHITEBOX_MODEL_ID }}
+          # Sync only on main, so a pull request can't change the policy in force.
+          sync: ${{ github.event_name == 'push' }}
 ```
 
-A `block` fails the job, and the violations are printed in the job log. On Business Cloud, use your
-tenant's API address in `base`. Store the API key as a repository secret, never in the workflow file.
+On a pull request, the step evaluates the model against the policy already in force. After the merge
+to `main`, it syncs the reviewed file first.
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `api_key` | (required) | A WhiteBoxXAI API key. Store it as a repository secret, never in the workflow file. |
+| `policy_file` | `whitebox.yaml` | Path to the policy file. |
+| `sync` | `true` | Sync the policy file before evaluating. |
+| `model_id` | | The model to evaluate. Leave it empty to sync only. |
+| `base_url` | `WHITEBOX_BASE_URL`, then `https://api.whiteboxxai.com` | The API address. On Business Cloud, set it to your tenant's API address. |
+
+| Output | Description |
+| --- | --- |
+| `action` | `pass`, `warn` or `block` |
+| `allowed` | `false` only when `action` is `block` |
+| `violations` | The violations as a JSON array |
+
+Each violation appears as an annotation on the run: a warning for `warn`, an error for `block`. The step
+also fails on any error from the API, such as a bad key, an unknown model, or a policy file that's
+refused. To fail on a warning too, give the step an `id` and check its output:
+
+```yaml
+      - uses: AgentaFlow/whitebox-governance-action@v1
+        id: policy
+        with:
+          api_key: ${{ secrets.WHITEBOX_API_KEY }}
+          model_id: ${{ vars.WHITEBOX_MODEL_ID }}
+      - if: steps.policy.outputs.action == 'warn'
+        run: exit 1
+```
+
+The Action runs in a Docker container, so it needs a Linux runner. On other runners or CI systems, call
+the two endpoints above directly and fail the job when `action` is `block`.
 
 ## What it gives an auditor
 

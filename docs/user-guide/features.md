@@ -150,11 +150,15 @@ curl -X POST https://api.whiteboxxai.com/api/v1/models \
   -d '{
     "name": "Customer Churn Predictor",
     "version": "2.1.0",
-    "model_type": "classification",
+    "model_type": "xgboost",
     "features": ["account_age_days", "total_purchases"],
     "baseline_metrics": {"accuracy": 0.89}
   }'
 ```
+
+`model_type` must be one of `xgboost`, `random_forest`, `neural_network`, `linear_model`, `llm` or
+`custom`. A task name such as `classification` is rejected; pick the family closest to your model, or
+`custom`.
 
 ### Model Versioning
 
@@ -487,50 +491,16 @@ Real-time visibility into model performance.
 - Latency (response time)
 - Errors (failure rate)
 
-### Dashboard Components
+### Where to see it
 
-#### 1. Overview Cards
+In the dashboard, this lives in **Observability → Performance**: platform health (**Healthy**,
+**Degraded** or **Unhealthy**), system performance over **7 days**, **30 days**, **90 days** or
+**1 year**, and **Baseline Performance Metrics** next to what has been measured since. See
+[Observability](observability.md#performance).
 
-**High-level KPIs:**
-- Total Models
-- Active Models
-- Predictions Today
-- Active Alerts
-- Average Accuracy
-- Drift Detections
-
-**Real-time updates** via WebSocket (every 5 seconds)
-
-#### 2. Time Series Charts
-
-**Prediction Volume:**
-- Line chart showing predictions over time
-- Granularity: Hourly, Daily, Weekly
-- Compare to previous period
-- Identify traffic patterns
-
-**Accuracy Trend:**
-- Track accuracy changes
-- Baseline comparison
-- Confidence intervals
-- Alert thresholds marked
-
-**Multi-metric View:**
-- Overlay multiple metrics
-- Compare precision vs recall
-- Identify trade-offs
-
-#### 3. Model Performance Table
-
-| Model | Accuracy | Predictions | Drift | Alerts | Last Prediction |
-|-------|----------|-------------|-------|--------|-----------------|
-| Fraud Detector v2 | 0.89 ↓ | 15.2k | ⚠️ Medium | 2 | 2 min ago |
-| Churn Predictor | 0.91 ↑ | 8.5k | ✅ Low | 0 | 5 min ago |
-
-**Actions:**
-- Click model to view details
-- Sort by any column
-- Filter by status/drift/alerts
+The model list in the **Model Register** shows each system's verdicts and signals, and
+[Needs Attention](needs-attention.md) collects the alerts. Metrics you report yourself with
+`client.metrics.create` appear in Performance too.
 
 ### Model-Specific Metrics
 
@@ -1211,19 +1181,14 @@ DI = 52/65 = 0.80 (PASS - exactly at threshold)
 
 ### Running Fairness Audits
 
-**Via UI:**
+**From the dashboard:**
 
-1. Navigate to **Bias & Fairness** page
-2. Click **Run Audit**
-3. Configure:
-   - Select model
-   - Choose protected attribute (e.g., gender, race, age)
-   - Select reference group (e.g., "male" for gender)
-   - Choose metrics to calculate
-   - Set time period
-
-4. Click **Run Audit**
-5. Review results (~1-3 minutes)
+There is no form to fill in. On the Classic layout's **Bias & Fairness** page, **Run Fairness Audit** opens
+a short guide. An audit compares outcomes across groups, so it needs the true outcomes, the model's
+predictions and each record's group membership, and WhiteBoxXAI doesn't hold that data. Audits are
+submitted from where the data lives, with the SDK or `POST /api/v1/fairness/audit`. The results then
+appear in **Assurance → Fairness** (or the Classic page): **Fairness Metrics**, **Group Comparison**,
+**Audit Results** and **Recommendations**.
 
 **Via SDK:**
 
@@ -1385,11 +1350,11 @@ client.fairness.get_latest_audit(model_id="model-uuid")
 ```python
 client.alerts.create(
     name="Fairness Score Alert",
-    alert_type="fairness",
+    alert_type="bias",
     severity="high",
     model_id="model-uuid",
     conditions=[
-        {"metric_name": "fairness_score", "operator": "lt", "threshold": 0.8, "window_minutes": 10080}
+        {"metric_name": "disparate_impact_ratio", "operator": "lt", "threshold": 0.8, "window_minutes": 10080}
     ],
     notification_channels=[{"type": "email", "target": "compliance@example.com"}],
 )

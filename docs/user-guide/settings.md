@@ -62,10 +62,11 @@ A key acts with the permissions of the administrator who created it. See [API Ke
 
 ### Integrations
 
-Health cards for **GitHub**, each notification channel type, the **SDK**, the **LiteLLM gateway**,
+Health cards for **GitHub**, each notification channel type, the **SDK**, **LLM gateways**,
 **ServiceNow AI Control Tower** and the **MCP server**, showing whether each is connected and
-working. The gateway card covers every connected LLM gateway, shows the one that most needs
-attention, and links to the LLM gateway pane. The ServiceNow card shows status only; records are
+working. The **LLM gateways** card covers every connected gateway: it counts the calls recorded
+across all of them, shows the verdict for the one that most needs attention with that gateway's
+name, and links to the LLM gateway pane. The ServiceNow card shows status only; records are
 pulled in from the Evidence page (see
 [ServiceNow AI Control Tower](compliance-evidence.md#servicenow-ai-control-tower)).
 
@@ -142,7 +143,8 @@ system, and the controls to rotate the token, switch acceptance off or disconnec
 told that administrators manage it.
 
 The pane opens on the **LiteLLM** tab. It also has tabs for OpenTelemetry (OTLP), Portkey AI, Kong AI
-Gateway and Azure APIM; each gateway is a separate connection with its own token.
+Gateway and Azure APIM; each gateway is a separate connection with its own token. Each tab says what its
+gateway sends and, when you connect, where that gateway takes the token.
 
 See [LiteLLM gateway](../integrations/litellm.md) and [LLM gateways](../integrations/gateways.md).
 
