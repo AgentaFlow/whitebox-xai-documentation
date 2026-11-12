@@ -18,11 +18,24 @@ After the run, WhiteBoxXAI computes per-agent cost, bottlenecks and a timeline. 
 [Governance Event](../get-started/governance-events.md#agent-workflows-one-event-per-workflow),
 however many agents and steps it has.
 
-!!! warning "Use the client's workflow methods"
-    In SDK 1.3.0, the helpers in `whiteboxxai.integrations.langchain_agents`
-    (`LangGraphMultiAgentMonitor`, `MultiAgentCallbackHandler` and `monitor_langchain_agent`) call
-    workflow methods the client doesn't have, and don't record runs. Use `client.agent_workflows` as
-    shown on this page.
+!!! tip "A shorter route: the helpers"
+    This page uses `client.agent_workflows` so every call is visible. The helpers in
+    `whiteboxxai.integrations.langchain_agents` wrap the same calls:
+
+    ```python
+    from whiteboxxai.integrations.langchain_agents import LangGraphMultiAgentMonitor
+
+    monitor = LangGraphMultiAgentMonitor(client, workflow_name="claims-triage")
+    workflow_id = monitor.start_monitoring(inputs={"claim_id": "CLM-2291"})
+    monitor.register_agent("triage", role="Classifies the claim", model_name="gpt-4o")
+    callbacks = monitor.get_callbacks("triage")       # pass as config={"callbacks": callbacks}
+    monitor.log_handoff("triage", "fraud-check", message="Claim classified")
+    monitor.complete_monitoring(outputs={"decision": "approve"})
+    ```
+
+    `MultiAgentCallbackHandler(client, workflow_id, agent_name="triage")` is the per-agent callback
+    handler behind `get_callbacks`, and `monitor_langchain_agent(client, agent_executor, workflow_name)`
+    runs a single agent as a one-agent workflow and returns its result and `workflow_id`.
 
 ## Install
 

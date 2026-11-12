@@ -46,10 +46,11 @@ classifier = wrap_transformers_pipeline(classifier, monitor)
 classifier("The update fixed my issue, thanks!")    # logged
 ```
 
-!!! warning "Register explicitly"
-    Pass `model_id` from `client.models.register(...)` to the monitor, as above. In SDK 1.3.0,
-    `register_from_model()` sends a `model_type` and leaves out fields that the API rejects, so
-    automatic registration fails.
+!!! tip "Or let the monitor register it"
+    `monitor.register_from_model(name="support-ticket-sentiment", features=["text"])` registers the
+    model and returns its id. `model_type` defaults to `llm` for generation tasks (text generation,
+    translation, summarization) and `neural_network` otherwise, and `version` defaults to `1.0.0`. Pass
+    `baseline_metrics={...}` once you have measured some on your own test set.
 
 ## Log without wrapping
 

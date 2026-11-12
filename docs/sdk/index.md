@@ -44,7 +44,7 @@ client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 | Parameter | Default | Purpose |
 | --- | --- | --- |
-| `api_key` | required | An [API key](../account/api-keys.md) (`wbx_live_...`) |
+| `api_key` | `WHITEBOX_API_KEY` | An [API key](../account/api-keys.md) (`wbx_live_...`). Read from the environment when you leave it out; the older name `WHITEBOXXAI_API_KEY` also works. |
 | `base_url` | `https://api.whiteboxxai.com` | Your API address. Business Cloud tenants use the address they were given. Also read from `WHITEBOX_BASE_URL`. |
 | `timeout` | `30` | Request timeout, in seconds |
 | `max_retries` | `3` | Retries for connection errors, `5xx` responses and `429`s |
@@ -204,12 +204,11 @@ wrapped = SklearnWrapper(clf, monitor)
 wrapped.predict(X_test)        # logged automatically
 ```
 
-!!! warning "Known issues in SDK 1.3.0"
-    Some integration helpers can't register models or workflows against the current API:
-    `XGBoostMonitor`/`LightGBMMonitor.register_from_model`, `TransformersMonitor.register_from_model`,
-    `KerasMonitor.register_saved_model`, `LangChainMonitor.register_application` and
-    `create_callback_handler`, and the `langchain_agents` helpers. Register with
-    `client.models.register(...)` and pass `model_id=` to the monitor, as each framework guide shows.
+The helpers' `register_from_model()` and `register_application()` send a valid `model_type`, a
+`version`, `features` and `baseline_metrics`. Pass `features=[...]` to give real column names; without
+them, some helpers fall back to `feature_0`, `feature_1` and so on, and others raise `ValueError`. If
+you'd rather control every field, register with `client.models.register(...)` and pass `model_id=` to
+the monitor, as each framework guide shows. These helpers need SDK 1.3.0 or later.
 
 Per-framework guides: [TensorFlow](../integrations/tensorflow.md),
 [Hugging Face](../integrations/huggingface.md), [XGBoost & LightGBM](../integrations/boosting.md),
@@ -333,12 +332,19 @@ client.compliance.get_framework_controls("iso_42001")
 client.compliance.iso42001_gaps(severity_filter="high")
 
 client.reports.list()
-client.reports.generate(report_type_id="model_card", model_id=model_id, format="pdf")
+report = client.reports.generate(report_type_id="model_card", model_id=model_id, format="pdf")
+client.reports.download(report, path="model_card.pdf")   # next SDK release; see below
 
 client.risk_register.portfolio()
 client.governance.list_review_requests(status="under_review")
 client.governance.get_review_request(request_id)     # includes evidence_snapshot_hash
 ```
+
+`ExportFormat` (`PDF`, `HTML`, `DOCX`, imported with `from whiteboxxai import ExportFormat`) can be
+passed as `format=`, and `client.reports.download(report, path=...)` saves the file; `adownload` is the
+async twin. They are in the current development version of the SDK and aren't in the published 1.3.0
+yet. Until they ship, pass `format="pdf"` and download from
+`/api/v1/export/exports/{export_id}/download`. See [Reports](../user-guide/reports.md#from-code).
 
 `client.governance.submit_decision(...)` exists for a person voting from their own session. It needs
 `evidence_snapshot_hash` and a current authenticator code (`totp_code`), and is refused when called with

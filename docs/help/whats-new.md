@@ -8,6 +8,20 @@ Changes since the previous documentation update (27 August 2026), newest areas f
 
 ## November 2026
 
+### SDK and MCP server updates
+
+- **SDK 1.3.0 integration helpers work.** `register_from_model()` and `register_application()` for
+  scikit-learn, XGBoost, LightGBM, PyTorch, Keras, Hugging Face and LangChain send a valid model type,
+  version, features and baseline metrics, and the LangGraph and multi-agent helpers record workflows. The
+  client reads `WHITEBOX_API_KEY` and `WHITEBOX_BASE_URL` when you don't pass them. See
+  [Python SDK](../sdk/index.md#framework-integrations)
+- **Offline mode** queues in `./WHITEBOX_offline` by default and also queues LLM call logs. See
+  [Offline Mode](../sdk/offline-mode.md)
+- **MCP server 0.3.2** accepts an API key in an `X-WhiteBox-API-Key` header as well as
+  `Authorization: Bearer`. See [MCP Server](../integrations/mcp.md#hosted-endpoint-authentication)
+- **Coming in the next SDK release:** `ExportFormat` with `client.reports.download()`, and
+  `client.llm_xai.rag_attribution()` with `get_unified_explanation()`. The REST routes are available now
+
 ### Single sign-on with Microsoft Entra ID
 
 People can sign in with their work accounts, and administrators can require it. See
