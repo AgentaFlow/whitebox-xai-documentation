@@ -295,8 +295,10 @@ from the [Feature reference](../user-guide/features.md#where-each-feature-lives)
 | `POST` | `/api/v1/llm-xai/batch-analyze` | Batch Analyze |
 | `POST` | `/api/v1/llm-xai/counterfactuals` | Generate Counterfactuals |
 | `POST` | `/api/v1/llm-xai/debug-prompt` | Debug Prompt |
+| `POST` | `/api/v1/llm-xai/rag-attribution` | RAG Chunk Attribution And Ungrounded Claims |
 | `GET` | `/api/v1/llm-xai/explanations` | Get Explanations |
 | `GET` | `/api/v1/llm-xai/explanations/{explanation_id}` | Get Explanation |
+| `GET` | `/api/v1/llm-xai/explanations/{explanation_id}/unified` | Get Unified Explanation |
 | `GET` | `/api/v1/llm-xai/prompt-analyses` | Get Prompt Analyses |
 | `GET` | `/api/v1/llm-xai/prompt-analyses/{analysis_id}` | Get Prompt Analysis |
 | `POST` | `/api/v1/llm-xai/sensitivity` | Analyze Sensitivity |
@@ -916,6 +918,44 @@ key. `{provider}` is one of `litellm`, `otlp`, `portkey`, `kong` or `azure_apim`
 | Method | Path | Summary |
 | --- | --- | --- |
 | `GET` | `/api/v1/integrations/status` | Get Integrations Status |
+
+### ServiceNow AI Control Tower
+
+Pull or push ServiceNow records as pending evidence. See
+[Compliance & Evidence](../user-guide/compliance-evidence.md#servicenow-ai-control-tower). These
+routes use your normal API key or session; there is no separate ServiceNow secret.
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/integrations/servicenow/config` | Get ServiceNow Integration Setup |
+| `POST` | `/api/v1/integrations/servicenow/evidence` | Ingest ServiceNow Evidence |
+| `POST` | `/api/v1/integrations/servicenow/sync-evidence` | Sync Evidence From ServiceNow (analyst role) |
+| `POST` | `/api/v1/integrations/servicenow/webhook` | Receive ServiceNow Webhook (same as `/evidence`) |
+
+### Single sign-on
+
+Microsoft Entra ID. Administrator only, on plans that include
+[single sign-on](../account/single-sign-on.md). The two `entra` routes are public: they start and
+finish a sign-in.
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/sso/connection` | Get SSO Connection |
+| `PATCH` | `/api/v1/sso/connection` | Update SSO Connection |
+| `DELETE` | `/api/v1/sso/connection` | Remove SSO Connection |
+| `POST` | `/api/v1/sso/connection/entra/start` | Start Entra ID Connection |
+| `GET` | `/api/v1/sso/entra/login` | Start Entra ID Sign-In |
+| `GET` | `/api/v1/sso/entra/callback` | Entra ID Sign-In Callback |
+
+### Executive dashboard value settings
+
+The assumptions behind the ROI and value figures on the
+[Overview](../user-guide/overview.md#value-impact).
+
+| Method | Path | Summary |
+| --- | --- | --- |
+| `GET` | `/api/v1/executive-dashboard/value-config` | Get Value Assumptions |
+| `PUT` | `/api/v1/executive-dashboard/value-config` | Update Value Assumptions |
 
 ### Dashboard data
 

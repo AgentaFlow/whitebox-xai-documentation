@@ -8,6 +8,47 @@ Changes since the previous documentation update (27 August 2026), newest areas f
 
 ## November 2026
 
+### Single sign-on with Microsoft Entra ID
+
+People can sign in with their work accounts, and administrators can require it. See
+[Single Sign-On](../account/single-sign-on.md).
+
+- **Settings → Single sign-on** on Business Cloud and above, with **Connect Microsoft Entra ID**
+- **Require SSO** refuses password, social and email-link sign-in for everyone except the break-glass
+  administrators you choose; API keys are unaffected
+- Accounts created on first sign-in, and roles that follow the Microsoft app role at each sign-in
+
+### ServiceNow AI Control Tower evidence
+
+**Sync from ServiceNow AICT** pulls change approvals, vendor risk assessments, AI governance records and
+incidents into **Compliance & Evidence** as SHA-256-hashed, pending evidence that an administrator approves.
+Records can also be pushed to the API. See
+[ServiceNow AI Control Tower](../user-guide/compliance-evidence.md#servicenow-ai-control-tower).
+
+### Reports, evidence packs and the Overview
+
+- **Reports** share one auditor layout: a document-control table, a findings summary, "What this section
+  shows an auditor" notes and, in HTML and PDF, a contents list. See
+  [How every report is laid out](../user-guide/reports.md#how-every-report-is-laid-out)
+- **Evidence packs** have a **Reporting period** (30 days, 90 days or 12 months) and a **What's in this
+  pack** preview before you generate
+- **Present** on the Overview is now five slides, adding **Trends & trajectory**, with **Home**, **End**,
+  **1** to **5** and a **Fullscreen** button
+- **Value & impact** shows combined AI spend and returns computed only from the assumptions you set, and
+  says so where nothing is set. See [Overview](../user-guide/overview.md#value-impact)
+
+### LLM & RAG attribution and explainability
+
+**Observability → LLM & RAG** has a panel for RAG claim grounding, token attribution and prompt
+robustness, and the API has `POST /api/v1/llm-xai/rag-attribution`. See
+[Attribution & explainability](../user-guide/observability.md#attribution-explainability).
+
+### How long data is kept
+
+Raw telemetry is kept 90 days on Free, and 365 days by default on Business Cloud, adjustable from 1 to
+7 years. Audit-trail events, evidence packs, drift reports and bias audits are not purged. See
+[Plans & Limits](../get-started/plans.md#how-long-data-is-kept).
+
 ### OpenTelemetry, Portkey, Kong and Azure API Management gateways
 
 **Settings → LLM gateway** now has tabs for four more sources besides LiteLLM, each a separate connection

@@ -73,6 +73,25 @@ Each chart has a table view with the same numbers, for screen readers and for co
 Written for executives and boards: **ROI and value**, **Drift impact** and **Agentic governance**.
 The Executive lens opens the Overview on this tab.
 
+**Business Value & Return on Investment** shows **Financial & Usage Telemetry** (**Combined AI
+Spend**, **LLM Token Spend**, **Agentic Workflow Spend** and **Predictions Logged**) next to the
+return figures. The return figures, such as net ROI and human hours saved, are computed only from
+assumptions your organization has set. Where nothing is set, the tile says it isn't instrumented
+and why, rather than showing an estimate. An invented ROI number is the kind of figure a board
+asks you to defend.
+
+The assumptions are the organization defaults and per-system profiles behind
+`GET` and `PUT /api/v1/executive-dashboard/value-config`:
+
+| Level | What you set |
+| --- | --- |
+| Organization | Hourly labor rate (USD), and minutes saved per prediction, per LLM request and per agent workflow run |
+| Each AI system | Governed business goal, monthly infrastructure cost, target monthly volume, minutes saved per unit, monthly revenue at risk, maximum churn risk, latency SLO and monthly operating cost |
+
+The editing dialog, **Configure Value & KPI Assumptions**, is on the Classic layout's Executive
+Dashboard (**ROI & Value** tab). The new layout doesn't have the dialog yet, so use the API or
+switch layout under **Settings → Preferences** to change them.
+
 ## Readiness setup wizard
 
 **Set up readiness** (or the first-run prompt **Set up your compliance readiness**) opens a
@@ -100,9 +119,13 @@ unfinished.
 2. **Compliance readiness**
 3. **What changed**
 4. **Decisions**
+5. **Trends & trajectory**: trust score, findings, drift incidents and evidence coverage, week by
+   week
 
-Use the arrow keys, Page Up / Page Down or Space to move between slides. **Print** produces one
-slide per page, and **Exit** returns to the dashboard. The slides use the same live numbers as the
+Use the arrow keys, Page Up / Page Down or Space to move between slides, **Home** and **End** to
+jump to the first or last, or **1** to **5** to go straight to a slide. **Fullscreen** (where your
+browser allows it) fills the screen, **Print** produces one slide per page, and **Exit** or `Esc`
+returns to the dashboard. The slides use the same live numbers as the
 Overview, so what you present matches what an auditor would see.
 
 For a document to circulate rather than present, generate a **Quarterly Board Pack** from

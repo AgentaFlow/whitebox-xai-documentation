@@ -283,6 +283,48 @@ All the records in the block share Governance Events: one per 100 records.
 `batch_analyze(llm_log_id, ...)`. Each response states the method it used; keep that with any number you
 pass on.
 
+### RAG attribution and ungrounded claims
+
+To check whether an answer is supported by the chunks that were retrieved for it, send the query, the
+answer and the chunks:
+
+```python
+result = client.llm_xai.rag_attribution(
+    query="Can a customer ask us to delete their data?",
+    answer=answer_text,
+    contexts=[
+        {"document_id": "policy-7", "title": "Data retention policy", "text": chunk_1, "chunk_index": 0},
+        {"document_id": "faq-12", "title": "Privacy FAQ", "text": chunk_2, "chunk_index": 1},
+    ],
+    model_id=model_id,          # optional: files the analysis under an AI system
+)
+
+for claim in result["ungrounded_claims"]:
+    print("No supporting chunk:", claim)
+print(result["plain_language_verdict"], result["analysis_method"])
+```
+
+Each chunk needs `text`; `document_id`, `title`, `chunk_index` and `retrieval_score` are optional. You
+can pass `llm_log_id` or `retrieval_log_id` instead of the text, to analyse a call you already logged.
+The result has `chunk_attributions` (how much each chunk contributed), `claim_groundings` (each claim
+and its best supporting chunk), `ungrounded_claims`, and `faithfulness`, `context_relevance` and
+`answer_relevance` scores. An ungrounded claim is one no retrieved chunk supports; it isn't proof the
+claim is false. `arag_attribution` is the async version.
+
+Every explanation is stored. `client.llm_xai.get_unified_explanation(explanation_id)` returns it in one
+shape whatever method made it: `model_type` (`generative_llm` or `rag_pipeline`), `explanation_method`,
+`plain_language_verdict`, `measured` and `attribution_data`.
+
+!!! note "Next SDK release"
+    `rag_attribution` and `get_unified_explanation` are in the current development version of the
+    SDK and aren't in the published 1.3.0 yet. Until they ship, call
+    `POST /api/v1/llm-xai/rag-attribution` and
+    `GET /api/v1/llm-xai/explanations/{explanation_id}/unified` directly; see the
+    [REST API Reference](api-reference.md#llm-explainability).
+
+The dashboard shows the same analyses in
+[Observability → LLM & RAG](../user-guide/observability.md#attribution-explainability).
+
 ## Next steps
 
 - [Evaluations & Prompt Versions](../user-guide/evaluations.md): govern prompts and check changes for regressions

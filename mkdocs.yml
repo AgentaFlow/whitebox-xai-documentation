@@ -185,6 +185,7 @@ nav:
   - Account & Security:
       - API Keys: account/api-keys.md
       - Two-Factor Authentication: account/two-factor-authentication.md
+      - Single Sign-On (Entra ID): account/single-sign-on.md
   - Help:
       - FAQ: help/faq.md
       - Troubleshooting: help/troubleshooting.md

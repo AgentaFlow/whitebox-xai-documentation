@@ -101,11 +101,58 @@ once and see every control it supports.
 bias audits, drift reports, model cards, access reviews and CI/CD lineage. Collected items are filed
 as **pending**, so an administrator still decides what counts.
 
+### ServiceNow AI Control Tower
+
+If your change approvals, vendor risk assessments and AI governance records live in ServiceNow AI
+Control Tower, you shouldn't have to retype them as evidence. WhiteBoxXAI pulls them in as the
+technical evidence behind them.
+
+An administrator turns on the **ServiceNow AI Control Tower** integration first (it appears as a
+status card under [Settings → Integrations](settings.md#integrations)). Then **Sync from
+ServiceNow AICT**, in **Evidence by artifact**, reads records from your instance. It reads the
+`change_request` table by default, up to 50 records at a time (500 at most), and can take a
+ServiceNow query to narrow them. The tables it accepts are:
+
+- `sn_ai_governance_asset_governance_details`, `cmdb_ci_appl_ai_application`, `cmdb_ci_function_ai`
+  and `alm_ai_dataset_digital_asset`
+- `sn_vdr_risk_asmt_assessment` (vendor risk assessments)
+- `change_request` (change approvals) and `incident`
+- `sn_compliance_policy_exception` and `sn_risk_risk`
+
+What happens to each record:
+
+1. It is stored as an exact JSON snapshot with a **SHA-256 hash**. A record that hasn't changed since
+   the last sync is skipped, so syncing twice doesn't file it twice (*"N new evidence artifacts
+   created, M unchanged records skipped"*).
+2. It is filed as **pending**. Like every other evidence item, it doesn't count towards a
+   framework until an administrator approves it, because a ServiceNow ticket existing isn't the
+   same as the control being met.
+
+Records can also be pushed to WhiteBoxXAI instead of pulled. Send them to
+`POST /api/v1/integrations/servicenow/evidence`, or point a ServiceNow business rule at
+`POST /api/v1/integrations/servicenow/webhook`, which does the same thing. Both use your normal
+[API key](../account/api-keys.md) or session. See the
+[REST API Reference](../sdk/api-reference.md#servicenow-ai-control-tower).
+
 ## Evidence packs
 
-**Compose an evidence pack** for **one AI system** or **the whole organization**, as PDF or HTML,
-and click **Generate evidence pack**. The pack is saved to [Reports](reports.md) → **History**,
-where it can be signed off and shared with an auditor.
+**Compose a pack** for **one AI system** or **the whole organization**, as PDF or HTML, and click
+**Generate evidence pack**. The pack is saved to [Reports](reports.md) → **History**, where it can
+be signed off and shared with an auditor.
+
+Choose the **Reporting period**: **Last 30 days**, **Last 90 days** or **Last 12 months**. The
+trust score and the risk register show their state when the pack is generated; the other sections
+cover the period you chose.
+
+**What's in this pack** previews the contents before you generate, and changes with your choice:
+
+- **Always included:** a cover with the scope, the period and how many findings sit at each rating;
+  for each section, what it shows an auditor and which requirements it is relevant to; and charts
+  where there is enough data to draw one, with missing data named as missing.
+- **Organization-wide:** every finding with its rating, the trust score across all AI systems, open
+  high and critical risks from the register, and the audit trail for the period.
+- **Added when you pick one AI system:** performance against the baseline, data and concept drift,
+  bias and fairness audits, and explainability coverage.
 
 ## Reports
 

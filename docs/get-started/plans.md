@@ -32,7 +32,7 @@ Plans are sold in two units:
 | **LLM, RAG, agent & prompt governance** | ✓ | ✓ | ✓ |
 | **MCP server & agent skills** | ✓ | ✓ | ✓ |
 | **Model-diff architecture reviews** | — | ✓ | ✓ |
-| **Access & audit** | Role-based access, audit log, Google or Microsoft sign-in | Same | Runs inside your own identity, key and network boundary |
+| **Access & audit** | Role-based access, audit log, Google or Microsoft sign-in | Same, plus Microsoft Entra ID single sign-on | Runs inside your own identity, key and network boundary |
 | **Support** | Community & documentation | Standard support, business-day response | 24/7 support & custom SLA |
 
 ## Free
@@ -63,6 +63,8 @@ stored and processed separately from every other customer's.
   because it had a busy month.
 - **Model-diff architecture reviews** that compare model versions and the code changes between
   them. See [GitHub Diff Reviews](../integrations/github-diff.md).
+- **Single sign-on with Microsoft Entra ID**, with an option to require it for everyone except
+  break-glass administrators. See [Single Sign-On](../account/single-sign-on.md).
 - **Standard support**, with a response within one business day.
 
 Business Cloud is available now. [Contact us](https://marketing.whiteboxxai.com/getting-started/demo)
@@ -90,6 +92,24 @@ can be created or changed in a demo account, and its usage isn't metered.
 
 You can also load the same kind of sample data into your own account from **Settings → Sample data
 & tour**. Sample-data models don't count as Governed AI Systems.
+
+## How long data is kept
+
+Raw telemetry (logged predictions, metrics and LLM call logs) is kept for a set period and then
+purged. The period depends on the plan:
+
+| | **Free** | **Business Cloud** |
+| --- | --- | --- |
+| **Raw telemetry** | 90 days, fixed | 365 days by default; an administrator can set it anywhere from 1 to 7 years (365 to 2,555 days), per AI system or for the whole organization |
+
+Demo accounts aren't purged. Calls older than 30 days are compressed in storage, which doesn't
+remove them.
+
+The records an auditor relies on aren't part of that purge. Audit-trail events, evidence packs,
+drift reports and bias audits are kept. When a purge removes the predictions behind an older drift
+report or bias audit, that report stays and is marked: *"Source predictions aged out under
+retention policy; metrics are locked and cannot be recomputed."* Each purge is itself written to the
+[audit trail](../user-guide/compliance-evidence.md#audit-trail).
 
 ## Check your usage
 

@@ -65,7 +65,12 @@ placeholders.
 
 The generated report is an **export**: download it from
 `GET /api/v1/export/exports/{export_id}/download`, and share or sign it off as described in
-[Reports](reports.md#from-code).
+[Reports](reports.md#from-code). In the next SDK release, `client.reports.download(result,
+path="report.pdf")` does the download for you; see [Reports](reports.md#from-code).
+
+Every type shares the same layout: a document-control table, a findings summary, "What this section
+shows an auditor" notes and (in HTML and PDF) a contents list. See
+[How every report is laid out](reports.md#how-every-report-is-laid-out).
 
 Pass `model_id` only for report types scoped to one AI system. Organization- and framework-scoped
 types ignore it.
