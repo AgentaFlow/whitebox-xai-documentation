@@ -159,16 +159,14 @@ model = client.models.register(
 )
 
 print(f"Model registered: {model['id']}")
-print(f"Commit: {model['github_commit_hash'][:7]}")
-print(f"Branch: {model['github_branch']}")
 ```
 
 **Output**:
 ```
-Model registered: 42
-Commit: abc1234
-Branch: main
+Model registered: 3f2b9c1e-6a4d-4e0b-9d7a-2c81f5a0b7e4
 ```
+
+The id is a UUID string.
 
 ### Example 2: Require Clean Repository
 
