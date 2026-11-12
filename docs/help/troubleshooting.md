@@ -41,9 +41,11 @@ python -c "import whiteboxxai, sys; print(whiteboxxai.__version__, sys.executabl
 
 The package is `whitebox-xai-sdk`; the import is `whiteboxxai`.
 
-### `TypeError: ... missing 1 required positional argument: 'api_key'`
+### `ValueError` about a missing API key, or `TypeError: ... 'api_key'`
 
-`WhiteBoxXAI()` needs the key passed in. Read it from the environment:
+`WhiteBoxXAI()` reads the key from `WHITEBOX_API_KEY` (and the address from `WHITEBOX_BASE_URL`) when
+you don't pass them. The error means the variable isn't set in the process running your code, so
+check it there, not only in your shell. You can also pass the key explicitly:
 
 ```python
 import os
@@ -52,12 +54,20 @@ from whiteboxxai import WhiteBoxXAI
 client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 ```
 
-### `AttributeError` from an integration helper
+Older SDK versions needed the key passed in, so upgrade with `pip install -U whitebox-xai-sdk` if you
+still see the `TypeError`. The older names `WHITEBOXXAI_API_KEY` and `WHITEBOXXAI_BASE_URL` are also read.
 
-In SDK 1.3.0, some helpers that register models or workflows for you call methods the client doesn't
-have. Register with `client.models.register(...)` and pass `model_id=` to the monitor. For LangChain,
-construct `WhiteBoxXAICallbackHandler(monitor)` directly. See the warning in
+### `ValueError` from an integration helper's `register_from_model()`
+
+The helper couldn't work out the model's feature names, or you passed a `model_type` the API doesn't
+accept. Pass `features=[...]` with the input column names, and use one of `xgboost`, `random_forest`,
+`neural_network`, `linear_model`, `llm` or `custom`. A task name such as `"classification"` is kept as
+metadata and the framework's default type is used. See
 [Python SDK → Framework integrations](../sdk/index.md#framework-integrations).
+
+If you hit an `AttributeError` or a refused registration from one of these helpers, you are on an older
+SDK than 1.3.0. Upgrade, or register with `client.models.register(...)` and pass `model_id=` to the
+monitor.
 
 ## Authentication
 

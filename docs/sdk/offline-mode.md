@@ -95,7 +95,7 @@ client = WhiteBoxXAI(
 
     # Offline mode settings
     enable_offline=True,                    # Enable offline mode
-    offline_dir="./whiteboxxai_offline",    # Queue storage directory
+    offline_dir="./WHITEBOX_offline",       # Queue storage directory (the default)
     offline_max_queue_size=10000,          # Max operations (0 = unlimited)
     offline_auto_sync=True,                # Enable auto-sync
     offline_sync_interval=60,              # Sync interval in seconds
@@ -107,14 +107,14 @@ client = WhiteBoxXAI(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `enable_offline` | bool | False | Enable offline mode |
-| `offline_dir` | str | "./whiteboxxai_offline" | Directory for queue database |
+| `offline_dir` | str | `"./WHITEBOX_offline"` | Directory for queue database. If you leave it out and an older `./whiteboxxai_offline` directory already exists (and `./WHITEBOX_offline` does not), that directory is reused so queued records aren't stranded. A path you pass is always used as given. |
 | `offline_max_queue_size` | int | 10000 | Maximum queued operations (0 = unlimited) |
 | `offline_auto_sync` | bool | True | Enable automatic background sync |
 | `offline_sync_interval` | int | 60 | Seconds between sync attempts |
 
 ## Operation Types
 
-The offline queue supports four operation types:
+The offline queue supports five operation types:
 
 ```python
 from whiteboxxai.offline import OperationType
@@ -123,7 +123,10 @@ OperationType.PREDICT          # Prediction logging
 OperationType.REGISTER_MODEL   # Model registration
 OperationType.UPDATE_BASELINE  # Baseline updates
 OperationType.LOG_BATCH        # Batch logging
+OperationType.LLM_LOG          # LLM call logging (queued by client.llm.log_call())
 ```
+
+`client.llm.log_call()` queues its record automatically when offline mode is on, like predictions do.
 
 ## Priority Levels
 
@@ -327,16 +330,14 @@ client = WhiteBoxXAI(
     enable_offline=True
 )
 
-# Create monitor
-monitor = ModelMonitor(
-    client=client,
-    model_name="fraud_detector",
-    model_type="classification"
-)
+# Create monitor for a model you registered earlier
+monitor = ModelMonitor(client, model_id=model_id)
 
-# Track predictions - automatically queued if offline
-y_pred = model.predict(X)
-monitor.track(inputs=X, outputs=y_pred)
+# Log a prediction - automatically queued if offline
+monitor.log_prediction(
+    inputs={"income": 52000, "utilisation": 0.31},
+    output={"prediction": 0, "probability": 0.12},
+)
 
 # Predictions queued and synced automatically
 ```

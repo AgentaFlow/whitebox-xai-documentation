@@ -49,10 +49,13 @@ model.predict_proba(X_live)    # logged
 LightGBM works the same way with `LightGBMMonitor` and `wrap_lightgbm_model`. Use `model_type="custom"`
 and `framework="lightgbm"` when registering.
 
-!!! warning "Register explicitly"
-    Pass `model_id` from `client.models.register(...)` to the monitor, as above. Don't rely on
-    `register_from_model()` or the wrapper's automatic registration in SDK 1.3.0. They don't send the
-    `version`, `features` and `baseline_metrics` fields the API requires, so registration is refused.
+!!! tip "Or let the monitor register it"
+    `monitor.register_from_model(model, X_train=X_train, y_train=y_train, version="3.1.0",
+    baseline_metrics={...})` registers the model for you and returns its id. It takes the feature names
+    from the model or `X_train`, falling back to `feature_0`, `feature_1` and so on, so pass
+    `features=[...]` when you want real names. It sends `model_type="xgboost"` unless you pass another. Registering with
+    `client.models.register(...)`, as above, keeps every field in your own code, which some teams
+    prefer for review.
 
 ## Log without wrapping
 

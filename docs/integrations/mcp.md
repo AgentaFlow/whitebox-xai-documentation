@@ -157,6 +157,9 @@ More copy-paste definitions are on [Agent Config Definitions](../agent-resources
 - Every request needs its own `Authorization: Bearer <token>` header: an API key, or a personal
   sign-in token. There's no fallback to environment variables, and a request without a valid header
   is refused with `401` before a session starts.
+- Clients or gateways that can't set `Authorization` (some registries and proxies reserve it) can send
+  an API key in an `X-WhiteBox-API-Key: wbx_live_...` header instead. If a request carries both,
+  `X-WhiteBox-API-Key` is used. The header was added in `whiteboxxai-mcp` 0.3.2.
 - A personal sign-in token expires after about 30 minutes and isn't refreshed by the server. Reconnect
   with a fresh token, or use an API key for long-running sessions.
 - Activity sent with an API key is metered as [Governance Events](../get-started/governance-events.md)

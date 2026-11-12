@@ -44,10 +44,14 @@ monitor = LangChainMonitor(client, application_name="support-assistant", model_i
 handler = WhiteBoxXAICallbackHandler(monitor)
 ```
 
-!!! warning "Create the handler directly"
-    In SDK 1.3.0, use `WhiteBoxXAICallbackHandler(monitor)` as above. `monitor.create_callback_handler()`
-    and `monitor.register_application()` try to register the application through a method the client
-    doesn't have, and fail.
+!!! tip "Or let the monitor register it"
+    `monitor.register_application(name="support-assistant", version="1.4.0", features=["question"])`
+    registers the application as an `llm` system and returns its id, and
+    `monitor.create_callback_handler()` then returns the same handler as
+    `WhiteBoxXAICallbackHandler(monitor)`. If the application isn't registered yet,
+    `create_callback_handler()` registers it with defaults (version `1.0.0`, one input named `input`),
+    so register it yourself when you want real versions and input names. The name may contain only
+    letters, digits, spaces, `-` and `_`; the API rejects other characters.
 
 ## Use it
 
@@ -120,9 +124,6 @@ with `prompt_version_id`. See [Evaluations & Prompt Versions](../user-guide/eval
 
 **Nothing appears.** Check the handler is in `config={"callbacks": [...]}` on the `invoke` call (or
 attached to the model), and that `WHITEBOX_API_KEY` is set in the process running the chain.
-
-**`AttributeError: ... has no attribute 'register_model'`.** You called `create_callback_handler()` or
-`register_application()`. Construct `WhiteBoxXAICallbackHandler(monitor)` directly instead.
 
 **Costs are blank.** Cost is calculated only for model names WhiteBoxXAI has prices for. See
 [LLM monitoring](../sdk/llm-monitoring.md#what-to-log).
