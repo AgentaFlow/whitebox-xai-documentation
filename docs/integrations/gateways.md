@@ -30,11 +30,21 @@ You need to be an administrator of your organisation.
 
 1. In **Settings → LLM gateway**, open the gateway's tab: **OpenTelemetry (OTLP)**, **Portkey AI**,
    **Kong AI Gateway** or **Azure APIM**.
-2. Name the connection, choose what is stored from each call, and select **Connect**. WhiteBoxXAI shows a
-   token starting `wbx_lgw_` **once**, as `Bearer wbx_lgw_...`. Copy it before you switch tab; switching
-   tab clears it. If you lose it, rotate it.
-3. Put the token and the address into the gateway's configuration, as each section below shows. The banner
-   names `WHITEBOXXAI_AUTHORIZATION`; where the token actually goes depends on the gateway.
+2. The tab says what that gateway sends. Name the connection, choose what is stored from each call, and
+   select **Connect**. Azure APIM sends no prompt or response, so its tab shows a note in place of that
+   choice. WhiteBoxXAI shows a token starting `wbx_lgw_` **once**, as `Bearer wbx_lgw_...`. Copy it before
+   you switch tab; switching tab clears it. If you lose it, rotate it.
+3. Put the token and the address into the gateway's configuration, as each section below shows. The token
+   banner says where this gateway takes the token, because it is not the same place on every gateway:
+
+    | Gateway | Where the token goes |
+    | --- | --- |
+    | OpenTelemetry, through a Collector | `WHITEBOXXAI_AUTHORIZATION`, where the Collector runs |
+    | OpenTelemetry, from an SDK | Inside `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, as `Authorization=Bearer%20wbx_lgw_...` |
+    | Portkey | Inside `EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_HEADERS` on your Portkey gateway, as `Authorization=Bearer wbx_lgw_...` |
+    | Kong AI Gateway | `DECK_WHITEBOXXAI_AUTHORIZATION`, where you run decK |
+    | Azure APIM | A secret named value called `WHITEBOXXAI_AUTHORIZATION` |
+
 4. Send a call through the gateway. The tab changes from **Waiting for the first call** to **Receiving**.
 
 An organisation has one connection per gateway type, so up to five at once. Each has its own token, rules,
@@ -80,7 +90,9 @@ through two gateways is also stored once.
 | Retention | As for [LiteLLM calls](litellm.md#limits): your organisation's data retention policy. |
 
 A refused request is counted under **Calls are being lost**. Whether the gateway sends it again depends on
-the gateway; Portkey's export, for one, does not retry. Treat the count as calls missing from your record.
+the gateway. LiteLLM and Portkey do not, and the pane says so. For OpenTelemetry, Kong and Azure API
+Management, their retry behaviour has not been confirmed, so the pane tells you to check whether your
+gateway sends the calls again. Until it does, treat the count as calls missing from your record.
 
 ### Governance Events
 
@@ -90,10 +102,14 @@ are not GenAI, and requests that cannot be read at all cost nothing.
 
 ### The Integrations card
 
-**Settings → Integrations** has one card for all gateway connections, titled **LiteLLM gateway**. It shows
-the state of the connection that most needs attention, in this order: calls being lost, receiving with
-problems, gone quiet, receiving, waiting, disabled. A stopped Kong connection is visible there even if
-LiteLLM is fine.
+**Settings → Integrations** has one card for all gateway connections, titled **LLM gateways**. Its count,
+**N calls recorded**, is the total across every connection. It shows the state of the connection that most
+needs attention, in this order: calls being lost, receiving with problems, gone quiet, receiving, waiting,
+disabled. Where two are tied, LiteLLM is shown.
+
+Unless that state is **Receiving**, the card shows the verdict, starting with the gateway's name, for
+example "Kong AI Gateway: …". So a stopped Kong connection is visible there, and named, even if LiteLLM is
+fine.
 
 ## OpenTelemetry (OTLP)
 
@@ -304,8 +320,8 @@ To file Kong calls by team, give each team's Kong consumer a `custom_id`.
 ## Azure API Management
 
 An outbound policy on your Azure OpenAI API sends one JSON record per call to WhiteBoxXAI. It records the
-model, token counts, timing and outcome. It does not send the prompt or the response, so the content policy
-has nothing to redact.
+model, token counts, timing and outcome. It does not send the prompt, the response or a cost, so the content
+policy has nothing to redact, and the **Azure APIM** tab shows a note instead of the content-policy choice.
 
 ### Set it up
 

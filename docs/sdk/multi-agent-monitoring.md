@@ -312,17 +312,19 @@ summary = monitor.complete_monitoring(
 Track parent-child agent executions for delegated tasks:
 
 ```python
-# Parent execution
-parent_exec_id = monitor.create_agent_execution(
-    agent=manager_agent,
-    inputs={"task": "coordinate_research"}
+# Parent execution (agent ids come from register_agent or the workflow's agent list)
+parent_exec = client.agent_workflows.create_execution(
+    workflow_id,
+    agent_id=manager_agent_id,
+    inputs={"task": "coordinate_research"},
 )
 
 # Child execution (delegated)
-child_exec_id = monitor.create_agent_execution(
-    agent=researcher_agent,
+child_exec = client.agent_workflows.create_execution(
+    workflow_id,
+    agent_id=researcher_agent_id,
     inputs={"subtask": "find_sources"},
-    parent_execution_id=parent_exec_id
+    parent_execution_id=parent_exec["id"],
 )
 ```
 
@@ -583,7 +585,7 @@ GET /api/v1/workflows/multi-agent/{workflow_id}/timeline
 }
 ```
 
-See [API Reference](#) for complete endpoint documentation.
+See the [REST API Reference](api-reference.md#agent-workflows) for complete endpoint documentation.
 
 ---
 
@@ -636,7 +638,7 @@ Content Writer: $0.1038 (6920 tokens)
 Identify performance bottlenecks:
 
 ```python
-bottlenecks = monitor.get_bottlenecks()
+bottlenecks = client.agent_workflows.bottlenecks(workflow_id)
 
 print("Slowest Agents:")
 for agent in bottlenecks["slowest_agents"]:
@@ -656,7 +658,7 @@ for agent in bottlenecks["failing_agents"]:
 View chronological event timeline:
 
 ```python
-timeline = monitor.get_timeline()
+timeline = client.agent_workflows.timeline(workflow_id)
 
 for event in timeline["events"]:
     print(f"[{event['timestamp']}] {event['event_type']}: {event['description']}")
@@ -947,7 +949,7 @@ summary = monitor.complete_monitoring(
 )
 
 # Analyze interactions
-interactions = monitor.get_workflow_interactions()
+interactions = client.agent_workflows.list_interactions(workflow_id)
 print(f"Total interactions: {len(interactions)}")
 ```
 
@@ -1026,11 +1028,13 @@ agent_id = monitor._register_agent(custom_agent)
 **Solution:** Ensure LLM callbacks are configured:
 
 ```python
-from whiteboxxai.integrations import WhiteBoxXAICallbackHandler
+from whiteboxxai.integrations.langchain_agents import MultiAgentCallbackHandler
 
 llm = ChatOpenAI(
     model="gpt-4o",
-    callbacks=[WhiteBoxXAICallbackHandler()]  # Auto-tracks tokens/cost
+    callbacks=[MultiAgentCallbackHandler(      # Auto-tracks tokens/cost for this agent
+        client=client, workflow_id=workflow_id, agent_name="researcher"
+    )],
 )
 ```
 

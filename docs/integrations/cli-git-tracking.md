@@ -1,12 +1,13 @@
 ---
-description: Record the Git commit, branch, repository and author a model came from when you register it with the WhiteBoxXAI Python SDK — automatic detection, manual metadata, clean-tree enforcement and CI usage.
+description: Record the Git commit, branch, repository and tag a model came from when you register it with the WhiteBoxXAI Python SDK — automatic detection, manual metadata, clean-tree enforcement and CI usage.
 ---
 
 # Git context tracking (SDK)
 
 When an auditor asks which code produced a model in production, the answer should be recorded, not
-reconstructed. The Python SDK can capture the Git commit, branch, repository and author at the moment
-you register a model, so every version traces back to source. (Despite this page's address, this is an
+reconstructed. The Python SDK can capture the Git commit, branch, repository and tag at the moment
+you register a model, so every version traces back to source. It records which code, not who wrote it:
+the commit message and author are not stored. (Despite this page's address, this is an
 SDK feature; there's no separate command-line tool.)
 
 Examples assume a `client` and `feature_names`, your model's input feature names, are already defined.
@@ -27,7 +28,6 @@ WhiteBoxXAI's Python SDK can automatically detect and track Git repository infor
 
 - **Models** → **Code commits**
 - **Model versions** → **Git branches/tags**
-- **Model authors** → **Git commit authors**
 - **Model changes** → **Code diffs**
 
 ### Benefits
@@ -35,7 +35,7 @@ WhiteBoxXAI's Python SDK can automatically detect and track Git repository infor
 ✅ **Automated tracking** - No manual metadata entry
 ✅ **Complete lineage** - Full model-to-code traceability
 ✅ **Version control** - Track model changes through Git history
-✅ **Collaboration** - See who created/modified models
+✅ **Auditable** - The commit hash names the exact code behind a registered model
 ✅ **Reproducibility** - Know exact code version for any model
 
 ## Quick Start
@@ -77,9 +77,13 @@ model = client.models.register(
 # - github_repository_url
 # - github_commit_hash
 # - github_branch
-# - github_commit_author
-# - github_commit_message
+# - github_tag (only when HEAD is on a tag)
+
+# The values come back on the model:
+print(model["github_commit_hash"][:7], model["github_branch"])
 ```
+
+The **Models** list shows the first seven characters of the commit hash and the branch for each model.
 
 ## Auto-Detection
 
@@ -89,7 +93,7 @@ When `auto_detect_git=True`, WhiteBoxXAI:
 
 1. **Searches for .git directory** - Walks up from current directory
 2. **Reads repository information** - Extracts remote URL, commit, branch
-3. **Captures commit metadata** - Gets author, message, timestamp
+3. **Reads the tag** - Only if HEAD is on one
 4. **Validates information** - Ensures Git context is valid
 5. **Submits to platform** - Includes Git data with model registration
 
@@ -101,8 +105,12 @@ When `auto_detect_git=True`, WhiteBoxXAI:
 | `github_commit_hash` | Full commit SHA | `abc123def456...` |
 | `github_branch` | Current branch | `main`, `feature/fraud-v2` |
 | `github_tag` | Git tag (if on tag) | `v1.0.0` |
-| `github_commit_author` | Commit author | `John Doe <john@example.com>` |
-| `github_commit_message` | Commit message | `Add fraud detection model` |
+
+Only these four fields are stored. The commit message and the commit author are not recorded, and if you
+pass `github_commit_message` or `github_commit_author` yourself, they are ignored. An author's email
+address is personal data, and the commit hash already points to the exact commit in your repository,
+where the author and message are kept. Values that are too long are rejected with a 422 rather than
+cut short; the commit hash can be at most 40 characters.
 
 ### Requirements
 
@@ -127,8 +135,6 @@ model = client.models.register(
     github_repository_url="https://github.com/myorg/models",
     github_commit_hash="abc123def456",
     github_branch="main",
-    github_commit_author="Jane Smith <jane@example.com>",
-    github_commit_message="Update fraud model",
     github_tag="v2.0.0",
     version="1.0.0",
     features=feature_names,
@@ -159,16 +165,14 @@ model = client.models.register(
 )
 
 print(f"Model registered: {model['id']}")
-print(f"Commit: {model['github_commit_hash'][:7]}")
-print(f"Branch: {model['github_branch']}")
 ```
 
 **Output**:
 ```
-Model registered: 42
-Commit: abc1234
-Branch: main
+Model registered: 3f2b9c1e-6a4d-4e0b-9d7a-2c81f5a0b7e4
 ```
+
+The id is a UUID string.
 
 ### Example 2: Require Clean Repository
 

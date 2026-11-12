@@ -950,7 +950,7 @@ finish a sign-in.
 ### Executive dashboard value settings
 
 The assumptions behind the ROI and value figures on the
-[Overview](../user-guide/overview.md#value-impact).
+[Overview](../user-guide/overview.md#value--impact).
 
 | Method | Path | Summary |
 | --- | --- | --- |
