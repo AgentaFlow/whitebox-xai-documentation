@@ -19,7 +19,9 @@ with its own token, rules and health. See [LLM gateways](../integrations/gateway
 - **Kong AI Gateway**: the `http-log` plugin alongside `ai-proxy`, with calls filed by Kong consumer
 - **Azure API Management**: an outbound policy that records model, tokens and timing per call, with calls
   filed by APIM product and subscription
-- The **Integrations** card now shows whichever connected gateway needs attention most
+- The **Integrations** card, now titled **LLM gateways**, counts calls recorded across every gateway and
+  shows whichever needs attention most, by name
+- The token banner says where each gateway takes the token, and each tab says what its gateway sends
 
 ### LiteLLM gateway
 

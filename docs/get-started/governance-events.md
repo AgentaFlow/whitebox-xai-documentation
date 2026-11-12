@@ -45,7 +45,8 @@ re-sends is recognised and costs nothing the second time, and a record WhiteBoxX
 and costs nothing. A gateway's calls are not grouped by `X-WhiteBox-Run-Id`; each is its own event.
 
 On the Free plan, a batch larger than what is left of the month is refused whole with `429`. LiteLLM does not
-resend a refused batch, so those calls are lost; the gateway pane counts them and says so.
+resend a refused batch, so those calls are lost; the gateway pane counts them and says so. Portkey does not
+resend either. For the other gateways, check whether yours does; see [Limits](../integrations/gateways.md#limits).
 
 For OpenTelemetry and Portkey, each GenAI span stored is one event. Spans that are not GenAI calls, such as
 HTTP or database spans in the same export, are dropped and cost nothing, as does a request that cannot be
