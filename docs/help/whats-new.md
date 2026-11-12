@@ -104,7 +104,10 @@ bias audits complete. See [Needs Attention](../user-guide/needs-attention.md#whe
 ### Policy-as-Code & GitOps
 
 Sync a `whitebox.yaml` policy from your repository and evaluate a model against it to warn or block a
-deployment from CI. See [Policy-as-Code & GitOps](../integrations/policy-as-code.md).
+deployment from CI. The [WhiteBoxXAI Governance Action](https://github.com/AgentaFlow/whitebox-governance-action)
+(`uses: AgentaFlow/whitebox-governance-action@v1`) runs both steps in GitHub Actions. Sync now refuses
+an action other than `warn` or `block`, and the old `agent_ticket` / `human_review` defaults are
+evaluated as `warn`. See [Policy-as-Code & GitOps](../integrations/policy-as-code.md).
 
 ### Pricing
 
