@@ -79,7 +79,7 @@ Each method has an async twin prefixed with `a`, such as `client.models.aregiste
 | `client.llm` | LLM call logging and usage | `log_call`, `log_calls_batch`, `query_logs`, `get_stats`, `usage_stats`, `cost_breakdown` |
 | `client.rag` | RAG retrievals and evaluations | `log_retrieval`, `create_evaluation`, `get_stats`, `metrics_precision` |
 | `client.safety` | Toxicity, PII and harmful-content scans | `analyze`, `analyze_batch`, thresholds |
-| `client.llm_xai` | LLM explainability | `attention`, `token_importance`, `prompt_sensitivity`, `counterfactuals`, `debug_prompt`, `batch_analyze` |
+| `client.llm_xai` | LLM explainability | `attention`, `token_importance`, `prompt_sensitivity`, `counterfactuals`, `debug_prompt`, `batch_analyze`; `rag_attribution` and `get_unified_explanation` in the next SDK release |
 | `client.prompts` | Governed prompt versions | `create_template`, `create_version`, `advance_stage`, `deploy`, `rollback`, `compute_drift` |
 | `client.agent_workflows` | Multi-agent workflow tracing | `create_and_start`, `register_agent`, `complete`, `analytics` |
 | `client.risk_register` | The AI Risk Register | `list`, `get`, `portfolio` |

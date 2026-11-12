@@ -5,7 +5,8 @@ description: Every WhiteBoxXAI Settings pane — profile and two-factor security
 # Settings
 
 **Settings** is in the sidebar footer and the avatar menu. Panes are grouped into **You** (your own
-account) and **Organisation** (shared settings, mostly for administrators).
+account) and **Organisation** (shared settings, mostly for administrators). There are 15 panes in
+all, and each links to its own address, for example `?pane=sso`.
 
 ## You
 
@@ -61,10 +62,13 @@ A key acts with the permissions of the administrator who created it. See [API Ke
 
 ### Integrations
 
-Health cards for **GitHub**, each notification channel type, the **SDK**, **LLM gateways** and the
-**MCP server**, showing whether each is connected and working. The **LLM gateways** card covers every
-connected gateway: it counts the calls recorded across all of them, shows the verdict for the one that
-most needs attention with that gateway's name, and links to the LLM gateway pane.
+Health cards for **GitHub**, each notification channel type, the **SDK**, **LLM gateways**,
+**ServiceNow AI Control Tower** and the **MCP server**, showing whether each is connected and
+working. The **LLM gateways** card covers every connected gateway: it counts the calls recorded
+across all of them, shows the verdict for the one that most needs attention with that gateway's
+name, and links to the LLM gateway pane. The ServiceNow card shows status only; records are
+pulled in from the Evidence page (see
+[ServiceNow AI Control Tower](compliance-evidence.md#servicenow-ai-control-tower)).
 
 **Notification channels** are where alerts and notifications are delivered: **Slack**, **email**,
 **webhook**, **SMS** and **PagerDuty**. Administrators can add, edit and delete channels, and use
@@ -120,6 +124,14 @@ Periodic user access reviews, which auditors routinely ask to see, are run from 
 
 A completed access review is filed as evidence through **Collect system evidence** in
 [Compliance & Evidence](compliance-evidence.md#collect-system-evidence).
+
+### Single sign-on
+
+Administrators connect **Microsoft Entra ID** here so people sign in with their work accounts. The
+pane covers **Connect Microsoft Entra ID**, creating accounts on first sign-in, the role given when
+Microsoft sends none, role mapping from Microsoft app roles, **Require SSO** and the break-glass
+administrators who keep password sign-in. It is available on Business Cloud and above; on the Free
+plan the pane says so. See [Single Sign-On](../account/single-sign-on.md).
 
 ### LLM gateway
 

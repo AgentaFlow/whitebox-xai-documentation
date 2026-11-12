@@ -76,11 +76,13 @@ Agents: load the `whitebox-governance-rules` skill before acting on WhiteBoxXAI 
 - [Explore with Sample Data](https://docs.whiteboxxai.com/learn/interactive-demos/): Explore WhiteBoxXAI without writing code — load clearly marked sample data, take the product tour, run the readiness setup, present the Overview to a board, and generate a sample evidence pack.
 - [From Model to Evidence Pack](https://docs.whiteboxxai.com/learn/workshops/): Hands-on tutorial — train a credit model on a public dataset, register and monitor it in WhiteBoxXAI, create a drift report, run a fairness audit by age group, take it through a governance review, and generate an auditor-ready evidence pack.
 - [Govern an LLM Application](https://docs.whiteboxxai.com/learn/tutorial-llm-app/): Hands-on tutorial — govern an LLM application with WhiteBoxXAI: log calls from any provider, scan answers for safety, version the prompt, score it against a golden dataset, and check a prompt change for regressions.
+- [Govern Your Agents in 5 Minutes](https://docs.whiteboxxai.com/learn/tutorial-agents-5-minutes/): Five-minute quickstart — install whiteboxxai-mcp with pip, connect your AI assistant to WhiteBoxXAI, load the governance rules, and get a first answer and a first drift record that came from real data.
 - [Connect an AI Assistant over MCP](https://docs.whiteboxxai.com/learn/tutorial-agent-mcp/): Hands-on tutorial — connect Claude Desktop, Claude Code, Cursor or VS Code to WhiteBoxXAI over MCP, load the agent skills, ask compliance questions, and have the assistant prepare a governance review for a person to decide.
 
 ## Account & Security
 
 - [API Keys](https://docs.whiteboxxai.com/account/api-keys/): Create, use and revoke WhiteBoxXAI API keys (wbx_live_...) for the SDK, REST API, CI/CD and the MCP server — what a key can do, how it differs from a login token, and how it interacts with two-factor authentication.
+- [Single Sign-On (Entra ID)](https://docs.whiteboxxai.com/account/single-sign-on/): Connect Microsoft Entra ID so your team signs in to WhiteBoxXAI with work accounts — who can set it up, what Require SSO blocks, break-glass administrators, accounts created on first sign-in and role mapping.
 - [Two-Factor Authentication](https://docs.whiteboxxai.com/account/two-factor-authentication/): Set up two-factor authentication (TOTP) for WhiteBoxXAI, use and regenerate backup codes, recover access, and understand why governance votes need an authenticator code while API keys don't.
 
 ## Help

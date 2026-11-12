@@ -26,6 +26,33 @@ and **Schedules**.
 For how SHAP, LIME and fairness metrics are computed, see [Assurance](assurance.md) and the
 [Feature reference](features.md).
 
+## How every report is laid out
+
+An auditor opens a report with one question: what am I looking at, and how much should I trust it?
+Every report type shares a layout built to answer that.
+
+- **A document-control table** at the front: the report, the organization, the scope, the reporting
+  period (when one applies), when it was generated, the frameworks it references, and a **How to
+  read this report** note.
+- **A findings summary**: how many findings sit at each rating (**Critical**, **High**, **Medium**
+  and **Low**), how many areas have no issues, and how many have **data gaps**. Narrative findings
+  carry a worded rating, so the severity doesn't rely on colour alone.
+- **What this section shows an auditor**: a short note at the top of each evidence section, with the
+  requirements it is relevant to, taken from the same control catalogs as your
+  [Controls](compliance-evidence.md#controls).
+- **A numbered contents list** with links (and page numbers in PDF) in the HTML and PDF formats, once
+  a report has three or more sections. Word (DOCX) reports don't have one.
+
+Charts appear only where the data exists. Depending on the report, they cover trust score by model,
+open risks by severity, fairness metric values, drift per check and performance against the baseline.
+If there isn't enough data to draw one, the report leaves the chart out and says the data is missing;
+it never draws one from placeholder values.
+
+Two reports go further on provenance. The **Auditor Traceability Matrix** includes an evidence
+manifest: each artifact, its SHA-256 hash and where it came from. The **Evidence Pack** states how
+its audit events were collected (hash-chained) and pins the exported file's hash, so a file handed
+back later can be checked with **Verify a file**.
+
 ## Report types
 
 | Report type | Scope | What it contains |
@@ -171,8 +198,24 @@ Report type ids: `quarterly_board_pack`, `iso42001_statement_of_applicability`,
 `model_card`, `fairness_audit`, `drift_report`, `evidence_pack`, `auditor_traceability_matrix`.
 Take ids from `client.reports.list()` rather than hard-coding them.
 
-A generated report is an **export** with an id. Download, share and sign it through the export
-endpoints:
+A generated report is an **export** with an id. To save the file from Python:
+
+```python
+from whiteboxxai import ExportFormat
+
+result = client.reports.generate(
+    report_type_id="model_card", model_id=model_id, format=ExportFormat.PDF  # PDF, HTML or DOCX
+)
+client.reports.download(result, path="model_card.pdf")     # writes the file and returns its bytes
+# async: await client.reports.agenerate(...); await client.reports.adownload(result, path=...)
+```
+
+!!! note "Next SDK release"
+    `ExportFormat`, `client.reports.download()` and `adownload()` are in the current development
+    version of the SDK and aren't in the published 1.3.0 yet. Until they ship, pass `format="pdf"`
+    to `generate` and download with the endpoint below.
+
+Download, share and sign it through the export endpoints:
 
 ```bash
 # Download

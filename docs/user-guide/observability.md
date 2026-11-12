@@ -56,6 +56,26 @@ Flagged categories are recorded as they were found and are never downgraded afte
 **Retrieval quality** metrics are only computed when you supply ground-truth document ids with a
 retrieval. Without them, the panel says the metrics haven't been computed.
 
+### Attribution & explainability
+
+When someone asks *why did the assistant say that, and was it grounded in the documents it
+retrieved?*, the **LLM & RAG Attribution & Explainability** panel answers with a computation you
+can re-run, not a summary. If you have more than one LLM system, choose a **Target System** first.
+The fields start with a sample scenario; replace them with your own text.
+
+| Tab | What you enter | What you get |
+| --- | --- | --- |
+| **RAG Grounding & Attribution** | A **User Query**, the **Generated Answer** and the retrieved context chunks. **Analyze RAG Grounding** runs it. | An **Auditor Verdict** in plain language, with the analysis method shown. **Sentence-by-Sentence Claim Grounding** marks each claim **Grounded** or **Ungrounded Claim**, with its supporting chunk and similarity. **Context Chunk Attribution Weights** show how much each chunk contributed. |
+| **Token Attribution** | An **Input Prompt** and the **Model Completion**, and a **Method**: **Integrated Gradients (Path Integral)**, **Input × Gradient** or **Leave-One-Out Perturbation**. **Compute Token Importance** runs it. | A verdict on the method used, a heat strip over the tokens, and a table of each token's importance score, labelled **Salient Driver** or **Contextual**. |
+| **Prompt Robustness & Ablation** | The **Prompt for Ablation Testing**, and an **Ablation Mode**: **Sentence Ablation (Deterministic)**, **Clause Removal** or **Character Perturbation**. **Analyze Sensitivity** runs it. | A **Robustness & Integrity Status**: **Measured Divergence**, or an explicit **Unmeasured** state. |
+
+The panel never fills a gap with an invented number. When a result can't be measured, it says
+**Unmeasured** and why. An ungrounded claim is a claim no retrieved chunk supports. It is not proof
+the claim is false, so treat it as a lead for review.
+
+The same analyses are available from code and the API. See [LLM monitoring](../sdk/llm-monitoring.md#llm-explainability)
+and the [REST API Reference](../sdk/api-reference.md#llm-explainability).
+
 ## Agents
 
 Multi-agent workflow runs from CrewAI, LangChain/LangGraph, AutoGen, n8n or your own framework.
