@@ -42,7 +42,7 @@ The GitHub Integration feature allows WhiteBoxXAI to automatically track AI mode
 ### Quick Start
 
 1. **Navigate to Settings**
-   - Go to Dashboard → Settings → GitHub Integration
+   - Go to **Settings → Integrations** and choose **Manage GitHub connections**
 
 2. **Connect Your Account**
    - Click "Connect with OAuth" (recommended) or "Connect with PAT"
@@ -80,7 +80,7 @@ WhiteBoxXAI supports two authentication methods for GitHub:
 - `read:org`: Read organization membership
 
 **How to Connect:**
-1. Click "Connect with OAuth" in Settings → GitHub Integration
+1. Click "Connect with OAuth" in **Settings → Integrations → Manage GitHub connections**
 2. Authorize WhiteBoxXAI on GitHub
 3. You'll be redirected back with a successful connection
 

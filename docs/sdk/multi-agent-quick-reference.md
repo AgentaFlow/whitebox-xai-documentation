@@ -99,8 +99,8 @@ monitor = CrewAIMonitor(api_key="key", api_url="https://api.whiteboxxai.com")
 |--------|------------|---------|-------------|
 | `start_monitoring()` | `crew, workflow_name, metadata` | `workflow_id` | Start monitoring |
 | `complete_monitoring()` | `status, outputs, error_message` | `summary` | Complete monitoring |
-| `log_agent_execution()` | `agent, inputs, outputs, tokens, cost` | `None` | Log execution |
-| `log_interaction()` | `from_agent, to_agent, type, message` | `None` | Log interaction |
+| `log_agent_execution()` | `agent, inputs, outputs, tokens_used, cost` | `None` | Log execution |
+| `log_interaction()` | `from_agent, to_agent, interaction_type, message` | `None` | Log interaction |
 | `log_task_completion()` | `task, status, output_data` | `None` | Log task |
 | `get_analytics()` | - | `dict` | Get analytics |
 
@@ -290,15 +290,13 @@ if cost > 1.0:
 ### Hierarchical Execution
 
 ```python
-parent_exec = monitor.create_agent_execution(
-    agent=manager,
-    inputs={"task": "coordinate"}
+parent_exec = client.agent_workflows.create_execution(
+    workflow_id, agent_id=manager_agent_id, inputs={"task": "coordinate"}
 )
 
-child_exec = monitor.create_agent_execution(
-    agent=worker,
-    inputs={"subtask": "..."},
-    parent_execution_id=parent_exec
+child_exec = client.agent_workflows.create_execution(
+    workflow_id, agent_id=worker_agent_id, inputs={"subtask": "..."},
+    parent_execution_id=parent_exec["id"],
 )
 ```
 
@@ -351,9 +349,9 @@ time.sleep(15)
 
 # Get analytics
 analytics = monitor.get_analytics()
-breakdown = monitor.get_cost_breakdown()
-bottlenecks = monitor.get_bottlenecks()
-timeline = monitor.get_timeline()
+breakdown = client.agent_workflows.cost_breakdown(workflow_id)
+bottlenecks = client.agent_workflows.bottlenecks(workflow_id)
+timeline = client.agent_workflows.timeline(workflow_id)
 ```
 
 ## Common Patterns

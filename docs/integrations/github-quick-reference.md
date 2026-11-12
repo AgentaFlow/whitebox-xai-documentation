@@ -8,7 +8,7 @@ description: Quick reference for the WhiteBoxXAI GitHub integration — connecti
 
 ### OAuth (Recommended)
 ```
-Dashboard → Settings → GitHub Integration → Connect with OAuth
+Settings → Integrations → Manage GitHub connections → Connect with OAuth
 ```
 
 ### Personal Access Token
@@ -17,7 +17,7 @@ Dashboard → Settings → GitHub Integration → Connect with OAuth
 # Required scopes: repo, read:org
 
 # 2. In WhiteBoxXAI:
-Dashboard → Settings → GitHub Integration → Connect with PAT
+Settings → Integrations → Manage GitHub connections → Connect with PAT
 ```
 
 ## Configuration File
@@ -67,19 +67,19 @@ client.models.register(
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/github/oauth/authorize` | GET | Initiate OAuth flow |
-| `/github/connect/pat` | POST | Connect with PAT |
-| `/github/connections` | GET | List connections |
-| `/github/connections/{id}/verify` | POST | Verify connection |
-| `/github/repositories/track` | POST | Track repository |
-| `/github/repositories/{id}/webhook` | POST | Setup webhook |
+| `/api/v1/github/oauth/authorize` | GET | Initiate OAuth flow |
+| `/api/v1/github/connect/pat` | POST | Connect with PAT |
+| `/api/v1/github/connections` | GET | List connections |
+| `/api/v1/github/connections/{id}/verify` | POST | Verify connection |
+| `/api/v1/github/repositories/track` | POST | Track repository |
+| `/api/v1/github/repositories/{id}/webhook` | POST | Setup webhook |
 
 ## Common Issues
 
 **Q: Models not auto-registering?**
 - Check `.whiteboxxai.yml` exists
-- Verify `auto_register: true`
-- Ensure model files match `path` patterns
+- Verify `enabled: true`
+- Ensure model files match `model_patterns`
 
 **Q: Webhook inactive?**
 - Click "Setup Webhook" in UI
@@ -110,8 +110,7 @@ Default patterns (glob syntax):
 
 Override in `.whiteboxxai.yml`:
 ```yaml
-models:
-  - path: "production/models/*.pkl"  # Specific folder only
+model_patterns: ["production/models/*.pkl"]   # Specific folder only
 ```
 
 ## Full Documentation

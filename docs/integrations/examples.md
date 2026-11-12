@@ -36,13 +36,14 @@ import numpy as np
 client = WhiteBoxXAI(api_key=os.environ["WHITEBOX_API_KEY"])
 
 # Register model
-model_id = client.models.register(
+model = client.models.register(
     name="simple_classifier",
     version="1.0.0",
     model_type="custom",
     features=feature_names,
     baseline_metrics={},
 )
+model_id = model["id"]          # register() returns the model record; its id is a UUID string
 
 print(f"Model registered: {model_id}")
 
@@ -59,7 +60,7 @@ for i in range(10):
     probability = np.random.rand()
 
     # Log to WhiteBoxXAI
-    prediction_id = client.predictions.log(
+    logged = client.predictions.log(
         model_id=model_id,
         input_data=features,
         output_data={
@@ -68,7 +69,7 @@ for i in range(10):
         }
     )
 
-    print(f"Logged prediction {i+1}: {prediction_id}")
+    print(f"Logged prediction {i+1}: {logged['prediction_id']}")
 
 print("✓ All predictions logged successfully!")
 ```
@@ -93,14 +94,14 @@ predictions = []
 
 for i in range(batch_size):
     predictions.append({
-        "inputs": {
+        "input_data": {
             "age": np.random.randint(18, 80),
             "income": np.random.randint(20000, 200000),
             "credit_score": np.random.randint(300, 850)
         },
-        "output": {
-            "prediction": np.random.choice(["approved", "denied"]),
-            "confidence": np.random.rand()
+        "output_data": {
+            "prediction": str(np.random.choice(["approved", "denied"])),
+            "confidence": float(np.random.rand())
         },
         "metadata": {
             "application_id": f"app_{i:05d}"
@@ -109,13 +110,14 @@ for i in range(batch_size):
 
 # Log entire batch at once
 print(f"Logging {len(predictions)} predictions...")
-prediction_ids = client.predictions.log_batch(
+batch_result = client.predictions.log_batch(
     model_id=model_id,
-    predictions=predictions
+    predictions=predictions      # up to 1,000 per call
 )
 
-print(f"✓ Logged {len(prediction_ids)} predictions")
-print(f"First prediction ID: {prediction_ids[0]}")
+print(f"✓ Logged {batch_result['logged']} of {batch_result['total']} predictions")
+if batch_result["failed"]:
+    print(batch_result["errors"])
 ```
 
 ---
@@ -466,7 +468,7 @@ model_id = monitor.register_model(
         "avg_transaction_amount",
         "is_international"
     ],
-    target="is_fraud",
+    target_variable="is_fraud",
     baseline_metrics={
         "accuracy": 0.94,
         "precision": 0.91,
@@ -509,7 +511,7 @@ def predict_fraud(transaction_data):
     probability = model.predict_proba([list(features.values())])[0][1]
 
     # Log to WhiteBoxXAI
-    prediction_id = monitor.log_prediction(
+    logged = monitor.log_prediction(
         inputs=features,
         output={
             "prediction": "fraud" if prediction == 1 else "legitimate",
@@ -528,7 +530,7 @@ def predict_fraud(transaction_data):
     return {
         "is_fraud": bool(prediction),
         "probability": probability,
-        "prediction_id": prediction_id
+        "prediction_id": logged["prediction_id"] if logged else None
     }
 
 # Example usage
@@ -578,7 +580,7 @@ model_id = monitor.register_model(
         "loan_amount",
         "loan_purpose"
     ],
-    target="approved",
+    target_variable="approved",
     baseline_metrics={
         "accuracy": 0.87,
         "precision": 0.84,
@@ -611,7 +613,7 @@ def approve_credit(application):
     probability = model.predict_proba([list(features.values())])[0][1]
 
     # Log prediction
-    prediction_id = monitor.log_prediction(
+    logged = monitor.log_prediction(
         inputs=features,
         output={
             "decision": "approved" if prediction == 1 else "denied",
@@ -627,15 +629,17 @@ def approve_credit(application):
     explanation = None
     if prediction == 0:
         explanation = client.explanations.generate(
-            prediction_id=prediction_id,
-            method="shap"
+            model_id=model_id,
+            instance=features,
+            method="shap",
+            prediction_id=logged["prediction_id"] if logged else None,
         )
 
     return {
         "approved": bool(prediction),
         "probability": probability,
         "explanation": explanation,
-        "prediction_id": prediction_id
+        "prediction_id": logged["prediction_id"] if logged else None
     }
 
 # Example
@@ -653,7 +657,7 @@ application = {
 result = approve_credit(application)
 print(f"Decision: {'Approved' if result['approved'] else 'Denied'}")
 if result['explanation']:
-    print(f"Top factors: {list(result['explanation']['feature_contributions'].keys())[:3]}")
+    print(f"Feature weights: {result['explanation']['feature_weights']}")
 ```
 
 ### Example 9: Customer Churn Prediction
@@ -684,17 +688,11 @@ model_id = monitor.register_model(
         "satisfaction_score",
         "subscription_tier"
     ],
-    target="will_churn",
+    target_variable="will_churn",
     baseline_metrics={},
 )
 
-# Enable drift detection
-monitor.enable_drift_detection(
-    threshold=0.15,
-    window_size=1000
-)
-
-# Prediction function with drift check
+# Prediction function with an occasional drift check
 def predict_churn(customer_data):
     """
     Predict customer churn with drift monitoring.
@@ -714,7 +712,7 @@ def predict_churn(customer_data):
     churn_probability = model.predict_proba([list(features.values())])[0][1]
 
     # Log prediction
-    prediction_id = monitor.log_prediction(
+    logged = monitor.log_prediction(
         inputs=features,
         output={
             "will_churn": bool(prediction),
@@ -730,19 +728,15 @@ def predict_churn(customer_data):
 
     # Check for drift periodically
     if np.random.random() < 0.01:  # 1% of predictions
-        recent_data = get_recent_predictions()  # Your function
-        drift_result = client.drift.detect(
-            model_id=model_id,
-            data=recent_data
-        )
-
-        if drift_result["severity"] == "high":
-            print(f"⚠️  High drift detected! Score: {drift_result['overall_score']:.3f}")
+        # Compares the model's most recent logged predictions with its baseline.
+        # It reads what you've already logged, so there is no data to pass in.
+        drift_result = client.drift.detect(model_id=model_id, window_size=1000)
+        print(drift_result)
 
     return {
         "will_churn": bool(prediction),
         "probability": churn_probability,
-        "prediction_id": prediction_id
+        "prediction_id": logged["prediction_id"] if logged else None
     }
 ```
 
@@ -802,7 +796,7 @@ def predict_with_ab_test(user_features, user_id):
     prediction = model.predict([user_features])
 
     # Log with variant metadata
-    prediction_id = monitor.log_prediction(
+    logged = monitor.log_prediction(
         inputs={"features": user_features},
         output={"recommendation": prediction[0]},
         metadata={
@@ -815,7 +809,7 @@ def predict_with_ab_test(user_features, user_id):
     return {
         "recommendation": prediction[0],
         "variant": variant,
-        "prediction_id": prediction_id
+        "prediction_id": logged["prediction_id"] if logged else None
     }
 
 # Analyze results
@@ -832,7 +826,7 @@ def compare_variants():
     print("Variant B:", summary_b)
 
     # Determine winner
-    if metrics_b['accuracy'] > metrics_a['accuracy'] * 1.02:  # 2% lift
+    if summary_b['accuracy'] > summary_a['accuracy'] * 1.02:  # 2% lift
         print("✓ Variant B wins!")
     else:
         print("✓ Variant A wins (control)")
@@ -900,7 +894,7 @@ def ensemble_predict(features):
     ensemble_pred = sum(predictions[name] * weights[name] for name in predictions)
 
     # Log ensemble prediction
-    prediction_id = ensemble_monitor.log_prediction(
+    logged = ensemble_monitor.log_prediction(
         inputs={"features": features},
         output={
             "probability": float(ensemble_pred),
@@ -912,7 +906,7 @@ def ensemble_predict(features):
     return {
         "probability": ensemble_pred,
         "components": predictions,
-        "prediction_id": prediction_id
+        "prediction_id": logged["prediction_id"] if logged else None
     }
 ```
 
@@ -1048,7 +1042,7 @@ def predict():
 
         # Log to WhiteBoxXAI (async)
         try:
-            prediction_id = monitor.log_prediction(
+            logged = monitor.log_prediction(
                 inputs=features,
                 output={
                     "prediction": int(prediction),
@@ -1062,12 +1056,12 @@ def predict():
         except Exception as e:
             # Don't fail request if logging fails
             print(f"Logging failed: {e}")
-            prediction_id = None
+            logged = None
 
         return jsonify({
             "prediction": int(prediction),
             "probability": float(probability),
-            "prediction_id": prediction_id
+            "prediction_id": logged["prediction_id"] if logged else None
         })
 
     except Exception as e:

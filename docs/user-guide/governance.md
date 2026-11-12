@@ -281,8 +281,8 @@ from a request's slide-over.
 
 ```bash
 GET  /api/v1/governance/review-boards/raci-grid       # the full grid, optionally filtered to one board
-POST /api/v1/governance/review-boards/requests/{request_id}/raci
-GET|PATCH|DELETE /api/v1/governance/review-boards/requests/{request_id}/raci/{assignment_id}
+POST|GET /api/v1/governance/review-boards/requests/{request_id}/participants
+PATCH|DELETE /api/v1/governance/review-boards/participants/{participant_id}
 ```
 
 The [`whitebox_governance_raci_grid`](../integrations/mcp.md#governance) MCP tool exposes the
