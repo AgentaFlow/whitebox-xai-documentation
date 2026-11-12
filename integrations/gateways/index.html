@@ -1,0 +1,4268 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Record LLM calls from OpenTelemetry, Portkey, Kong AI Gateway and Azure API Management in WhiteBoxXAI — what each gateway sends, the configuration to add, how calls are filed under AI systems, and the limits that apply to every gateway connection.">
+      
+      
+        <meta name="author" content="AgentaFlow">
+      
+      
+        <link rel="canonical" href="https://docs.whiteboxxai.com/integrations/gateways/">
+      
+      
+        <link rel="prev" href="../litellm/">
+      
+      
+        <link rel="next" href="../n8n-webhooks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Other LLM Gateways (OTLP, Portkey, Kong, APIM) - WhiteBoxXAI Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#llm-gateways" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="WhiteBoxXAI Documentation" class="md-header__button md-logo" aria-label="WhiteBoxXAI Documentation" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            WhiteBoxXAI Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Other LLM Gateways (OTLP, Portkey, Kong, APIM)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AgentaFlow/whitebox-xai-documentation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    whitebox-xai-documentation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../get-started/getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Enhanced Dashboard
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../account/ai-regulations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Compliance & Reports
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../sdk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  SDK & API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../agent-resources/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  MCP & AI Agents
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Integrations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../learn/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../account/api-keys/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Account & Security
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../help/faq/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Help
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="WhiteBoxXAI Documentation" class="md-nav__button md-logo" aria-label="WhiteBoxXAI Documentation" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    WhiteBoxXAI Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AgentaFlow/whitebox-xai-documentation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    whitebox-xai-documentation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/plans/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans & Limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/governance-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../help/whats-new/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's New
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enhanced Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Enhanced Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/needs-attention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Needs Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/model-register/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/assurance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assurance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/evaluations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluations & Prompt Versions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance & Reports
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compliance & Reports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../account/ai-regulations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance Frameworks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/compliance-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance & Evidence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/reports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/report-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report Types Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reviews & Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/risk-register/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Risk Register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/trust-score/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Score
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../sdk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK & API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK & API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/llm-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/multi-agent-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Agent Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/multi-agent-quick-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Agent Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/offline-mode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline Mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../agent-resources/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP & AI Agents
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MCP & AI Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-resources/skill-libraries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Skills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-resources/prompts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Prompts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-resources/yaml-definitions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Config Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Integrations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crewai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CrewAI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../langchain-multi-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain Multi-Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tensorflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TensorFlow & Keras
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../huggingface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hugging Face
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../boosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XGBoost & LightGBM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github-quick-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github-diff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Diff Reviews
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-git-tracking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git Context Tracking (SDK)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policy-as-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy-as-Code & GitOps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../litellm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LiteLLM Gateway
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other LLM Gateways (OTLP, Portkey, Kong, APIM)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Other LLM Gateways (OTLP, Portkey, Kong, APIM)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-every-connection-shares" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What every connection shares
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What every connection shares">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-stored-and-how-calls-are-filed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is stored, and how calls are filed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#governance-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Governance Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-integrations-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Integrations card
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opentelemetry-otlp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenTelemetry (OTLP)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenTelemetry (OTLP)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up-through-a-collector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up through a Collector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up-from-an-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up from an SDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-spans-are-kept" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which spans are kept
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-recorded-from-each-span" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is recorded from each span
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#portkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Portkey
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Portkey">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-portkey-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Portkey records
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kong-ai-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kong AI Gateway
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kong AI Gateway">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-kong-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Kong records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#azure-api-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Azure API Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Azure API Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-azure-api-management-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Azure API Management records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../n8n-webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    n8n Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../learn/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learn/interactive-demos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explore with Sample Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learn/workshops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    From Model to Evidence Pack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learn/tutorial-llm-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Govern an LLM Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learn/tutorial-agents-5-minutes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Govern Your Agents in 5 Minutes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learn/tutorial-agent-mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect an AI Assistant over MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account & Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Account & Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../account/api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../account/two-factor-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two-Factor Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../account/single-sign-on/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single Sign-On (Entra ID)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Help
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Help
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../help/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../help/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../help/support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-every-connection-shares" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What every connection shares
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What every connection shares">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-stored-and-how-calls-are-filed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is stored, and how calls are filed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#governance-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Governance Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-integrations-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Integrations card
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opentelemetry-otlp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenTelemetry (OTLP)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenTelemetry (OTLP)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up-through-a-collector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up through a Collector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up-from-an-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up from an SDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-spans-are-kept" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which spans are kept
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-recorded-from-each-span" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is recorded from each span
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#portkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Portkey
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Portkey">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-portkey-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Portkey records
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kong-ai-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kong AI Gateway
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kong AI Gateway">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-kong-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Kong records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#azure-api-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Azure API Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Azure API Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-it-up_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set it up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-azure-api-management-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Azure API Management records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels-for-filing_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels for filing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/AgentaFlow/whitebox-xai-documentation/edit/main/docs/integrations/gateways.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="llm-gateways">LLM gateways<a class="headerlink" href="#llm-gateways" title="Anchor link to this section">&para;</a></h1>
+<p>Your teams' LLM calls already pass through a gateway, or through code that emits OpenTelemetry traces.
+Connecting it to WhiteBoxXAI records each call where it passes through, so no team has to add logging to its
+own code. WhiteBoxXAI accepts calls from five sources:</p>
+<table>
+<thead>
+<tr>
+<th>Gateway</th>
+<th>What it sends</th>
+<th>Where it goes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../litellm/">LiteLLM</a></td>
+<td>LiteLLM's standard logging records, in batches</td>
+<td><code>/api/v1/llm/gateways/litellm/ingest</code></td>
+</tr>
+<tr>
+<td><a href="#opentelemetry-otlp">OpenTelemetry (OTLP)</a></td>
+<td>OTLP traces over HTTP, JSON or Protobuf, from a Collector or an SDK</td>
+<td><code>/api/v1/llm/gateways/otlp/v1/traces</code></td>
+</tr>
+<tr>
+<td><a href="#portkey">Portkey</a></td>
+<td>Portkey's OpenTelemetry log export</td>
+<td><code>/api/v1/llm/gateways/otlp/v1/traces</code></td>
+</tr>
+<tr>
+<td><a href="#kong-ai-gateway">Kong AI Gateway</a></td>
+<td>The <code>http-log</code> plugin's record, with the <code>ai-proxy</code> fields</td>
+<td><code>/api/v1/llm/gateways/kong/ingest</code></td>
+</tr>
+<tr>
+<td><a href="#azure-api-management">Azure API Management</a></td>
+<td>A JSON record from a <code>send-one-way-request</code> policy</td>
+<td><code>/api/v1/llm/gateways/azure_apim/ingest</code></td>
+</tr>
+</tbody>
+</table>
+<p>All addresses are on <code>https://api.whiteboxxai.com</code>; a Business Cloud tenant has its own address, which the
+setup pane shows.</p>
+<p>LiteLLM has its own guide: <a href="../litellm/">LiteLLM gateway</a>. This page covers the other four, and what all five
+connections share.</p>
+<h2 id="what-every-connection-shares">What every connection shares<a class="headerlink" href="#what-every-connection-shares" title="Anchor link to this section">&para;</a></h2>
+<h3 id="connect">Connect<a class="headerlink" href="#connect" title="Anchor link to this section">&para;</a></h3>
+<p>You need to be an administrator of your organisation.</p>
+<ol>
+<li>In <strong>Settings → LLM gateway</strong>, open the gateway's tab: <strong>OpenTelemetry (OTLP)</strong>, <strong>Portkey AI</strong>,
+   <strong>Kong AI Gateway</strong> or <strong>Azure APIM</strong>.</li>
+<li>The tab says what that gateway sends. Name the connection, choose what is stored from each call, and
+   select <strong>Connect</strong>. Azure APIM sends no prompt or response, so its tab shows a note in place of that
+   choice. WhiteBoxXAI shows a token starting <code>wbx_lgw_</code> <strong>once</strong>, as <code>Bearer wbx_lgw_...</code>. Copy it before
+   you switch tab; switching tab clears it. If you lose it, rotate it.</li>
+<li>
+<p>Put the token and the address into the gateway's configuration, as each section below shows. The token
+   banner says where this gateway takes the token, because it is not the same place on every gateway:</p>
+<table>
+<thead>
+<tr>
+<th>Gateway</th>
+<th>Where the token goes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenTelemetry, through a Collector</td>
+<td><code>WHITEBOXXAI_AUTHORIZATION</code>, where the Collector runs</td>
+</tr>
+<tr>
+<td>OpenTelemetry, from an SDK</td>
+<td>Inside <code>OTEL_EXPORTER_OTLP_TRACES_HEADERS</code>, as <code>Authorization=Bearer%20wbx_lgw_...</code></td>
+</tr>
+<tr>
+<td>Portkey</td>
+<td>Inside <code>EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_HEADERS</code> on your Portkey gateway, as <code>Authorization=Bearer wbx_lgw_...</code></td>
+</tr>
+<tr>
+<td>Kong AI Gateway</td>
+<td><code>DECK_WHITEBOXXAI_AUTHORIZATION</code>, where you run decK</td>
+</tr>
+<tr>
+<td>Azure APIM</td>
+<td>A secret named value called <code>WHITEBOXXAI_AUTHORIZATION</code></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Send a call through the gateway. The tab changes from <strong>Waiting for the first call</strong> to <strong>Receiving</strong>.</p>
+</li>
+</ol>
+<p>An organisation has one connection per gateway type, so up to five at once. Each has its own token, rules,
+health and rate limit. A token only works for its own gateway type: a Kong token sent to the OTLP address is
+refused with <code>401</code>. The one exception is Portkey, whose token is accepted on the OTLP address because that
+is where Portkey sends.</p>
+<h3 id="what-is-stored-and-how-calls-are-filed">What is stored, and how calls are filed<a class="headerlink" href="#what-is-stored-and-how-calls-are-filed" title="Anchor link to this section">&para;</a></h3>
+<p>These work the same way for every gateway, and are described once in the LiteLLM guide:</p>
+<ul>
+<li><strong>Content policy</strong>: <strong>Redact personal data (recommended)</strong>, <strong>Metadata only</strong> or <strong>Store everything as
+  sent</strong>, applied to every prompt, message and response a gateway sends. See
+  <a href="../litellm/#what-is-stored">What is stored</a> and
+  <a href="../litellm/#what-redaction-removes-and-what-it-does-not">what redaction removes, and what it does not</a>.</li>
+<li><strong>Rules and unregistered traffic</strong>: rules map a label to an AI system, unclaimed labels from the last 30
+  days are listed so you can assign them, and assigning also files the last 30 days of matching calls. See
+  <a href="../litellm/#filing-calls-under-ai-systems">Filing calls under AI systems</a>.</li>
+<li><strong>Health</strong>: the same six states, from <strong>Waiting for the first call</strong> to <strong>Calls are being lost</strong>. See
+  <a href="../litellm/#health">Health</a>.</li>
+</ul>
+<p>The labels are always called <strong>Team</strong>, <strong>Team ID</strong>, <strong>API key</strong>, <strong>Model</strong> and <strong>Tag</strong>, but each gateway fills
+them from different fields. On Kong, for example, <strong>API key</strong> holds the consumer's username. Each section below
+has a table showing where each label comes from.</p>
+<p>If a call carries no team or key, only its model is known, and the pane says so. An assignment then applies
+to every call to that model.</p>
+<h3 id="duplicates">Duplicates<a class="headerlink" href="#duplicates" title="Anchor link to this section">&para;</a></h3>
+<p>A call is identified by its request id (each section below says which field). A call that arrives twice is
+stored once and costs nothing the second time. This is per organisation: the same request id arriving
+through two gateways is also stored once.</p>
+<h3 id="limits">Limits<a class="headerlink" href="#limits" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records per request</td>
+<td>1,000. For OpenTelemetry and Portkey, this counts GenAI spans only. A larger request is refused with <code>413</code> and counted as lost.</td>
+</tr>
+<tr>
+<td>Request size</td>
+<td>32 MB, read from the <code>Content-Length</code> header. A larger request is refused with <code>413</code> and counted as lost.</td>
+</tr>
+<tr>
+<td>Request rate</td>
+<td>1,200 per 60 seconds for each connection, separate from your dashboard and SDK traffic. Beyond that, <code>429</code>.</td>
+</tr>
+<tr>
+<td>Free plan</td>
+<td>A request that would record more Governance Events than are left this month is refused whole with <code>429</code>. On Business Cloud the monthly allowance is not a hard cap.</td>
+</tr>
+<tr>
+<td>Retention</td>
+<td>As for <a href="../litellm/#limits">LiteLLM calls</a>: your organisation's data retention policy.</td>
+</tr>
+</tbody>
+</table>
+<p>A refused request is counted under <strong>Calls are being lost</strong>. Whether the gateway sends it again depends on
+the gateway. LiteLLM and Portkey do not, and the pane says so. For OpenTelemetry, Kong and Azure API
+Management, their retry behaviour has not been confirmed, so the pane tells you to check whether your
+gateway sends the calls again. Until it does, treat the count as calls missing from your record.</p>
+<h3 id="governance-events">Governance Events<a class="headerlink" href="#governance-events" title="Anchor link to this section">&para;</a></h3>
+<p>Each call <strong>stored</strong> is one <a href="../../get-started/governance-events/#llm-gateway-calls">Governance Event</a>. For
+OpenTelemetry and Portkey, that is one event per GenAI span stored. Duplicates, rejected records, spans that
+are not GenAI, and requests that cannot be read at all cost nothing.</p>
+<h3 id="the-integrations-card">The Integrations card<a class="headerlink" href="#the-integrations-card" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Settings → Integrations</strong> has one card for all gateway connections, titled <strong>LLM gateways</strong>. Its count,
+<strong>N calls recorded</strong>, is the total across every connection. It shows the state of the connection that most
+needs attention, in this order: calls being lost, receiving with problems, gone quiet, receiving, waiting,
+disabled. Where two are tied, LiteLLM is shown.</p>
+<p>Unless that state is <strong>Receiving</strong>, the card shows the verdict, starting with the gateway's name, for
+example "Kong AI Gateway: …". So a stopped Kong connection is visible there, and named, even if LiteLLM is
+fine.</p>
+<h2 id="opentelemetry-otlp">OpenTelemetry (OTLP)<a class="headerlink" href="#opentelemetry-otlp" title="Anchor link to this section">&para;</a></h2>
+<p>Use this for an OpenTelemetry Collector, or for an application whose OpenTelemetry SDK exports traces
+directly. WhiteBoxXAI accepts OTLP over HTTP, as JSON or Protobuf, optionally gzip-compressed. It does not
+accept OTLP over gRPC.</p>
+<h3 id="set-it-up-through-a-collector">Set it up through a Collector<a class="headerlink" href="#set-it-up-through-a-collector" title="Anchor link to this section">&para;</a></h3>
+<p>Add an <code>otlphttp</code> exporter to your Collector's configuration and include it in your traces pipeline. The
+pane shows this block:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">exporters</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">otlphttp/whiteboxxai</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">traces_endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">"${env:WHITEBOXXAI_OTLP_ENDPOINT}"</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">headers</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">Authorization</span><span class="p">:</span><span class="w"> </span><span class="s">"${env:WHITEBOXXAI_AUTHORIZATION}"</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nt">service</span><span class="p">:</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">pipelines</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">traces</span><span class="p">:</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">receivers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">otlp</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">processors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">batch</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">      </span><span class="nt">exporters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">otlphttp/whiteboxxai</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p>The block assumes your Collector already defines the <code>otlp</code> receiver and <code>batch</code> processor; merge it into
+your existing pipeline. Then set two environment variables where the Collector runs:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WHITEBOXXAI_OTLP_ENDPOINT</code></td>
+<td><code>https://api.whiteboxxai.com/api/v1/llm/gateways/otlp/v1/traces</code></td>
+</tr>
+<tr>
+<td><code>WHITEBOXXAI_AUTHORIZATION</code></td>
+<td><code>Bearer wbx_lgw_...</code>, including the word <code>Bearer</code></td>
+</tr>
+</tbody>
+</table>
+<p>Use <code>traces_endpoint</code>, not <code>endpoint</code>. With <code>endpoint</code>, the exporter appends <code>/v1/traces</code> to an address that
+already ends in it, and every request fails with <code>404</code>.</p>
+<h3 id="set-it-up-from-an-sdk">Set it up from an SDK<a class="headerlink" href="#set-it-up-from-an-sdk" title="Anchor link to this section">&para;</a></h3>
+<p>To export straight from an application, set the standard OpenTelemetry variables:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code></td>
+<td><code>https://api.whiteboxxai.com/api/v1/llm/gateways/otlp/v1/traces</code></td>
+</tr>
+<tr>
+<td><code>OTEL_EXPORTER_OTLP_TRACES_HEADERS</code></td>
+<td><code>Authorization=Bearer%20wbx_lgw_...</code></td>
+</tr>
+</tbody>
+</table>
+<p>The space after <code>Bearer</code> is written as <code>%20</code>, which is how the OpenTelemetry specification encodes it in
+this variable.</p>
+<h3 id="which-spans-are-kept">Which spans are kept<a class="headerlink" href="#which-spans-are-kept" title="Anchor link to this section">&para;</a></h3>
+<p>A trace export contains every span: HTTP requests, database calls, and the LLM calls you want. WhiteBoxXAI
+keeps a span only if it has an attribute starting <code>gen_ai.</code>, <code>llm.</code> or <code>openinference.</code>, or if its name
+contains <code>chat</code>, <code>llm</code>, <code>completion</code>, <code>generate</code>, <code>openai</code> or <code>anthropic</code>. Every other span is dropped
+without being counted, billed or reported.</p>
+<p>So an exporter that sends only non-GenAI spans leaves the tab at <strong>Waiting for the first call</strong>. If that
+happens, check that your LLM client library is instrumented with OpenTelemetry's GenAI conventions.</p>
+<h3 id="what-is-recorded-from-each-span">What is recorded from each span<a class="headerlink" href="#what-is-recorded-from-each-span" title="Anchor link to this section">&para;</a></h3>
+<p>Attributes are read from the span, then from its resource. Where several are listed, the first one present
+wins.</p>
+<table>
+<thead>
+<tr>
+<th>Stored as</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td><code>gen_ai.response.model</code>, <code>gen_ai.request.model</code>, <code>llm.model_name</code></td>
+</tr>
+<tr>
+<td>Provider</td>
+<td><code>gen_ai.system</code>, <code>gen_ai.provider.name</code>, <code>llm.provider</code></td>
+</tr>
+<tr>
+<td>Messages and prompt</td>
+<td><code>gen_ai.system_instructions</code> and <code>gen_ai.input.messages</code>; otherwise prompt events, <code>gen_ai.prompt</code>, <code>llm.prompt</code> or <code>input.value</code></td>
+</tr>
+<tr>
+<td>Completion</td>
+<td><code>gen_ai.output.messages</code>; otherwise completion events, <code>gen_ai.completion</code>, <code>llm.completion</code> or <code>output.value</code></td>
+</tr>
+<tr>
+<td>Tokens</td>
+<td><code>gen_ai.usage.input_tokens</code> and <code>gen_ai.usage.output_tokens</code> (or the older <code>prompt_tokens</code> and <code>completion_tokens</code> names); the total if sent, otherwise their sum</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td><code>gen_ai.usage.cost</code> or <code>gen_ai.usage.total_cost</code>, as sent. If no cost is sent, the cost is recorded as unavailable, not as zero.</td>
+</tr>
+<tr>
+<td>Time and latency</td>
+<td>The span's start and end time</td>
+</tr>
+<tr>
+<td>Outcome</td>
+<td>Error if the span's status is error. A message mentioning a timeout is recorded as a timeout, and one mentioning a rate limit as rate-limited.</td>
+</tr>
+<tr>
+<td>Request id</td>
+<td><code>gen_ai.response.id</code>, otherwise the span id</td>
+</tr>
+<tr>
+<td>Session</td>
+<td><code>gen_ai.conversation.id</code> or <code>session.id</code>, otherwise the trace id</td>
+</tr>
+<tr>
+<td>End user</td>
+<td><code>enduser.id</code> or <code>user.id</code></td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>The resource's <code>deployment.environment</code></td>
+</tr>
+<tr>
+<td>Parameters</td>
+<td><code>gen_ai.request.temperature</code>, <code>max_tokens</code>, <code>top_p</code>, <code>frequency_penalty</code>, <code>presence_penalty</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="labels-for-filing">Labels for filing<a class="headerlink" href="#labels-for-filing" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team</td>
+<td><code>gen_ai.team</code> or <code>team</code>, otherwise the resource's <code>service.name</code></td>
+</tr>
+<tr>
+<td>Team ID</td>
+<td><code>gen_ai.team_id</code>, or the resource's <code>team.id</code></td>
+</tr>
+<tr>
+<td>API key</td>
+<td><code>client.id</code>, otherwise <code>enduser.id</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td><code>gen_ai.request.model</code>, otherwise the model</td>
+</tr>
+<tr>
+<td>Tag</td>
+<td><code>gen_ai.tags</code> or <code>tags</code> (a list or a comma-separated string), and the resource's <code>service.namespace</code></td>
+</tr>
+</tbody>
+</table>
+<p>Because the team falls back to <code>service.name</code>, each instrumented service usually shows up as its own team
+under <strong>Unregistered traffic</strong>. That is often the most useful way to assign calls to AI systems.</p>
+<h2 id="portkey">Portkey<a class="headerlink" href="#portkey" title="Anchor link to this section">&para;</a></h2>
+<p>Portkey sends calls to WhiteBoxXAI through its OpenTelemetry log export, which Portkey calls Complete Logs
+Export. Portkey describes it as experimental and offers it on Enterprise and self-hosted gateways only. It
+sends each call on its own, without batching, and does not retry a failed send.</p>
+<h3 id="set-it-up">Set it up<a class="headerlink" href="#set-it-up" title="Anchor link to this section">&para;</a></h3>
+<p>Connect on the <strong>Portkey AI</strong> tab, then set these environment variables on your Portkey gateway:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">EXPERIMENTAL_GEN_AI_OTEL_TRACES_ENABLED</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="p">:</span><span class="w"> </span><span class="s">"https://api.whiteboxxai.com/api/v1/llm/gateways/otlp"</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_HEADERS</span><span class="p">:</span><span class="w"> </span><span class="s">"Authorization=Bearer</span><span class="nv"> </span><span class="s">wbx_lgw_..."</span>
+</span></code></pre></div>
+<p>The endpoint stops at <code>/otlp</code>, without <code>/v1/traces</code>, because Portkey adds <code>/v1/traces</code> itself. The header is
+written with a plain space, as Portkey's documentation shows.</p>
+<h3 id="what-portkey-records">What Portkey records<a class="headerlink" href="#what-portkey-records" title="Anchor link to this section">&para;</a></h3>
+<p>Portkey's spans are read exactly as described under
+<a href="#what-is-recorded-from-each-span">What is recorded from each span</a>, with three additions:</p>
+<ul>
+<li><strong>Cost</strong> comes from <code>portkey.usage.cost</code> first.</li>
+<li><strong>Team</strong> comes from <code>portkey.metadata.team</code>, otherwise from <code>portkey.workspace.slug</code>.</li>
+<li><strong>Other metadata</strong> you attach in Portkey becomes a tag such as <code>region:eu</code>. Metadata named <code>team_id</code>,
+  <code>key_alias</code> or <code>model_group</code> fills that label instead. The workspace is also added as a tag,
+  <code>workspace:&lt;slug&gt;</code>.</li>
+</ul>
+<p>To file Portkey calls by team, attach <code>team</code> metadata to requests in Portkey. Without it, calls are grouped by
+workspace, and without a workspace, only by model.</p>
+<h2 id="kong-ai-gateway">Kong AI Gateway<a class="headerlink" href="#kong-ai-gateway" title="Anchor link to this section">&para;</a></h2>
+<p>Kong's <code>ai-proxy</code> plugin records each LLM call in Kong's log, and its <code>http-log</code> plugin sends that log to
+WhiteBoxXAI.</p>
+<h3 id="set-it-up_1">Set it up<a class="headerlink" href="#set-it-up_1" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Turn on AI logging.</strong> In your existing <code>ai-proxy</code> or <code>ai-proxy-advanced</code> plugin, set:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">log_statistics</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">log_payloads</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span></code></pre></div>
+<p>Without <code>log_statistics</code> Kong leaves out token counts, and without <code>log_payloads</code> it leaves out the prompt
+and response. Add these settings to your existing plugin; don't declare a second <code>ai-proxy</code>, which would
+replace your model and route settings.</p>
+</li>
+<li>
+<p><strong>Add <code>http-log</code>.</strong> The pane shows this decK configuration:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">_format_version</span><span class="p">:</span><span class="w"> </span><span class="s">"3.0"</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">plugins</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http-log</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">http_endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env "DECK_WHITEBOXXAI_INGEST_URL" }}</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POST</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">content_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">keepalive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60000</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">flush_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">headers</span><span class="p">:</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">        </span><span class="nt">Authorization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ env "DECK_WHITEBOXXAI_AUTHORIZATION" }}</span>
+</span></code></pre></div>
+<p>As written, the plugin applies to every service. To limit it to your AI routes, add a <code>service</code> or
+<code>route</code> to the plugin entry.</p>
+</li>
+<li>
+<p><strong>Set the variables where you run decK</strong>, then run <code>deck gateway sync</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DECK_WHITEBOXXAI_INGEST_URL</code></td>
+<td><code>https://api.whiteboxxai.com/api/v1/llm/gateways/kong/ingest</code></td>
+</tr>
+<tr>
+<td><code>DECK_WHITEBOXXAI_AUTHORIZATION</code></td>
+<td><code>Bearer wbx_lgw_...</code></td>
+</tr>
+</tbody>
+</table>
+<p>decK only substitutes variables whose names start with <code>DECK_</code>, and it substitutes them when it syncs.
+The token is then held in Kong's plugin configuration.</p>
+</li>
+</ol>
+<p><code>http-log</code> can send one record per request or, with its queue's batch size above 1, an array of records.
+WhiteBoxXAI accepts both.</p>
+<h3 id="what-kong-records">What Kong records<a class="headerlink" href="#what-kong-records" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Stored as</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>The <code>ai-proxy</code> request or response model, otherwise the model in the request or response body</td>
+</tr>
+<tr>
+<td>Provider</td>
+<td>The <code>ai-proxy</code> provider name, otherwise <code>kong-ai</code></td>
+</tr>
+<tr>
+<td>Tokens and cost</td>
+<td>The <code>ai-proxy</code> usage figures, otherwise the response body's <code>usage</code>, otherwise Kong's <code>x-llm-usage-*</code> headers</td>
+</tr>
+<tr>
+<td>Messages, prompt and completion</td>
+<td>The <code>ai-proxy</code> payloads, otherwise the request and response bodies</td>
+</tr>
+<tr>
+<td>Time and latency</td>
+<td><code>started_at</code>, and Kong's request latency</td>
+</tr>
+<tr>
+<td>Outcome</td>
+<td>The response status: <code>429</code> is rate-limited, <code>408</code> and <code>504</code> are timeouts, other <code>4xx</code> and <code>5xx</code> are failures</td>
+</tr>
+<tr>
+<td>Request id</td>
+<td>Kong's request id</td>
+</tr>
+<tr>
+<td>End user</td>
+<td>The consumer's username</td>
+</tr>
+</tbody>
+</table>
+<p>A record without <code>started_at</code> is rejected.</p>
+<h3 id="labels-for-filing_1">Labels for filing<a class="headerlink" href="#labels-for-filing_1" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team</td>
+<td>The consumer's <code>custom_id</code>, otherwise the service name</td>
+</tr>
+<tr>
+<td>Team ID</td>
+<td>The consumer's id</td>
+</tr>
+<tr>
+<td>API key</td>
+<td>The consumer's username</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>The model</td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>The route's tags</td>
+</tr>
+</tbody>
+</table>
+<p>To file Kong calls by team, give each team's Kong consumer a <code>custom_id</code>.</p>
+<h2 id="azure-api-management">Azure API Management<a class="headerlink" href="#azure-api-management" title="Anchor link to this section">&para;</a></h2>
+<p>An outbound policy on your Azure OpenAI API sends one JSON record per call to WhiteBoxXAI. It records the
+model, token counts, timing and outcome. It does not send the prompt, the response or a cost, so the content
+policy has nothing to redact, and the <strong>Azure APIM</strong> tab shows a note instead of the content-policy choice.</p>
+<h3 id="set-it-up_2">Set it up<a class="headerlink" href="#set-it-up_2" title="Anchor link to this section">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Create two named values</strong> in your API Management instance:</p>
+<table>
+<thead>
+<tr>
+<th>Named value</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WHITEBOXXAI_INGEST_URL</code></td>
+<td><code>https://api.whiteboxxai.com/api/v1/llm/gateways/azure_apim/ingest</code></td>
+</tr>
+<tr>
+<td><code>WHITEBOXXAI_AUTHORIZATION</code></td>
+<td><code>Bearer wbx_lgw_...</code>. Make this a secret named value.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>Add the policy</strong> inside your API's <code>&lt;outbound&gt;</code> section, after <code>&lt;base /&gt;</code>. The pane shows this snippet:</p>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">&lt;send-one-way-request</span><span class="w"> </span><span class="na">mode=</span><span class="s">"new"</span><span class="nt">&gt;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="nt">&lt;set-url&gt;</span>{{WHITEBOXXAI_INGEST_URL}}<span class="nt">&lt;/set-url&gt;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&lt;set-method&gt;</span>POST<span class="nt">&lt;/set-method&gt;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">&lt;set-header</span><span class="w"> </span><span class="na">name=</span><span class="s">"Authorization"</span><span class="w"> </span><span class="na">exists-action=</span><span class="s">"override"</span><span class="nt">&gt;</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">&lt;value&gt;</span>{{WHITEBOXXAI_AUTHORIZATION}}<span class="nt">&lt;/value&gt;</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">&lt;/set-header&gt;</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">&lt;set-header</span><span class="w"> </span><span class="na">name=</span><span class="s">"Content-Type"</span><span class="w"> </span><span class="na">exists-action=</span><span class="s">"override"</span><span class="nt">&gt;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="nt">&lt;value&gt;</span>application/json<span class="nt">&lt;/value&gt;</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">&lt;/set-header&gt;</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="nt">&lt;set-body&gt;</span>@{
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span>var<span class="w"> </span>deployment<span class="w"> </span>=<span class="w"> </span>context.Request.MatchedParameters.GetValueOrDefault("deployment-id",
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">            </span>(string)context.Variables.GetValueOrDefault("deployment-id",<span class="w"> </span>""));
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">        </span>JObject<span class="w"> </span>respObj<span class="w"> </span>=<span class="w"> </span>null;
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span>var<span class="w"> </span>contentType<span class="w"> </span>=<span class="w"> </span>context.Response.Headers.GetValueOrDefault("Content-Type",<span class="w"> </span>"");
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span>if<span class="w"> </span>(contentType.Contains("application/json"))<span class="w"> </span>{
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">            </span>try<span class="w"> </span>{
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">                </span>respObj<span class="w"> </span>=<span class="w"> </span>context.Response.Body?.As<span class="ni">&amp;lt;</span>JObject<span class="ni">&amp;gt;</span>(preserveContent:<span class="w"> </span>true);
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">            </span>}<span class="w"> </span>catch<span class="w"> </span>{}
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">        </span>}
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span>return<span class="w"> </span>new<span class="w"> </span>JObject(
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">            </span>new<span class="w"> </span>JProperty("request_id",<span class="w"> </span>context.RequestId.ToString()),
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">            </span>new<span class="w"> </span>JProperty("timestamp",<span class="w"> </span>context.Timestamp.ToString("o")),
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">            </span>new<span class="w"> </span>JProperty("deployment",<span class="w"> </span>deployment),
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">            </span>new<span class="w"> </span>JProperty("model",<span class="w"> </span>(string)respObj?["model"]<span class="w"> </span>??<span class="w"> </span>deployment),
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">            </span>new<span class="w"> </span>JProperty("usage",<span class="w"> </span>respObj?["usage"]),
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">            </span>new<span class="w"> </span>JProperty("api_id",<span class="w"> </span>context.Api?.Id),
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">            </span>new<span class="w"> </span>JProperty("durationMs",<span class="w"> </span>context.Elapsed.TotalMilliseconds),
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">            </span>new<span class="w"> </span>JProperty("subscription_id",<span class="w"> </span>context.Subscription?.Id),
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">            </span>new<span class="w"> </span>JProperty("product_id",<span class="w"> </span>context.Product?.Id),
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">            </span>new<span class="w"> </span>JProperty("status_code",<span class="w"> </span>context.Response.StatusCode)
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span>).ToString();
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">    </span>}<span class="nt">&lt;/set-body&gt;</span>
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="nt">&lt;/send-one-way-request&gt;</span>
+</span></code></pre></div>
+<p><code>send-one-way-request</code> does not wait for WhiteBoxXAI to answer, so it adds no delay to your callers.</p>
+</li>
+</ol>
+<h3 id="what-azure-api-management-records">What Azure API Management records<a class="headerlink" href="#what-azure-api-management-records" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Stored as</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>The <strong>deployment name</strong> from the request URL. If the API has no <code>deployment-id</code> parameter, the model the response reports.</td>
+</tr>
+<tr>
+<td>Provider</td>
+<td><code>azure_openai</code></td>
+</tr>
+<tr>
+<td>Tokens</td>
+<td>The response's <code>usage</code>, for JSON responses only</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Not sent, so recorded as unavailable</td>
+</tr>
+<tr>
+<td>Time and latency</td>
+<td>The request's start time and APIM's elapsed time</td>
+</tr>
+<tr>
+<td>Outcome</td>
+<td>The response status: <code>429</code> is rate-limited, <code>408</code> and <code>504</code> are timeouts, other <code>4xx</code> and <code>5xx</code> are failures</td>
+</tr>
+<tr>
+<td>Request id</td>
+<td>APIM's request id</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Streamed responses record no tokens.</strong> The policy reads the response body only when it is JSON, because
+reading a streamed (server-sent events) response would make APIM buffer it and break streaming for your
+callers. A streamed call is still recorded, with its model, timing and outcome.</p>
+<h3 id="labels-for-filing_2">Labels for filing<a class="headerlink" href="#labels-for-filing_2" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team</td>
+<td>The APIM product</td>
+</tr>
+<tr>
+<td>API key</td>
+<td>The APIM subscription</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>The APIM API's id</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>Model</strong> label holds the API's id, not the model name, so <strong>Unregistered traffic</strong> lists one row per
+API. To file calls by team, put each team's subscriptions under its own product.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Anchor link to this section">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>You see</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>401</code> in the gateway's log</td>
+<td>The token is wrong, was rotated, or the connection is disabled. Or it belongs to another gateway's tab: each gateway type needs its own connection and token.</td>
+</tr>
+<tr>
+<td><code>404</code> from the OpenTelemetry Collector</td>
+<td>The exporter uses <code>endpoint</code> instead of <code>traces_endpoint</code>, so it sends to <code>.../v1/traces/v1/traces</code>.</td>
+</tr>
+<tr>
+<td><code>404</code> from Portkey</td>
+<td>The endpoint ends in <code>/v1/traces</code>. Stop it at <code>/otlp</code>; Portkey adds the rest.</td>
+</tr>
+<tr>
+<td>Traces are sent, but the tab stays at <strong>Waiting for the first call</strong></td>
+<td>None of the spans is a GenAI span. See <a href="#which-spans-are-kept">Which spans are kept</a>.</td>
+</tr>
+<tr>
+<td><strong>Receiving, with problems</strong> and "OTLP payload is neither valid JSON nor valid Protobuf trace data"</td>
+<td>The body could not be read as an OTLP trace export, for example because it was compressed with something other than gzip. The request costs nothing.</td>
+</tr>
+<tr>
+<td>Kong calls with no tokens, or no prompt and response</td>
+<td><code>log_statistics</code> or <code>log_payloads</code> is not on in <code>ai-proxy</code>.</td>
+</tr>
+<tr>
+<td>Kong records rejected with "started_at is not a number"</td>
+<td>The record was not produced by <code>http-log</code>.</td>
+</tr>
+<tr>
+<td>Azure calls with zero tokens</td>
+<td>The calls are streamed. See <a href="#what-azure-api-management-records">What is recorded</a>.</td>
+</tr>
+<tr>
+<td><code>413</code></td>
+<td>A request was over 32 MB, or carried more than 1,000 records or GenAI spans. Lower the gateway's batch size.</td>
+</tr>
+<tr>
+<td><code>429</code></td>
+<td>A quota or rate-limit refusal. See <a href="../litellm/#when-calls-are-lost">When calls are lost</a>.</td>
+</tr>
+<tr>
+<td>Calls arrive with no AI system</td>
+<td>No rule matches. Assign the label under <strong>Unregistered traffic</strong>.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../litellm/" class="md-footer__link md-footer__link--prev" aria-label="Previous: LiteLLM Gateway">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                LiteLLM Gateway
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../n8n-webhooks/" class="md-footer__link md-footer__link--next" aria-label="Next: n8n Webhooks">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                n8n Webhooks
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 AgentaFlow · WhiteBoxXAI
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/AgentaFlow/whitebox-python-sdk" target="_blank" rel="noopener" title="WhiteBoxXAI Python SDK" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://whiteboxxai.com" target="_blank" rel="noopener" title="whiteboxxai.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M351.9 280H161c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zm-191-48h190.9c-2.8-64.5-17.1-123.9-37.4-167.4-11.4-24.4-23.7-41.8-35.1-52.4C268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4m-48 0c3.5-85.6 25.6-165.1 57.9-217.3C78.7 47.3 10.9 131.2 1.5 232zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3zm111.4-48C501.9 131.2 434.1 47.3 342 14.7c32.3 52.2 54.4 131.7 57.9 217.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

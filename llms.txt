@@ -1,0 +1,99 @@
+# WhiteBoxXAI Documentation
+
+> WhiteBoxXAI turns how AI systems actually behave into audit evidence: monitoring, explainability (SHAP, LIME, DiCE), drift, fairness audits, LLM and agent audit trails, governance reviews, and compliance evidence for ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF. It records evidence; it does not certify compliance.
+
+Agents: load the `whitebox-governance-rules` skill before acting on WhiteBoxXAI data (https://whiteboxxai.com/skills/index.md). Never invent a number; report empty or unassessed results as they are; never cast a governance vote for a person. Python package: `whitebox-xai-sdk` (import `whiteboxxai`, key in `WHITEBOX_API_KEY`). MCP server: `whiteboxxai-mcp` (key in `WHITEBOXXAI_MCP_API_KEY`) or hosted at https://api.whiteboxxai.com/mcp/. REST API: https://api.whiteboxxai.com/api/v1 with `Authorization: Bearer <key>`.
+
+- [Home](https://docs.whiteboxxai.com/): WhiteBoxXAI documentation — turn how your AI systems actually behave into audit evidence for ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF, using the Enhanced Dashboard, the Python SDK, the REST API or the MCP server.
+
+## Get Started
+
+- [Getting Started](https://docs.whiteboxxai.com/get-started/getting-started/): Go from a new WhiteBoxXAI account to a monitored model with drift, explainability and an exportable evidence report — sign up, set up readiness, connect the SDK, log predictions, and generate your first report.
+- [Plans & Limits](https://docs.whiteboxxai.com/get-started/plans/): WhiteBoxXAI plans — Free, Business Cloud and Enterprise Edition — priced in Governed AI Systems and Governance Events, with the same governance features on every tier.
+- [Governance Events](https://docs.whiteboxxai.com/get-started/governance-events/): Exactly what counts as a WhiteBoxXAI Governance Event and a Governed AI System, how batches, agent workflows and run grouping are counted, what is free, and what the 429 and 403 limit responses mean.
+- [What's New](https://docs.whiteboxxai.com/help/whats-new/): What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashboard, Governance Events pricing, Report Studio, evaluations and prompt versions, SDK 1.3.0, MCP server 0.3.0, agent skills, authenticator-code voting, automatic alert rules, Policy-as-Code and more.
+
+## Enhanced Dashboard
+
+- [The Enhanced Dashboard](https://docs.whiteboxxai.com/user-guide/): How the WhiteBoxXAI Enhanced Dashboard is organized — sidebar sections, lenses, roles, the command palette, keyboard shortcuts, saved views, and switching between the Enhanced and Classic layouts.
+- [Overview](https://docs.whiteboxxai.com/user-guide/overview/): The WhiteBoxXAI Overview — current posture tiles, framework readiness, what changed, trends, value and impact, the five-step readiness setup wizard, and presentation mode for board meetings.
+- [Needs Attention](https://docs.whiteboxxai.com/user-guide/needs-attention/): The WhiteBoxXAI Needs Attention queue — alerts, risks, reviews and deadlines ranked worst first, with filters, saved views and row actions; plus All Alerts and Alert Rules.
+- [Model Register](https://docs.whiteboxxai.com/user-guide/model-register/): The WhiteBoxXAI Model Register — every governed AI system with lens-specific columns, filters and CSV export, and the per-system dossier with verdicts, signals, model card, control coverage, trust score history and audit trail.
+- [Assurance](https://docs.whiteboxxai.com/user-guide/assurance/): WhiteBoxXAI Assurance — explainability (SHAP, LIME and DiCE counterfactuals), fairness audits and drift detection for a system, each computed from logged data and shown with a plain-language verdict.
+- [Observability](https://docs.whiteboxxai.com/user-guide/observability/): WhiteBoxXAI Observability — runtime performance for ML models, LLM & RAG audit trails (usage, cost, safety, retrieval quality, conversation log) and multi-agent workflow runs.
+- [Evaluations & Prompt Versions](https://docs.whiteboxxai.com/user-guide/evaluations/): Prompt evaluations in WhiteBoxXAI — golden datasets, scoring methods, evaluation runs, regression checks between prompt versions, and governed prompt versions with a design → verify → deploy → retired lifecycle.
+- [Settings](https://docs.whiteboxxai.com/user-guide/settings/): Every WhiteBoxXAI Settings pane — profile and two-factor security, preferences, data and privacy, users and roles, API keys, integrations and notification channels, subscription and usage, trust score weights, brand profiles, writing style, security posture and access reviews, and sample data.
+- [Feature Reference](https://docs.whiteboxxai.com/user-guide/features/): Technical reference for WhiteBoxXAI features — model registry, prediction logging, metrics, drift detection methods, SHAP/LIME/DiCE explainability, fairness metrics, LLM monitoring — with the SDK calls behind each and links to the dashboard pages.
+
+## Compliance & Reports
+
+- [Compliance Frameworks](https://docs.whiteboxxai.com/account/ai-regulations/): The five compliance frameworks WhiteBoxXAI covers — ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF — with exactly what each control catalog contains, what it leaves out, which evidence and reports map to it, and what WhiteBoxXAI does not do.
+- [Compliance & Evidence](https://docs.whiteboxxai.com/user-guide/compliance-evidence/): WhiteBoxXAI Compliance & Evidence — framework readiness for ISO/IEC 42001, the EU AI Act, GDPR, CCPA and NIST AI RMF, control applicability decisions, evidence filing and approval, automatic system evidence collection, evidence packs, the compliance calendar and the tamper-evident audit trail.
+- [Reports](https://docs.whiteboxxai.com/user-guide/reports/): WhiteBoxXAI Reports — 12 audit-ready report types (board pack, ISO/IEC 42001 SoA, EU AI Act Annex IV, GDPR DPIA, CCPA ADMT, NIST AI RMF, model card, fairness, drift, evidence pack, traceability matrix), branded templates, sign-off, verified auditor share links and schedules.
+- [Report Types Reference](https://docs.whiteboxxai.com/user-guide/report-engine/): Reference for every WhiteBoxXAI report type — id, scope, the data each one needs before it can be generated, formats, and the SDK and REST calls to list, preview and generate them.
+- [Reviews & Decisions](https://docs.whiteboxxai.com/user-guide/governance/): WhiteBoxXAI Reviews & Decisions — governance review boards, review requests, votes signed with an authenticator code, separation of duties, the immutable decision archive, RACI assignments and scheduled reviews.
+- [AI Risk Register](https://docs.whiteboxxai.com/user-guide/risk-register/): The WhiteBoxXAI AI Risk Register — likelihood × impact scoring, severity thresholds, categories, workflow states, the portfolio heat map, automatic risk drafting from bias audits, drift and governance decisions, and audit history.
+- [Trust Score](https://docs.whiteboxxai.com/user-guide/trust-score/): How the WhiteBoxXAI Trust Score is computed — fairness, drift and explainability components, weights, renormalization when data is missing, history, and where it appears.
+
+## SDK & API
+
+- [Python SDK](https://docs.whiteboxxai.com/sdk/): The WhiteBoxXAI Python SDK (whitebox-xai-sdk 1.3.0) — install, configure, register models, log predictions and LLM calls, group runs into Governance Events, explanations including DiCE, drift, fairness, prompts, compliance, reports, governance, async, offline mode, privacy helpers and error handling.
+- [LLM Monitoring](https://docs.whiteboxxai.com/sdk/llm-monitoring/): Log LLM calls to WhiteBoxXAI from any provider — OpenAI, Anthropic Claude, Google Gemini, xAI Grok, Mistral, AWS Bedrock, Azure OpenAI, Hugging Face or local models — with a reusable decorator, safety scans, RAG retrievals, prompt versions and grouped runs.
+- [Multi-Agent Monitoring](https://docs.whiteboxxai.com/sdk/multi-agent-monitoring/): Monitor multi-agent AI workflows (CrewAI, LangChain/LangGraph, AutoGen, n8n or custom) with WhiteBoxXAI — agents, tasks, executions, interactions, cost breakdown, bottlenecks and timelines, via the SDK or REST API.
+- [Multi-Agent Quick Reference](https://docs.whiteboxxai.com/sdk/multi-agent-quick-reference/): Quick reference for WhiteBoxXAI multi-agent workflow monitoring — SDK methods, REST endpoints, request and response shapes, enums and common patterns.
+- [Offline Mode](https://docs.whiteboxxai.com/sdk/offline-mode/): Use WhiteBoxXAI SDK offline mode to queue model registrations, baselines and predictions on disk when the API can't be reached, and sync them later.
+- [REST API Reference](https://docs.whiteboxxai.com/sdk/api-reference/): WhiteBoxXAI REST API reference — base URL, authentication with API keys, the error envelope, rate limits, Governance Event metering and the X-WhiteBox-Run-Id header, pagination, and every customer-facing endpoint grouped by area.
+
+## MCP & AI Agents
+
+- [Agent & Developer Resources](https://docs.whiteboxxai.com/agent-resources/): Machine-readable entry points for AI agents and coding assistants working with WhiteBoxXAI — llms.txt, agent skills, the MCP server, prompts and client configs.
+- [MCP Server](https://docs.whiteboxxai.com/integrations/mcp/): The WhiteBoxXAI MCP server (MCP Governance Layer) — install whiteboxxai-mcp or use the hosted endpoint, configure Claude Desktop, Claude Code, Cursor or VS Code, render MCP Apps cards, understand governance voting, and browse all 197 tools.
+- [Agent Skills](https://docs.whiteboxxai.com/agent-resources/skill-libraries/): The seven public WhiteBoxXAI agent skills — what each covers, when to load it, and how to install them into Claude Code, Copilot, Cursor or any harness that reads SKILL.md files.
+- [AI Prompts](https://docs.whiteboxxai.com/agent-resources/prompts/): Copy-paste system prompts for AI assistants that work with WhiteBoxXAI data — a compliance assistant for risk officers and a developer prompt for instrumentation work.
+- [Agent Config Definitions](https://docs.whiteboxxai.com/agent-resources/yaml-definitions/): Copy-paste MCP client configurations (JSON and YAML) for connecting Claude Desktop, Claude Code, Cursor, VS Code and other agents to the WhiteBoxXAI MCP server, plus an n8n webhook node definition.
+
+## Integrations
+
+- [Integration Examples](https://docs.whiteboxxai.com/integrations/examples/): End-to-end code examples for integrating WhiteBoxXAI into ML applications — scikit-learn, PyTorch and XGBoost monitoring, credit, fraud and churn use cases, A/B tests and ensembles.
+- [CrewAI](https://docs.whiteboxxai.com/integrations/crewai/): Monitor CrewAI crews with WhiteBoxXAI — register agents and tasks automatically, log executions, delegations and task results, and get cost, bottleneck and timeline analytics, as one Governance Event per run.
+- [LangChain](https://docs.whiteboxxai.com/integrations/langchain/): Monitor LangChain and LangGraph applications with WhiteBoxXAI — a callback handler that logs every LLM call, chain run, tool call and retrieval, and groups each root run into shared Governance Events.
+- [LangChain Multi-Agent](https://docs.whiteboxxai.com/integrations/langchain-multi-agent/): Record LangChain and LangGraph multi-agent systems in WhiteBoxXAI as workflows — agents, tasks, executions and agent-to-agent handoffs — alongside every LLM call, with per-agent cost, bottlenecks and a timeline.
+- [TensorFlow & Keras](https://docs.whiteboxxai.com/integrations/tensorflow/): Monitor TensorFlow and Keras models with WhiteBoxXAI — register the model, log training with a Keras callback, log predictions, and set a baseline.
+- [Hugging Face](https://docs.whiteboxxai.com/integrations/huggingface/): Monitor Hugging Face Transformers pipelines with WhiteBoxXAI — register the model, wrap a pipeline so predictions are logged, log batches and generation metrics.
+- [XGBoost & LightGBM](https://docs.whiteboxxai.com/integrations/boosting/): Monitor XGBoost and LightGBM models with WhiteBoxXAI — register the model, wrap predict and predict_proba so every prediction is logged, and track feature importance.
+- [GitHub](https://docs.whiteboxxai.com/integrations/github/): Connect GitHub to WhiteBoxXAI with OAuth or a personal access token, track repositories, auto-register model versions from commits, trace predictions to code, and add branch protection, check runs and PR comments.
+- [GitHub Quick Reference](https://docs.whiteboxxai.com/integrations/github-quick-reference/): Quick reference for the WhiteBoxXAI GitHub integration — connecting, tracking repositories, the .whiteboxxai.yml file, SDK Git tracking and the main endpoints.
+- [GitHub Diff Reviews](https://docs.whiteboxxai.com/integrations/github-diff/): Model-diff architecture reviews in WhiteBoxXAI — compare two Git-backed model versions for parameter, layer, hyperparameter, shape and framework changes, generate a changelog, and use the results in CI and governance reviews. Business Cloud and Enterprise Edition.
+- [Git Context Tracking (SDK)](https://docs.whiteboxxai.com/integrations/cli-git-tracking/): Record the Git commit, branch, repository and tag a model came from when you register it with the WhiteBoxXAI Python SDK — automatic detection, manual metadata, clean-tree enforcement and CI usage.
+- [Policy-as-Code & GitOps](https://docs.whiteboxxai.com/integrations/policy-as-code/): Policy-as-Code and GitOps with WhiteBoxXAI — define drift and bias policy in a whitebox.yaml file, sync it from CI, and evaluate a model against it to warn or block a deployment, with the violations recorded.
+- [LLM Gateways (OTLP, Portkey, Kong, Azure APIM)](https://docs.whiteboxxai.com/integrations/gateways/): Record LLM calls from OpenTelemetry, Portkey, Kong AI Gateway and Azure API Management in WhiteBoxXAI — what each gateway sends, the configuration to add, how calls are filed under AI systems, and the limits that apply to every gateway connection.
+- [LiteLLM Gateway](https://docs.whiteboxxai.com/integrations/litellm/): Record every LLM call that goes through your LiteLLM gateway in WhiteBoxXAI — connect it once, paste one block into LiteLLM's configuration, and see calls filed under the AI system they belong to, with the prompt and response redacted or left out as you choose, what redaction misses, and what happens when calls are refused.
+- [n8n Webhooks](https://docs.whiteboxxai.com/integrations/n8n-webhooks/): Send n8n workflow executions to WhiteBoxXAI with a webhook node, so AI automation runs are recorded as monitored workflows with node-level detail.
+
+## Tutorials
+
+- [Tutorials](https://docs.whiteboxxai.com/learn/): Hands-on WhiteBoxXAI tutorials — explore with sample data, take a tabular model from training to an auditor-ready evidence pack, govern an LLM application, and connect an AI assistant over MCP.
+- [Explore with Sample Data](https://docs.whiteboxxai.com/learn/interactive-demos/): Explore WhiteBoxXAI without writing code — load clearly marked sample data, take the product tour, run the readiness setup, present the Overview to a board, and generate a sample evidence pack.
+- [From Model to Evidence Pack](https://docs.whiteboxxai.com/learn/workshops/): Hands-on tutorial — train a credit model on a public dataset, register and monitor it in WhiteBoxXAI, create a drift report, run a fairness audit by age group, take it through a governance review, and generate an auditor-ready evidence pack.
+- [Govern an LLM Application](https://docs.whiteboxxai.com/learn/tutorial-llm-app/): Hands-on tutorial — govern an LLM application with WhiteBoxXAI: log calls from any provider, scan answers for safety, version the prompt, score it against a golden dataset, and check a prompt change for regressions.
+- [Govern Your Agents in 5 Minutes](https://docs.whiteboxxai.com/learn/tutorial-agents-5-minutes/): Five-minute quickstart — install whiteboxxai-mcp with pip, connect your AI assistant to WhiteBoxXAI, load the governance rules, and get a first answer and a first drift record that came from real data.
+- [Connect an AI Assistant over MCP](https://docs.whiteboxxai.com/learn/tutorial-agent-mcp/): Hands-on tutorial — connect Claude Desktop, Claude Code, Cursor or VS Code to WhiteBoxXAI over MCP, load the agent skills, ask compliance questions, and have the assistant prepare a governance review for a person to decide.
+
+## Account & Security
+
+- [API Keys](https://docs.whiteboxxai.com/account/api-keys/): Create, use and revoke WhiteBoxXAI API keys (wbx_live_...) for the SDK, REST API, CI/CD and the MCP server — what a key can do, how it differs from a login token, and how it interacts with two-factor authentication.
+- [Single Sign-On (Entra ID)](https://docs.whiteboxxai.com/account/single-sign-on/): Connect Microsoft Entra ID so your team signs in to WhiteBoxXAI with work accounts — who can set it up, what Require SSO blocks, break-glass administrators, accounts created on first sign-in and role mapping.
+- [Two-Factor Authentication](https://docs.whiteboxxai.com/account/two-factor-authentication/): Set up two-factor authentication (TOTP) for WhiteBoxXAI, use and regenerate backup codes, recover access, and understand why governance votes need an authenticator code while API keys don't.
+
+## Help
+
+- [FAQ](https://docs.whiteboxxai.com/help/faq/): Answers to common questions about WhiteBoxXAI — what it does and doesn't do, plans and Governance Events, supported models and LLM providers, data handling, compliance frameworks, explanations, drift, fairness, alerts, reports, governance votes, the SDK, API and MCP server.
+- [Troubleshooting](https://docs.whiteboxxai.com/help/troubleshooting/): Fixes for common WhiteBoxXAI problems — SDK install and import errors, 401/403/404/409/422/429 responses, plan limits, predictions or explanations not appearing, MCP server errors, governance votes refused, and two-factor issues.
+- [Getting Support](https://docs.whiteboxxai.com/help/support/): How to get help with WhiteBoxXAI — the in-dashboard support form, what context it attaches, support levels by plan, and the support email address.
+
+## Optional
+
+- [Agent skills index](https://whiteboxxai.com/skills/index.md): Seven SKILL.md files for coding agents
+- [Skills discovery JSON](https://whiteboxxai.com/.well-known/skills/index.json)
+- [Python SDK source and examples](https://github.com/AgentaFlow/whitebox-python-sdk)
+- [WhiteBoxXAI website](https://whiteboxxai.com)

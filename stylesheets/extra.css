@@ -1,0 +1,92 @@
+/* ==========================================================================
+   WhiteBoxXAI documentation — brand theme
+   Primary blue hsl(221.2 83.2% 53.3%) ≈ #2563EB, slate neutrals.
+   Source of truth: whitebox-xai-design skill (colors.css).
+   ========================================================================== */
+
+/* --- Brand primary/accent (light + dark share the "custom" palette) --- */
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color: #2563eb;
+  --md-primary-fg-color--light: #3b82f6;
+  --md-primary-fg-color--dark: #1d4ed8;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+}
+
+[data-md-color-accent="custom"] {
+  --md-accent-fg-color: #3b82f6;
+  --md-accent-fg-color--transparent: rgba(59, 130, 246, 0.1);
+  --md-accent-bg-color: #ffffff;
+  --md-accent-bg-color--light: rgba(255, 255, 255, 0.7);
+}
+
+/* Brighter blue for links/accents on the dark (slate) scheme for contrast */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #3b82f6;
+  --md-typeset-a-color: #60a5fa;
+  --md-accent-fg-color: #60a5fa;
+}
+
+/* Keep the logo legible on the colored header */
+.md-header__button.md-logo img {
+  height: 1.6rem;
+  width: auto;
+}
+
+/* --- Homepage hero --- */
+.wbx-hero {
+  text-align: center;
+  padding: 3.5rem 1rem 2rem;
+}
+
+.wbx-hero h1 {
+  font-weight: 800;
+  font-size: 2.4rem;
+  line-height: 1.15;
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.02em;
+}
+
+.wbx-hero p.wbx-tagline {
+  font-size: 1.05rem;
+  color: var(--md-default-fg-color--light);
+  max-width: 42rem;
+  margin: 0 auto 1.75rem;
+}
+
+.wbx-hero .md-button {
+  margin: 0.25rem 0.35rem;
+}
+
+/* --- Card grid polish (Material's .grid.cards) --- */
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+  border-radius: 0.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-primary-fg-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.md-typeset .grid.cards > ul > li > hr {
+  margin: 0.6rem 0;
+}
+
+/* Slightly tighter, more "product" feeling tables */
+.md-typeset table:not([class]) {
+  font-size: 0.78rem;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .md-typeset .grid.cards > ul > li {
+    transition: none;
+  }
+  .md-typeset .grid.cards > ul > li:hover {
+    transform: none;
+  }
+}
