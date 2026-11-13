@@ -1,12 +1,12 @@
 ---
-description: Record LLM calls from OpenTelemetry, Portkey, Kong AI Gateway and Azure API Management in WhiteBoxXAI — what each gateway sends, the configuration to add, how calls are filed under AI systems, and the limits that apply to every gateway connection.
+description: Record LLM calls from OpenTelemetry, Portkey, Kong AI Gateway, Azure API Management and Microsoft Foundry in WhiteBoxXAI — what each gateway sends, the configuration to add, how calls are filed under AI systems, and the limits that apply to every gateway connection.
 ---
 
 # LLM gateways
 
 Your teams' LLM calls already pass through a gateway, or through code that emits OpenTelemetry traces.
 Connecting it to WhiteBoxXAI records each call where it passes through, so no team has to add logging to its
-own code. WhiteBoxXAI accepts calls from five sources:
+own code. WhiteBoxXAI accepts calls from six sources:
 
 | Gateway | What it sends | Where it goes |
 | --- | --- | --- |
@@ -15,11 +15,12 @@ own code. WhiteBoxXAI accepts calls from five sources:
 | [Portkey](#portkey) | Portkey's OpenTelemetry log export | `/api/v1/llm/gateways/otlp/v1/traces` |
 | [Kong AI Gateway](#kong-ai-gateway) | The `http-log` plugin's record, with the `ai-proxy` fields | `/api/v1/llm/gateways/kong/ingest` |
 | [Azure API Management](#azure-api-management) | A JSON record from a `send-one-way-request` policy | `/api/v1/llm/gateways/azure_apim/ingest` |
+| [Microsoft Foundry](microsoft-foundry.md) | OpenTelemetry traces from the Foundry client libraries, or forwarded Azure Monitor logs | `/api/v1/llm/gateways/otlp/v1/traces`, `/api/v1/llm/gateways/microsoft_foundry/ingest` |
 
 All addresses are on `https://api.whiteboxxai.com`; a Business Cloud tenant has its own address, which the
 setup pane shows.
 
-LiteLLM has its own guide: [LiteLLM gateway](litellm.md). This page covers the other four, and what all five
+LiteLLM has its own guide: [LiteLLM gateway](litellm.md). [Microsoft Foundry](microsoft-foundry.md) has its own guide too. This page covers the other four, and what all six
 connections share.
 
 ## What every connection shares
@@ -44,13 +45,14 @@ You need to be an administrator of your organisation.
     | Portkey | Inside `EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_HEADERS` on your Portkey gateway, as `Authorization=Bearer wbx_lgw_...` |
     | Kong AI Gateway | `DECK_WHITEBOXXAI_AUTHORIZATION`, where you run decK |
     | Azure APIM | A secret named value called `WHITEBOXXAI_AUTHORIZATION` |
+    | Microsoft Foundry | Inside `OTEL_EXPORTER_OTLP_TRACES_HEADERS` where your app runs, as `Authorization=Bearer%20wbx_lgw_...`; a forwarder takes it as `WHITEBOXXAI_AUTHORIZATION` |
 
 4. Send a call through the gateway. The tab changes from **Waiting for the first call** to **Receiving**.
 
-An organisation has one connection per gateway type, so up to five at once. Each has its own token, rules,
+An organisation has one connection per gateway type, so up to six at once. Each has its own token, rules,
 health and rate limit. A token only works for its own gateway type: a Kong token sent to the OTLP address is
-refused with `401`. The one exception is Portkey, whose token is accepted on the OTLP address because that
-is where Portkey sends.
+refused with `401`. The exceptions are Portkey and Microsoft Foundry, whose tokens are accepted on the OTLP address because that
+is where they send.
 
 ### What is stored, and how calls are filed
 

@@ -19,7 +19,7 @@ A Governance Event is one unit of AI activity that WhiteBoxXAI records:
 | --- | --- | --- |
 | Logged prediction | `client.predictions.log` | 1 |
 | LLM interaction | `client.llm.log_call` | 1 |
-| LLM call recorded through a gateway ([LiteLLM](../integrations/litellm.md), [OpenTelemetry, Portkey, Kong, Azure APIM](../integrations/gateways.md)) | none: the gateway sends it | 1 per call stored |
+| LLM call recorded through a gateway ([LiteLLM](../integrations/litellm.md), [Microsoft Foundry](../integrations/microsoft-foundry.md), [OpenTelemetry, Portkey, Kong, Azure APIM](../integrations/gateways.md)) | none: the gateway sends it | 1 per call stored |
 | RAG retrieval | `client.rag.log_retrieval` | 1 |
 | Safety scan | `client.safety.analyze` | 1 |
 | Explanation (SHAP, LIME, DiCE) | `client.explanations.generate` / `generate_async` | 1 |
