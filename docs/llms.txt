@@ -11,7 +11,7 @@ Agents: load the `whitebox-governance-rules` skill before acting on WhiteBoxXAI 
 - [Getting Started](https://docs.whiteboxxai.com/get-started/getting-started/): Go from a new WhiteBoxXAI account to a monitored model with drift, explainability and an exportable evidence report — sign up, set up readiness, connect the SDK, log predictions, and generate your first report.
 - [Plans & Limits](https://docs.whiteboxxai.com/get-started/plans/): WhiteBoxXAI plans — Free, Business Cloud and Enterprise Edition — priced in Governed AI Systems and Governance Events, with the same governance features on every tier.
 - [Governance Events](https://docs.whiteboxxai.com/get-started/governance-events/): Exactly what counts as a WhiteBoxXAI Governance Event and a Governed AI System, how batches, agent workflows and run grouping are counted, what is free, and what the 429 and 403 limit responses mean.
-- [What's New](https://docs.whiteboxxai.com/help/whats-new/): What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashboard, Governance Events pricing, Report Studio, evaluations and prompt versions, SDK 1.3.0, MCP server 0.3.0, agent skills, authenticator-code voting, automatic alert rules, Policy-as-Code and more.
+- [What's New](https://docs.whiteboxxai.com/help/whats-new/): What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashboard, Governance Events pricing, Report Studio, evaluations and prompt versions, SDK 1.4.0, MCP server 0.3.0, agent skills, authenticator-code voting, automatic alert rules, Policy-as-Code and more.
 
 ## Enhanced Dashboard
 
@@ -37,7 +37,7 @@ Agents: load the `whitebox-governance-rules` skill before acting on WhiteBoxXAI 
 
 ## SDK & API
 
-- [Python SDK](https://docs.whiteboxxai.com/sdk/): The WhiteBoxXAI Python SDK (whitebox-xai-sdk 1.3.0) — install, configure, register models, log predictions and LLM calls, group runs into Governance Events, explanations including DiCE, drift, fairness, prompts, compliance, reports, governance, async, offline mode, privacy helpers and error handling.
+- [Python SDK](https://docs.whiteboxxai.com/sdk/): The WhiteBoxXAI Python SDK (whitebox-xai-sdk 1.4.0) — install, configure, register models, log predictions and LLM calls, group runs into Governance Events, explanations including DiCE, drift, fairness, prompts, compliance, reports, governance, async, offline mode, privacy helpers and error handling.
 - [LLM Monitoring](https://docs.whiteboxxai.com/sdk/llm-monitoring/): Log LLM calls to WhiteBoxXAI from any provider — OpenAI, Anthropic Claude, Google Gemini, xAI Grok, Mistral, AWS Bedrock, Azure OpenAI, Hugging Face or local models — with a reusable decorator, safety scans, RAG retrievals, prompt versions and grouped runs.
 - [Multi-Agent Monitoring](https://docs.whiteboxxai.com/sdk/multi-agent-monitoring/): Monitor multi-agent AI workflows (CrewAI, LangChain/LangGraph, AutoGen, n8n or custom) with WhiteBoxXAI — agents, tasks, executions, interactions, cost breakdown, bottlenecks and timelines, via the SDK or REST API.
 - [Multi-Agent Quick Reference](https://docs.whiteboxxai.com/sdk/multi-agent-quick-reference/): Quick reference for WhiteBoxXAI multi-agent workflow monitoring — SDK methods, REST endpoints, request and response shapes, enums and common patterns.

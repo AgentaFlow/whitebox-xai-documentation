@@ -65,7 +65,7 @@ placeholders.
 
 The generated report is an **export**: download it from
 `GET /api/v1/export/exports/{export_id}/download`, and share or sign it off as described in
-[Reports](reports.md#from-code). In the next SDK release, `client.reports.download(result,
+[Reports](reports.md#from-code). With SDK 1.4.0 or later, `client.reports.download(result,
 path="report.pdf")` does the download for you; see [Reports](reports.md#from-code).
 
 Every type shares the same layout: a document-control table, a findings summary, "What this section

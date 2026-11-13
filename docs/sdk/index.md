@@ -1,5 +1,5 @@
 ---
-description: The WhiteBoxXAI Python SDK (whitebox-xai-sdk 1.3.0) — install, configure, register models, log predictions and LLM calls, group runs into Governance Events, explanations including DiCE, drift, fairness, prompts, compliance, reports, governance, async, offline mode, privacy helpers and error handling.
+description: The WhiteBoxXAI Python SDK (whitebox-xai-sdk 1.4.0) — install, configure, register models, log predictions and LLM calls, group runs into Governance Events, explanations including DiCE, drift, fairness, prompts, compliance, reports, governance, async, offline mode, privacy helpers and error handling.
 ---
 
 # Python SDK
@@ -8,7 +8,7 @@ The `whitebox-xai-sdk` package is the Python client for WhiteBoxXAI. It wraps th
 methods, retries transient failures, can queue records while offline, and has drop-in integrations
 for common ML and LLM frameworks.
 
-- **Package:** `whitebox-xai-sdk` 1.3.0 · **Import:** `whiteboxxai` · **Python:** 3.9 or later ·
+- **Package:** `whitebox-xai-sdk` 1.4.0 · **Import:** `whiteboxxai` · **Python:** 3.10 or later ·
   **License:** MIT
 - **Source and examples:** [github.com/AgentaFlow/whitebox-python-sdk](https://github.com/AgentaFlow/whitebox-python-sdk)
 
@@ -79,7 +79,7 @@ Each method has an async twin prefixed with `a`, such as `client.models.aregiste
 | `client.llm` | LLM call logging and usage | `log_call`, `log_calls_batch`, `query_logs`, `get_stats`, `usage_stats`, `cost_breakdown` |
 | `client.rag` | RAG retrievals and evaluations | `log_retrieval`, `create_evaluation`, `get_stats`, `metrics_precision` |
 | `client.safety` | Toxicity, PII and harmful-content scans | `analyze`, `analyze_batch`, thresholds |
-| `client.llm_xai` | LLM explainability | `attention`, `token_importance`, `prompt_sensitivity`, `counterfactuals`, `debug_prompt`, `batch_analyze`; `rag_attribution` and `get_unified_explanation` in the next SDK release |
+| `client.llm_xai` | LLM explainability | `attention`, `token_importance`, `prompt_sensitivity`, `counterfactuals`, `debug_prompt`, `batch_analyze`, `rag_attribution`, `get_unified_explanation` |
 | `client.prompts` | Governed prompt versions | `create_template`, `create_version`, `advance_stage`, `deploy`, `rollback`, `compute_drift` |
 | `client.agent_workflows` | Multi-agent workflow tracing | `create_and_start`, `register_agent`, `complete`, `analytics` |
 | `client.risk_register` | The AI Risk Register | `list`, `get`, `portfolio` |
@@ -333,7 +333,7 @@ client.compliance.iso42001_gaps(severity_filter="high")
 
 client.reports.list()
 report = client.reports.generate(report_type_id="model_card", model_id=model_id, format="pdf")
-client.reports.download(report, path="model_card.pdf")   # next SDK release; see below
+client.reports.download(report, path="model_card.pdf")
 
 client.risk_register.portfolio()
 client.governance.list_review_requests(status="under_review")
@@ -342,9 +342,9 @@ client.governance.get_review_request(request_id)     # includes evidence_snapsho
 
 `ExportFormat` (`PDF`, `HTML`, `DOCX`, imported with `from whiteboxxai import ExportFormat`) can be
 passed as `format=`, and `client.reports.download(report, path=...)` saves the file; `adownload` is the
-async twin. They are in the current development version of the SDK and aren't in the published 1.3.0
-yet. Until they ship, pass `format="pdf"` and download from
-`/api/v1/export/exports/{export_id}/download`. See [Reports](../user-guide/reports.md#from-code).
+async twin. They need SDK 1.4.0 or later. On an older version, pass `format="pdf"` and download from
+`/api/v1/export/exports/{export_id}/download`. `download` only follows a link on your own `base_url`, so
+the API key is never sent to another host. See [Reports](../user-guide/reports.md#from-code).
 
 `client.governance.submit_decision(...)` exists for a person voting from their own session. It needs
 `evidence_snapshot_hash` and a current authenticator code (`totp_code`), and is refused when called with
