@@ -1,5 +1,5 @@
 ---
-description: What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashboard, Governance Events pricing, Report Studio, evaluations and prompt versions, SDK 1.3.0, MCP server 0.3.0, agent skills, authenticator-code voting, automatic alert rules, Policy-as-Code and more.
+description: What's new in WhiteBoxXAI since August 2026 — the Enhanced Dashboard, Governance Events pricing, Report Studio, evaluations and prompt versions, SDK 1.4.0, MCP server 0.3.0, agent skills, authenticator-code voting, automatic alert rules, Policy-as-Code and more.
 ---
 
 # What's new
@@ -19,8 +19,8 @@ Changes since the previous documentation update (27 August 2026), newest areas f
   [Offline Mode](../sdk/offline-mode.md)
 - **MCP server 0.3.2** accepts an API key in an `X-WhiteBox-API-Key` header as well as
   `Authorization: Bearer`. See [MCP Server](../integrations/mcp.md#hosted-endpoint-authentication)
-- **Coming in the next SDK release:** `ExportFormat` with `client.reports.download()`, and
-  `client.llm_xai.rag_attribution()` with `get_unified_explanation()`. The REST routes are available now
+- **SDK 1.4.0** adds `ExportFormat` with `client.reports.download()`, and
+  `client.llm_xai.rag_attribution()` with `get_unified_explanation()`. See [Python SDK 1.4.0](#python-sdk-140)
 
 ### Single sign-on with Microsoft Entra ID
 
@@ -172,6 +172,17 @@ Plans are now sized in **Governed AI Systems** and **Governance Events** instead
 includes 1 system and 2,500 events a month; Business Cloud up to 10 systems and 100,000 events, with
 overage at $5 per 10,000. Dashboard use, reads, configuration and reports are free. See
 [Plans & Limits](../get-started/plans.md) and [Governance Events](../get-started/governance-events.md).
+
+### Python SDK 1.4.0
+
+- `ExportFormat` and `client.reports.download()` / `adownload()` save a generated report as PDF, HTML
+  or DOCX. They refuse a link on any host other than your `base_url`, so the API key is never sent elsewhere
+- `client.llm_xai.rag_attribution()` and `get_unified_explanation()`
+- `client.reports.generate()` sends `format` and `model_id` the way the API expects; before this it
+  was refused with a 422. It also takes `brand_profile_id`, `template_id` and `settings`
+- `ModelMonitor.detect_drift()` runs on the model's recently logged predictions: pass `window_size` and
+  `feature_names`, not data. `log_prediction(auto_explain=True)` now generates the explanation
+- **Python 3.10 or later** is required; 3.9 is no longer supported
 
 ### Python SDK 1.3.0
 

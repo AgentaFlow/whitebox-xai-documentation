@@ -8,7 +8,7 @@ You'll take a small customer-support assistant and give it the governance a revi
 call logged, answers scanned for toxicity and personal data, the prompt under version control, and a
 regression check before a prompt change ships. It takes about 40 minutes.
 
-**You need:** Python 3.9 or later, a WhiteBoxXAI [API key](../account/api-keys.md) in
+**You need:** Python 3.10 or later, a WhiteBoxXAI [API key](../account/api-keys.md) in
 `WHITEBOX_API_KEY`, and an API key for any LLM provider. The examples use OpenAI; swap in any provider
 from [LLM monitoring](../sdk/llm-monitoring.md#provider-recipes).
 

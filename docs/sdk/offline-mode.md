@@ -10,7 +10,7 @@ Offline mode lets the SDK keep working in environments with unreliable network
 connectivity. When the API is unreachable, operations are queued in a persistent SQLite
 database and synchronized once the connection is restored.
 
-!!! info "Requires SDK 1.0.0 or later (current release: 1.3.0)"
+!!! info "Requires SDK 1.0.0 or later (current release: 1.4.0)"
     Offline mode was not functional before 1.0.0: nothing was ever queued automatically, and
     `sync()` failed against methods that didn't exist. If you're on an older version,
     upgrade — `pip install --upgrade whitebox-xai-sdk` — before relying on any of this.

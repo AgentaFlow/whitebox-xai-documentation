@@ -210,10 +210,9 @@ client.reports.download(result, path="model_card.pdf")     # writes the file and
 # async: await client.reports.agenerate(...); await client.reports.adownload(result, path=...)
 ```
 
-!!! note "Next SDK release"
-    `ExportFormat`, `client.reports.download()` and `adownload()` are in the current development
-    version of the SDK and aren't in the published 1.3.0 yet. Until they ship, pass `format="pdf"`
-    to `generate` and download with the endpoint below.
+!!! note "Requires SDK 1.4.0 or later"
+    `ExportFormat`, `client.reports.download()` and `adownload()` were added in 1.4.0. On an older
+    version, pass `format="pdf"` to `generate` and download with the endpoint below.
 
 Download, share and sign it through the export endpoints:
 

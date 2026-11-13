@@ -19,7 +19,7 @@ It takes about 20 minutes. Prefer to explore first? Load sample data (step 2) an
 
 ## Before you start
 
-- **Python 3.9 or later**, if you'll connect a model with the SDK
+- **Python 3.10 or later**, if you'll connect a model with the SDK
 - **A model you can call**: scikit-learn, XGBoost, LightGBM, PyTorch, TensorFlow/Keras, Hugging
   Face, an LLM app, or anything else you can call from Python
 

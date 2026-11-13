@@ -9,7 +9,7 @@ system, logged predictions, a stored drift report, a fairness audit, a recorded 
 evidence pack. It takes about 45 minutes and uses the public German Credit dataset, so you don't need
 data of your own.
 
-**You need:** Python 3.9 or later, a WhiteBoxXAI account (the Free plan is enough), and an
+**You need:** Python 3.10 or later, a WhiteBoxXAI account (the Free plan is enough), and an
 [API key](../account/api-keys.md) in `WHITEBOX_API_KEY`.
 
 ```bash

@@ -315,9 +315,8 @@ Every explanation is stored. `client.llm_xai.get_unified_explanation(explanation
 shape whatever method made it: `model_type` (`generative_llm` or `rag_pipeline`), `explanation_method`,
 `plain_language_verdict`, `measured` and `attribution_data`.
 
-!!! note "Next SDK release"
-    `rag_attribution` and `get_unified_explanation` are in the current development version of the
-    SDK and aren't in the published 1.3.0 yet. Until they ship, call
+!!! note "Requires SDK 1.4.0 or later"
+    `rag_attribution` and `get_unified_explanation` were added in 1.4.0. On an older version, call
     `POST /api/v1/llm-xai/rag-attribution` and
     `GET /api/v1/llm-xai/explanations/{explanation_id}/unified` directly; see the
     [REST API Reference](api-reference.md#llm-explainability).
