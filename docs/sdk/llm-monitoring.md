@@ -218,6 +218,21 @@ Each recipe shows the provider call and how to pull out the completion and token
 Model ids change often; use the ones your provider currently offers. Provider SDK details are in each
 provider's own documentation.
 
+### Microsoft Foundry
+
+For `azure-ai-inference`, `AzureOpenAI` and `AIProjectClient`, wrap the client instead of logging each call:
+
+```python
+from whiteboxxai.integrations.foundry import FoundryMonitor, wrap_foundry_client
+
+monitor = FoundryMonitor(client, model_id="<AI system id>", project_name="claims-bot")
+chat = wrap_foundry_client(ChatCompletionsClient(endpoint, credential), monitor)
+```
+
+It records latency, tokens, the prompt and response (personal data masked by default) and Azure AI Content Safety's
+result, and never changes what your call returns or raises. See [Microsoft Foundry](../integrations/microsoft-foundry.md#wrap-a-client-in-python)
+for what it wraps and what it does not.
+
 ## LangChain and LangGraph
 
 If your application uses LangChain, the callback handler logs every LLM call for you, whichever chat
